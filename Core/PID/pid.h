@@ -1,0 +1,66 @@
+#ifndef _PID_H_
+#define _PID_H_
+
+#include <stdint.h>
+#include "stm32g071xx.h"
+
+typedef enum{
+    RO = 0x01,
+    WO = 0x02,
+    RW = 0x03
+}rw_t;
+
+typedef struct{
+    rw_t        p;
+    uint16_t *  v;
+}p_uint16_register_t;
+
+typedef struct{
+    rw_t        p;
+    uint32_t *  v;
+}p_uint32_register_t;
+
+typedef struct{
+    rw_t        p;
+    float       v;
+}float_register_t;
+
+typedef struct{
+    float_register_t sp;
+    float_register_t fb;
+    float_register_t acc;
+    float_register_t Kp;
+    float_register_t Ki;
+    float_register_t Kd;
+}loop_t;
+
+typedef struct{
+  GPIO_TypeDef *  frw_port;
+  uint16_t        frw_pin;
+  GPIO_TypeDef *  rev_port;
+  uint16_t        rev_pin;
+}direction_control_t;
+
+typedef struct{
+    union{
+        struct{
+            float_register_t    torque;
+            loop_t              position_l;
+            loop_t              speed_l;
+            loop_t              current_l;
+            float_register_t    output;
+        };
+        float_register_t all_registers[20];
+    };
+    direction_control_t dir_pins;
+    p_uint32_register_t pwm_duty;
+    p_uint32_register_t encoder_s;
+    p_uint16_register_t current_s;
+}device_t;
+
+void PID_DriveCompute(uint8_t drive_num);
+
+extern device_t drives[4];
+extern uint16_t current[4];
+
+#endif
