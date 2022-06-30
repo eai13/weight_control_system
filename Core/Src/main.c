@@ -32,6 +32,7 @@
 #include <stdint.h>
 
 #include "debug.h"
+#include "protocol.h"
 #include "pid.h"
 #include "global_config.h"
 /* USER CODE END Includes */
@@ -137,6 +138,8 @@ int main(void)
   HAL_TIM_Base_Start_IT(&CONTROL_SYSTEM_TIMER);
 
   print_in("Start\r\n");
+
+  PROTOCOL_Start();
 
   /* USER CODE END 2 */
 

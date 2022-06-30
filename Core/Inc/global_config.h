@@ -4,10 +4,10 @@
 #define _DEBUG_VERSION_
 
 // DEBUG USART
-#define DEBUG_UART      huart1
+#define DEBUG_UART      huart2
 
 // PROTOCOL USART
-#define PROTOCOL_UART   huart2
+#define PROTOCOL_UART   huart1
 
 // ENCODER TIMERS
 #define ENCODER_1_TIMER     htim2

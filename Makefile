@@ -72,7 +72,8 @@ Drivers/STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_uart.c \
 Drivers/STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_uart_ex.c \
 Core/Src/system_stm32g0xx.c \
 Core/debug/debug.c \
-Core/PID/pid.c
+Core/PID/pid.c \
+Core/protocol/protocol.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -135,7 +136,8 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32G0xx/Include \
 -IDrivers/CMSIS/Include \
 -ICore/debug \
--ICore/PID
+-ICore/PID \
+-ICore/protocol
 
 
 # compile gcc flags

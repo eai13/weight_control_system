@@ -262,3 +262,19 @@ void PID_DriveCompute(uint8_t drive_num){
     // else
     //     *(DRIVE.pwm_duty.v) = pwm_out;
 }
+
+rw_status_t PID_WriteReg(uint8_t drive_num, uint8_t reg, float data){
+    if (DRIVE.all_registers[reg].p & WO){
+        DRIVE.all_registers[reg].v = data;
+        return RW_OK;
+    }
+    else return RW_ERROR;
+}
+
+rw_status_t PID_ReadReg(uint8_t drive_num, uint8_t reg, float * data){
+    if (DRIVE.all_registers[reg].p & RO){
+        *data = DRIVE.all_registers[reg].v;
+        return RW_OK;
+    }
+    else return RW_ERROR;
+}

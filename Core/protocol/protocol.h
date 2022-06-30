@@ -6,11 +6,13 @@
 #include "pid.h"
 
 typedef enum{
-    ERROR_CRC   = 0x01,
-    ERROR_CMD   = 0x02,
-    ERROR_ID    = 0x03,
-    ERROR_READ  = 0x04,
-    ERROR_WRITE = 0x05
+    ERROR_NO_ERROR          = 0x00,
+    ERROR_CRC               = 0x01,
+    ERROR_CMD               = 0x02,
+    ERROR_ID                = 0x03,
+    ERROR_READ              = 0x04,
+    ERROR_WRITE             = 0x05,
+    ERROR_INTERNAL_ERROR    = 0x06
 }error_t;
 
 typedef enum{
@@ -18,7 +20,9 @@ typedef enum{
     ID_DRIVE_2      = 0x01,
     ID_DRIVE_3      = 0x02,
     ID_DRIVE_4      = 0x03,
-    ID_GLOBAL       = 0x04
+    ID_GLOBAL       = 0x04,
+    ID_GLOBAL_CMD   = 0x05,
+    ID_LAST
 }id_t;
 
 typedef enum{
@@ -61,21 +65,29 @@ typedef struct{
 }frame_header_t;
 
 typedef struct{
-    float data;
-    uint8_t crc8;
+    registers_t reg;
+    float       data;
+    uint8_t     crc8;
 }single_reg_data_t;
 
 typedef struct{
-    float data[4];
-    uint8_t crc8;
+    registers_t reg;
+    float       data[4];
+    uint8_t     crc8;
 }multiple_reg_data_t;
 
 typedef struct{
     uint8_t arg;
     uint8_t crc8;
 }global_cmd_data_t;
+
+typedef struct{
+    id_t id;
+    error_t status;
+}response_header_t;
 #pragma pack(pop)
 
 void PROTOCOL_ProcessFrame(void);
+void PROTOCOL_Start(void);
 
 #endif

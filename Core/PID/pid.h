@@ -10,6 +10,11 @@ typedef enum{
     RW = 0x03
 }rw_t;
 
+typedef enum{
+    RW_OK       = 0x01,
+    RW_ERROR    = 0x02
+}rw_status_t;
+
 typedef struct{
     rw_t        p;
     uint16_t *  v;
@@ -59,6 +64,9 @@ typedef struct{
 }device_t;
 
 void PID_DriveCompute(uint8_t drive_num);
+
+rw_status_t PID_WriteReg(uint8_t drive_num, uint8_t reg, float data);
+rw_status_t PID_ReadReg(uint8_t drive_num, uint8_t reg, float * data);
 
 extern device_t drives[4];
 extern uint16_t current[4];
