@@ -98,8 +98,11 @@ void PROTOCOL_ProcessFrame(void){
                         break;
                     }
                     // Check Crc
-                    if (PID_ReadReg(header.id, s_data.reg, &(s_data.data)) == RW_OK)
+                    float tmp = 0;
+                    if (PID_ReadReg(header.id, s_data.reg, &tmp) == RW_OK){
                         resp_header.status = ERROR_NO_ERROR;
+                        s_data.data = tmp;
+                    }
                     else resp_header.status = ERROR_READ;
                     // Count Crc
                     HAL_UART_Transmit(&PROTOCOL_UART, &resp_header, sizeof(response_header_t), 10);

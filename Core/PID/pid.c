@@ -208,7 +208,8 @@ void PID_DriveCompute(uint8_t drive_num){
     print_in("Current values: %d, %d, %d, %d\r\n", current[0], current[1], current[2], current[3]);
     print_in("Encoder values: %d, %d, %d, %d\r\n",
             *(drives[0].encoder_s.v), *(drives[1].encoder_s.v), *(drives[2].encoder_s.v), *(drives[3].encoder_s.v));
-    
+    print_in("Set Point Values: %d, %d, %d, %d\r\n",
+            drives[0].position_l.sp.v, drives[1].position_l.sp.v, drives[2].position_l.sp.v, drives[3].position_l.sp.v);
     // // GETTING RADIAL POSITION
     float tmp_position = 0;
     if (drive_num == 3){
