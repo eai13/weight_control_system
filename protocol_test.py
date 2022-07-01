@@ -78,5 +78,6 @@ def send_single(id, cmd, reg, val, crc):
         print('\tSTATUS: ', errors[status])
         print('\n')
 
-send_single(ID_DRIVE_3, WRITE, POS_SP, 300, 0)
-send_multiple(ID_GLOBAL, READ, POS_SP, 0, 0, 0, 0, 0)
+# send_single(ID_DRIVE_1, WRITE, POS_SP, 100, 0)
+send_single(ID_DRIVE_1, READ, POS_SP, 0, 0)
+# send_multiple(ID_GLOBAL, READ, POS_SP, 0, 0, 0, 0, 0)

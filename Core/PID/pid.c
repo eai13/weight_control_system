@@ -17,6 +17,19 @@
 #define _ABS_FLOAT(value) \
             ((((float)(value)) > ((float)(0.0))) ? ((float)(value)) : (((float)(-1)) * ((float)(value))))
 
+// #define _ABS_FLOAT(value) \
+//             ((((float)(value)) > ((float)(0.0))) ? ((float)(value)) : (((float)(-1)) * ((float)(value))))
+
+// #define _GET_CURRENT(bits) \
+//             ((float)(abs(((int32_t)(bits)) - ADC_CURRENT_0)) / ADC_RESOLUTION * ADC_REFERENCE / ADC_VPA)
+
+// #define _GET_RADIAL(ticks) \
+//             (((float)(ticks)) / ((float)(600.0)) * ((float)(6.28)) / ((float)(2.0)))
+
+// #define _VOLTS_TO_PWM(volts) \
+//             ((int32_t)(((float)(volts)) / ((float)(24.0)) * ((float)(64000.0))))
+
+
 uint16_t current[4] = { 0, 0, 0, 0 };
 float    set_position[4] = { 0, 0, 0, 0 };
 int32_t lptim_corrector = 0;
@@ -181,16 +194,16 @@ device_t drives[4] = {
     }
 };
 
-static inline float GetRealCurrent(uint16_t raw){
+static float GetRealCurrent(uint16_t raw){
     // ((double)(abs(((int32_t)(bits)) - AVG_CURRENT_MEASURE)) / ADC_RESOLUTION * REF_VOLTAGE / VOLTS_PER_AMP)
     return (((float)(abs((int16_t)(raw)) - ADC_CURRENT_0)) / ADC_RESOLUTION * ADC_REFERENCE / ADC_VPA);
 }
 
-static inline float GetRealRadial(uint32_t raw){
+static float GetRealRadial(uint32_t raw){
     return (((float)(raw)) / ((float)(600.0)) * ((float)(6.28)) / ((float)(2.0)));
 }
 
-static inline uint32_t VoltsToPWM(float volts){
+static uint32_t VoltsToPWM(float volts){
     return ((int32_t)((volts) / ((float)(24.0)) * ((float)(64000.0))));
 }
 
@@ -205,59 +218,60 @@ static inline void DriveReverse(uint8_t drive_num){
 }
 
 void PID_DriveCompute(uint8_t drive_num){
-    print_in("Current values: %d, %d, %d, %d\r\n", current[0], current[1], current[2], current[3]);
-    print_in("Encoder values: %d, %d, %d, %d\r\n",
-            *(drives[0].encoder_s.v), *(drives[1].encoder_s.v), *(drives[2].encoder_s.v), *(drives[3].encoder_s.v));
-    print_in("Set Point Values: %d, %d, %d, %d\r\n",
-            drives[0].position_l.sp.v, drives[1].position_l.sp.v, drives[2].position_l.sp.v, drives[3].position_l.sp.v);
+    // print_in("Current values: %d, %d, %d, %d\r\n", current[0], current[1], current[2], current[3]);
+    // print_in("Encoder values: %d, %d, %d, %d\r\n",
+    //         *(drives[0].encoder_s.v), *(drives[1].encoder_s.v), *(drives[2].encoder_s.v), *(drives[3].encoder_s.v));
+    // print_in("Set Point Values: %d, %d, %d, %d\r\n",
+    //         drives[0].position_l.sp.v, drives[1].position_l.sp.v, drives[2].position_l.sp.v, drives[3].position_l.sp.v);
     // // GETTING RADIAL POSITION
     float tmp_position = 0;
     if (drive_num == 3){
         tmp_position = GetRealRadial(((int32_t)(*(DRIVE.encoder_s.v))) + lptim_corrector);
     }
-    else if (drive_num = 0){
+    else if (drive_num == 0){
         tmp_position = GetRealRadial(((int32_t)(*(DRIVE.encoder_s.v))) - 0x7FFFFFFF);
     }
     else{
         tmp_position = GetRealRadial(((int32_t)(*(DRIVE.encoder_s.v))) - 0x7FFF);
     }
+    
+    // FEEDBACK COMPUTE
+    DRIVE.position_l.fb.v   =
+            tmp_position;
+    DRIVE.speed_l.fb.v      = 
+            (tmp_position - DRIVE.position_l.fb.v) / TIME_CONSTANT;
+    DRIVE.current_l.fb.v    =
+            GetRealCurrent(*(DRIVE.current_s.v));
 
-    // // FEEDBACK COMPUTE
-    // DRIVE.position_l.fb.v   =
-    //         tmp_position;
-    // DRIVE.speed_l.fb.v      = 
-    //         (tmp_position - DRIVE.position_l.fb.v) / TIME_CONSTANT;
-    // DRIVE.current_l.fb.v    =
-    //         GetRealCurrent(*(DRIVE.current_s.v));
-
-    // // SETPOINT COMPUTE
+    // SETPOINT COMPUTE
     // DRIVE.position_l.sp.v = 
     //         set_position[drive_num];
-    // DRIVE.speed_l.sp.v = 
-    //         (DRIVE.position_l.sp.v - DRIVE.position_l.fb.v) * DRIVE.position_l.Kp.v;
-    // DRIVE.current_l.sp.v = 
-    //         (DRIVE.speed_l.sp.v - DRIVE.speed_l.fb.v) * DRIVE.speed_l.Kp.v;
+    DRIVE.speed_l.sp.v = 
+            (DRIVE.position_l.sp.v - DRIVE.position_l.fb.v) * DRIVE.position_l.Kp.v;
+    DRIVE.current_l.sp.v = 
+            (DRIVE.speed_l.sp.v - DRIVE.speed_l.fb.v) * DRIVE.speed_l.Kp.v;
 
-    // // CURRENT ACCUMULATOR COMPUTE
-    // DRIVE.current_l.acc.v += 
-    //         (DRIVE.current_l.sp.v / DRIVE_REDUCTION + DRIVE.torque.v - DRIVE.current_l.fb.v) * DRIVE.current_l.Ki.v;
-    // if (DRIVE.current_l.acc.v > ACC_LIM_UP)
-    //     DRIVE.current_l.acc.v = ACC_LIM_UP;
-    // else if (DRIVE.current_l.acc.v < ACC_LIM_DOWN)
-    //     DRIVE.current_l.acc.v = ACC_LIM_DOWN;
+    // CURRENT ACCUMULATOR COMPUTE
+    DRIVE.current_l.acc.v += 
+            (DRIVE.current_l.sp.v / DRIVE_REDUCTION + DRIVE.torque.v - DRIVE.current_l.fb.v) * DRIVE.current_l.Ki.v;
+    if (DRIVE.current_l.acc.v > ACC_LIM_UP)
+        DRIVE.current_l.acc.v = ACC_LIM_UP;
+    else if (DRIVE.current_l.acc.v < ACC_LIM_DOWN)
+        DRIVE.current_l.acc.v = ACC_LIM_DOWN;
 
-    // // OUTPUT COMPUTE
-    // DRIVE.output.v = 
-    //         (DRIVE.current_l.sp.v / DRIVE_REDUCTION + DRIVE.torque.v - DRIVE.current_l.fb.v) * DRIVE.current_l.Kp.v + DRIVE.current_l.acc.v;
-    // if (DRIVE.output.v > ((float)(24.0))) DRIVE.output.v = ((float)(24.0));
-    // else if (DRIVE.output.v < ((float)(-24.0))) DRIVE.output.v = ((float)(-24.0));
+    // OUTPUT COMPUTE
+    DRIVE.output.v = 
+            (DRIVE.current_l.sp.v / DRIVE_REDUCTION + DRIVE.torque.v - DRIVE.current_l.fb.v) * DRIVE.current_l.Kp.v + DRIVE.current_l.acc.v;
+    if (DRIVE.output.v > ((float)(24.0))) DRIVE.output.v = ((float)(24.0));
+    else if (DRIVE.output.v < ((float)(-24.0))) DRIVE.output.v = ((float)(-24.0));
 
-    // // SET DIRECTION
-    // if (DRIVE.output.v > 0) DriveForward(drive_num);
-    // else DriveReverse(drive_num);
+    // SET DIRECTION
+    if (DRIVE.output.v > 0) DriveForward(drive_num);
+    else DriveReverse(drive_num);
 
-    // // CONVERT TO PWM
-    // uint16_t pwm_out = VoltsToPWM(_ABS_FLOAT(DRIVE.output.v));
+    // CONVERT TO PWM
+    uint16_t pwm_out = VoltsToPWM(_ABS_FLOAT(DRIVE.output.v));
+    print_in("PWM OUT: %d\r\n", pwm_out);
     // if (pwm_out > 32000)
     //     *(DRIVE.pwm_duty.v) = 32000;
     // else
