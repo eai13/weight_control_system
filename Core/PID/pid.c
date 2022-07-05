@@ -199,7 +199,7 @@ static float GetRealCurrent(uint16_t raw){
     return (((float)(abs((int16_t)(raw)) - ADC_CURRENT_0)) / ADC_RESOLUTION * ADC_REFERENCE / ADC_VPA);
 }
 
-static float GetRealRadial(uint32_t raw){
+static float GetRealRadial(int32_t raw){
     return (((float)(raw)) / ((float)(600.0)) * ((float)(6.28)) / ((float)(2.0)));
 }
 
@@ -207,14 +207,27 @@ static uint32_t VoltsToPWM(float volts){
     return ((int32_t)((volts) / ((float)(24.0)) * ((float)(64000.0))));
 }
 
+typedef enum{
+    DIR_STOP = 0x00,
+    DIR_FORWARD = 0x01,
+    DIR_REVERSE = 0x02
+}drive_dir;
+
+static drive_dir direction = 0;
 static inline void DriveForward(uint8_t drive_num){
-    HAL_GPIO_WritePin(DRIVE.dir_pins.frw_port, DRIVE.dir_pins.frw_pin, 1);
+    if (direction != DIR_FORWARD) direction = DIR_FORWARD;
+    else return;
     HAL_GPIO_WritePin(DRIVE.dir_pins.rev_port, DRIVE.dir_pins.rev_pin, 0);
+    HAL_Delay(1);
+    HAL_GPIO_WritePin(DRIVE.dir_pins.frw_port, DRIVE.dir_pins.frw_pin, 1);
 }
 
 static inline void DriveReverse(uint8_t drive_num){
-    HAL_GPIO_WritePin(DRIVE.dir_pins.rev_port, DRIVE.dir_pins.rev_pin, 1);
+    if (direction != DIR_REVERSE) direction = DIR_REVERSE;
+    else return;
     HAL_GPIO_WritePin(DRIVE.dir_pins.frw_port, DRIVE.dir_pins.frw_pin, 0);
+    HAL_Delay(1);
+    HAL_GPIO_WritePin(DRIVE.dir_pins.rev_port, DRIVE.dir_pins.rev_pin, 1);
 }
 
 void PID_DriveCompute(uint8_t drive_num){
@@ -272,10 +285,10 @@ void PID_DriveCompute(uint8_t drive_num){
     // CONVERT TO PWM
     uint16_t pwm_out = VoltsToPWM(_ABS_FLOAT(DRIVE.output.v));
     print_in("PWM OUT: %d\r\n", pwm_out);
-    // if (pwm_out > 32000)
-    //     *(DRIVE.pwm_duty.v) = 32000;
-    // else
-    //     *(DRIVE.pwm_duty.v) = pwm_out;
+    if (pwm_out > 32000)
+        *(DRIVE.pwm_duty.v) = 32000;
+    else
+        *(DRIVE.pwm_duty.v) = pwm_out;
 }
 
 rw_status_t PID_WriteReg(uint8_t drive_num, uint8_t reg, float data){

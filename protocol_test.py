@@ -1,7 +1,15 @@
 import serial
 import struct
+from time import sleep
 
 errors = [ 'NO ERROR', 'ERROR CRC', 'ERROR CMD', 'ERROR ID', 'ERROR READ', 'ERROR WRITE', 'INTERNAL ERROR' ]
+
+register_name = [
+    'TORQUE', 'POS_SP', 'POS_FB', 'POS_ACC', 'POS_Kp', 'POS_Ki', 'POS_Kd',
+              'SPD_SP', 'SPD_FB', 'SPD_ACC', 'SPD_Kp', 'SPD_Ki', 'SPD_Kd',
+              'CUR_SP', 'CUR_FB', 'CUR_ACC', 'CUR_Kp', 'CUR_Ki', 'CUR_Kd',
+              'OUTPUT'
+]
 
 ID_DRIVE_1 = 0
 ID_DRIVE_2 = 1
@@ -46,7 +54,7 @@ def send_multiple(id, cmd, reg, val1, val2, val3, val4, crc):
         print('MULTIPLE READ CMD')
         print('\tID: ', id)
         print('\tSTATUS: ', errors[status])
-        print('\tREGISTER: ', reg)
+        print('\tREGISTER: ', register_name[reg])
         print('\tDATA: ', data1, data2, data3, data4)
         print('\tCRC: ', crc)
         print('\n')
@@ -63,12 +71,12 @@ def send_single(id, cmd, reg, val, crc):
     if (cmd == READ):
         rx_data = ser.read(8)
         id, status, reg, data, crc = struct.unpack('<BBBfB', rx_data)
-        print('SINGLE READ CMD')
-        print('\tID: ', id)
-        print('\tSTATUS: ', errors[status])
-        print('\tREGISTER: ', reg)
+        # print('SINGLE READ CMD')
+        # print('\tID: ', id)
+        # print('\tSTATUS: ', errors[status])
+        print('\tREGISTER: ', register_name[reg])
         print('\tDATA: ', data)
-        print('\tCRC: ', crc)
+        # print('\tCRC: ', crc)
         print('\n')
     else:
         rx_data = ser.read(2)
@@ -79,5 +87,13 @@ def send_single(id, cmd, reg, val, crc):
         print('\n')
 
 # send_single(ID_DRIVE_1, WRITE, POS_SP, 100, 0)
-send_single(ID_DRIVE_1, READ, POS_SP, 0, 0)
+# send_single(ID_DRIVE_1, READ, POS_SP, 0, 0)
+while(1):
+    send_single(ID_DRIVE_4, READ, POS_FB, 0, 0)
+    send_single(ID_DRIVE_4, READ, CUR_ACC, 0, 0)
+    send_single(ID_DRIVE_4, READ, CUR_SP, 0, 0)
+    send_single(ID_DRIVE_4, READ, CUR_FB, 0, 0)
+    send_single(ID_DRIVE_4, READ, OUTPUT, 0, 0)
+    print('-----------------')
+    sleep(1)
 # send_multiple(ID_GLOBAL, READ, POS_SP, 0, 0, 0, 0, 0)

@@ -8,8 +8,8 @@
 #define POSITION_Kp     ((float)(20.0))
 
 // ACCUMULATOR THRESHOLDS
-#define ACC_LIM_UP      ((float)(4.0))
-#define ACC_LIM_DOWN    ((float)(-4.0))
+#define ACC_LIM_UP      ((float)(2.0))
+#define ACC_LIM_DOWN    ((float)(-2.0))
 
 // TIME CONSTANT FOR INTEGRATOR
 #define TIME_CONSTANT   ((float)(0.1))

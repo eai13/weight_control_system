@@ -113,6 +113,15 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
+  HAL_GPIO_WritePin(DRV1_DIR_0_GPIO_Port, DRV1_DIR_0_Pin, 0);
+  HAL_GPIO_WritePin(DRV1_DIR_1_GPIO_Port, DRV1_DIR_1_Pin, 0);
+  HAL_GPIO_WritePin(DRV2_DIR_0_GPIO_Port, DRV2_DIR_0_Pin, 0);
+  HAL_GPIO_WritePin(DRV2_DIR_1_GPIO_Port, DRV2_DIR_1_Pin, 0);
+  HAL_GPIO_WritePin(DRV3_DIR_0_GPIO_Port, DRV3_DIR_0_Pin, 0);
+  HAL_GPIO_WritePin(DRV3_DIR_1_GPIO_Port, DRV3_DIR_1_Pin, 0);
+  HAL_GPIO_WritePin(DRV4_DIR_0_GPIO_Port, DRV4_DIR_0_Pin, 0);
+  HAL_GPIO_WritePin(DRV4_DIR_1_GPIO_Port, DRV4_DIR_1_Pin, 0);
+
   HAL_ADCEx_Calibration_Start(&hadc1);
   HAL_ADC_Start_DMA(&hadc1, current, 4);
   HAL_TIM_Base_Start(&htim6);
@@ -147,7 +156,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    PID_DriveCompute(0);
+    PID_DriveCompute(3);
     HAL_Delay(100);
     /* USER CODE END WHILE */
 
