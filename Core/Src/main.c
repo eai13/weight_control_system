@@ -54,7 +54,11 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * tim){
+  if (tim == &CONTROL_SYSTEM_TIMER){
+    PID_DriveCompute(3);
+  }
+}
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -156,7 +160,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    PID_DriveCompute(3);
+    
     HAL_Delay(100);
     /* USER CODE END WHILE */
 

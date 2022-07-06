@@ -83,7 +83,7 @@ void HAL_LPTIM_MspInit(LPTIM_HandleTypeDef* lptimHandle)
     HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
     /* LPTIM1 interrupt Init */
-    HAL_NVIC_SetPriority(TIM6_DAC_LPTIM1_IRQn, 0, 0);
+    HAL_NVIC_SetPriority(TIM6_DAC_LPTIM1_IRQn, 6, 6);
     HAL_NVIC_EnableIRQ(TIM6_DAC_LPTIM1_IRQn);
   /* USER CODE BEGIN LPTIM1_MspInit 1 */
 

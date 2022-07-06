@@ -51,7 +51,7 @@ device_t drives[4] = {
             .fb =   { RO, 0 },
             .acc =  { RO, 0 },
             .Kp =   { RW, POSITION_Kp },
-            .Ki =   { RO, 0 },
+            .Ki =   { RO, POSITION_Ki },
             .Kd =   { RO, 0 }
         },
         .speed_l = {
@@ -59,7 +59,7 @@ device_t drives[4] = {
             .fb =   { RO, 0 },
             .acc =  { RO, 0 },
             .Kp =   { RW, SPEED_Kp},
-            .Ki =   { RO, 0 },
+            .Ki =   { RO, SPEED_Ki },
             .Kd =   { RO, 0 }
         },
         .current_l = {
@@ -88,15 +88,15 @@ device_t drives[4] = {
             .fb =   { RO, 0 },
             .acc =  { RO, 0 },
             .Kp =   { RW, POSITION_Kp },
-            .Ki =   { RO, 0 },
+            .Ki =   { RO, POSITION_Ki },
             .Kd =   { RO, 0 }
         },
         .speed_l = {
             .sp =   { RW, 0 },
             .fb =   { RO, 0 },
             .acc =  { RO, 0 },
-            .Kp =   { RW, SPEED_Kp},
-            .Ki =   { RO, 0 },
+            .Kp =   { RW, SPEED_Kp },
+            .Ki =   { RO, SPEED_Ki },
             .Kd =   { RO, 0 }
         },
         .current_l = {
@@ -125,15 +125,15 @@ device_t drives[4] = {
             .fb =   { RO, 0 },
             .acc =  { RO, 0 },
             .Kp =   { RW, POSITION_Kp },
-            .Ki =   { RO, 0 },
+            .Ki =   { RO, POSITION_Ki },
             .Kd =   { RO, 0 }
         },
         .speed_l = {
             .sp =   { RW, 0 },
             .fb =   { RO, 0 },
             .acc =  { RO, 0 },
-            .Kp =   { RW, SPEED_Kp},
-            .Ki =   { RO, 0 },
+            .Kp =   { RW, SPEED_Kp },
+            .Ki =   { RO, SPEED_Ki },
             .Kd =   { RO, 0 }
         },
         .current_l = {
@@ -162,15 +162,15 @@ device_t drives[4] = {
             .fb =   { RO, 0 },
             .acc =  { RO, 0 },
             .Kp =   { RW, POSITION_Kp },
-            .Ki =   { RO, 0 },
+            .Ki =   { RO, POSITION_Ki },
             .Kd =   { RO, 0 }
         },
         .speed_l = {
             .sp =   { RW, 0 },
             .fb =   { RO, 0 },
             .acc =  { RO, 0 },
-            .Kp =   { RW, SPEED_Kp},
-            .Ki =   { RO, 0 },
+            .Kp =   { RW, SPEED_Kp },
+            .Ki =   { RO, SPEED_Ki },
             .Kd =   { RO, 0 }
         },
         .current_l = {
@@ -231,11 +231,7 @@ static inline void DriveReverse(uint8_t drive_num){
 }
 
 void PID_DriveCompute(uint8_t drive_num){
-    // print_in("Current values: %d, %d, %d, %d\r\n", current[0], current[1], current[2], current[3]);
-    // print_in("Encoder values: %d, %d, %d, %d\r\n",
-    //         *(drives[0].encoder_s.v), *(drives[1].encoder_s.v), *(drives[2].encoder_s.v), *(drives[3].encoder_s.v));
-    // print_in("Set Point Values: %d, %d, %d, %d\r\n",
-    //         drives[0].position_l.sp.v, drives[1].position_l.sp.v, drives[2].position_l.sp.v, drives[3].position_l.sp.v);
+    
     // // GETTING RADIAL POSITION
     float tmp_position = 0;
     if (drive_num == 3){
@@ -256,21 +252,30 @@ void PID_DriveCompute(uint8_t drive_num){
     DRIVE.current_l.fb.v    =
             GetRealCurrent(*(DRIVE.current_s.v));
 
-    // SETPOINT COMPUTE
-    // DRIVE.position_l.sp.v = 
-    //         set_position[drive_num];
+    // Position loop compute
+    DRIVE.position_l.acc.v +=
+            (DRIVE.position_l.sp.v - DRIVE.position_l.fb.v) * DRIVE.position_l.Ki.v;
+    if (DRIVE.position_l.acc.v > POSITION_ACC_LIM_UP) DRIVE.position_l.acc.v = POSITION_ACC_LIM_UP;
+    else if (DRIVE.position_l.acc.v < POSITION_ACC_LIM_DOWN) DRIVE.position_l.acc.v = POSITION_ACC_LIM_DOWN;
+
     DRIVE.speed_l.sp.v = 
-            (DRIVE.position_l.sp.v - DRIVE.position_l.fb.v) * DRIVE.position_l.Kp.v;
+            (DRIVE.position_l.sp.v - DRIVE.position_l.fb.v) * DRIVE.position_l.Kp.v + DRIVE.position_l.acc.v;
+    
+    // Speed loop compute
+    DRIVE.speed_l.acc.v += 
+            (DRIVE.speed_l.sp.v - DRIVE.speed_l.fb.v) * DRIVE.speed_l.Ki.v;
+    if (DRIVE.speed_l.acc.v > SPEED_ACC_LIM_UP) DRIVE.speed_l.acc.v = SPEED_ACC_LIM_UP;
+    else if (DRIVE.speed_l.acc.v < SPEED_ACC_LIM_DOWN) DRIVE.speed_l.acc.v = SPEED_ACC_LIM_DOWN;
+
     DRIVE.current_l.sp.v = 
-            (DRIVE.speed_l.sp.v - DRIVE.speed_l.fb.v) * DRIVE.speed_l.Kp.v;
+            (DRIVE.speed_l.sp.v - DRIVE.speed_l.fb.v) * DRIVE.speed_l.Kp.v + DRIVE.speed_l.acc.v;
 
     // CURRENT ACCUMULATOR COMPUTE
     DRIVE.current_l.acc.v += 
             (DRIVE.current_l.sp.v / DRIVE_REDUCTION + DRIVE.torque.v - DRIVE.current_l.fb.v) * DRIVE.current_l.Ki.v;
-    if (DRIVE.current_l.acc.v > ACC_LIM_UP)
-        DRIVE.current_l.acc.v = ACC_LIM_UP;
-    else if (DRIVE.current_l.acc.v < ACC_LIM_DOWN)
-        DRIVE.current_l.acc.v = ACC_LIM_DOWN;
+    
+    if (DRIVE.current_l.acc.v > CURR_ACC_LIM_UP) DRIVE.current_l.acc.v = CURR_ACC_LIM_UP;
+    else if (DRIVE.current_l.acc.v < CURR_ACC_LIM_DOWN) DRIVE.current_l.acc.v = CURR_ACC_LIM_DOWN;
 
     // OUTPUT COMPUTE
     DRIVE.output.v = 
@@ -284,7 +289,7 @@ void PID_DriveCompute(uint8_t drive_num){
 
     // CONVERT TO PWM
     uint16_t pwm_out = VoltsToPWM(_ABS_FLOAT(DRIVE.output.v));
-    print_in("PWM OUT: %d\r\n", pwm_out);
+    
     if (pwm_out > 32000)
         *(DRIVE.pwm_duty.v) = 32000;
     else
