@@ -17,19 +17,6 @@
 #define _ABS_FLOAT(value) \
             ((((float)(value)) > ((float)(0.0))) ? ((float)(value)) : (((float)(-1)) * ((float)(value))))
 
-// #define _ABS_FLOAT(value) \
-//             ((((float)(value)) > ((float)(0.0))) ? ((float)(value)) : (((float)(-1)) * ((float)(value))))
-
-// #define _GET_CURRENT(bits) \
-//             ((float)(abs(((int32_t)(bits)) - ADC_CURRENT_0)) / ADC_RESOLUTION * ADC_REFERENCE / ADC_VPA)
-
-// #define _GET_RADIAL(ticks) \
-//             (((float)(ticks)) / ((float)(600.0)) * ((float)(6.28)) / ((float)(2.0)))
-
-// #define _VOLTS_TO_PWM(volts) \
-//             ((int32_t)(((float)(volts)) / ((float)(24.0)) * ((float)(64000.0))))
-
-
 uint16_t current[4] = { 0, 0, 0, 0 };
 float    set_position[4] = { 0, 0, 0, 0 };
 int32_t lptim_corrector = 0;
@@ -47,173 +34,200 @@ device_t drives[4] = {
     { // DRIVE 1
         .torque = { RW, 0 },
         .position_l = { 
-            .sp =   { RW, 0 },
-            .fb =   { RO, 0 },
-            .acc =  { RO, 0 },
-            .Kp =   { RW, POSITION_Kp },
-            .Ki =   { RO, POSITION_Ki },
-            .Kd =   { RO, 0 }
+            .sp         = { RW, 0 },
+            .fb         = { RO, 0 },
+            .acc        = { RO, 0 },
+            .acc_thres  = { RW, WC_CONFIG_DEFAULT_POS_ACC_THRES },
+            .perr       = { RO, 0 },
+            .Kp         = { RW, WC_CONFIG_DEFAULT_POSITION_Kp },
+            .Ki         = { RO, WC_CONFIG_DEFAULT_POSITION_Ki },
+            .Kd         = { RO, WC_CONFIG_DEFAULT_POSITION_Kd }
         },
         .speed_l = {
-            .sp =   { RW, 0 },
-            .fb =   { RO, 0 },
-            .acc =  { RO, 0 },
-            .Kp =   { RW, SPEED_Kp},
-            .Ki =   { RO, SPEED_Ki },
-            .Kd =   { RO, 0 }
+            .sp         = { RW, 0 },
+            .fb         = { RO, 0 },
+            .acc        = { RO, 0 },
+            .acc_thres  = { RW, WC_CONFIG_DEFAULT_SPEED_ACC_THRES },
+            .perr       = { RO, 0 },
+            .Kp         = { RW, WC_CONFIG_DEFAULT_SPEED_Kp},
+            .Ki         = { RO, WC_CONFIG_DEFAULT_SPEED_Ki },
+            .Kd         = { RO, WC_CONFIG_DEFAULT_SPEED_Kd }
         },
         .current_l = {
-            .sp =   { RW, 0 },
-            .fb =   { RO, 0 },
-            .acc =  { RO, 0 },
-            .Kp =   { RW, CURRENT_Kp },
-            .Ki =   { RW, CURRENT_Ki },
-            .Kd =   { RO, 0 }
+            .sp         = { RW, 0 },
+            .fb         = { RO, 0 },
+            .acc        = { RO, 0 },
+            .acc_thres  = { RW, WC_CONFIG_DEFAULT_CURR_ACC_THRES },
+            .perr       = { RO, 0 },
+            .Kp         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kp },
+            .Ki         = { RW, WC_CONFIG_DEFAULT_CURRENT_Ki },
+            .Kd         = { RO, WC_CONFIG_DEFAULT_CURRENT_Kd }
         },
-        .output =       { RO, 0 },
-        .encoder_s =    { RW, &ENCODER_1_COUNT },
-        .current_s =    { RO, &(current[0]) },
-        .pwm_duty =     { RO, &PWM_1_DUTY },
-        .dir_pins =     {
-            .frw_port = DRV1_DIR_0_GPIO_Port,
-            .frw_pin =  DRV1_DIR_0_Pin,
-            .rev_port = DRV1_DIR_1_GPIO_Port,
-            .rev_pin =  DRV1_DIR_1_Pin
+        .output         = { RO, 0 },
+        .output_thres   = { RW, WC_CONFIG_DEFAULT_OUTPUT_THRES },
+        .encoder_s      = { RW, &ENCODER_1_COUNT },
+        .current_s      = { RO, &(current[0]) },
+        .pwm_duty       = { RO, &PWM_1_DUTY },
+        .dir_pins       = {
+            .frw_port   = DRV1_DIR_0_GPIO_Port,
+            .frw_pin    = DRV1_DIR_0_Pin,
+            .rev_port   = DRV1_DIR_1_GPIO_Port,
+            .rev_pin    = DRV1_DIR_1_Pin
         }
     },
     { // DRIVE 2
         .torque = { RW, 0 },
         .position_l = { 
-            .sp =   { RW, 0 },
-            .fb =   { RO, 0 },
-            .acc =  { RO, 0 },
-            .Kp =   { RW, POSITION_Kp },
-            .Ki =   { RO, POSITION_Ki },
-            .Kd =   { RO, 0 }
+            .sp         = { RW, 0 },
+            .fb         = { RO, 0 },
+            .acc        = { RO, 0 },
+            .acc_thres  = { RW, WC_CONFIG_DEFAULT_POS_ACC_THRES },
+            .perr       = { RO, 0 },
+            .Kp         = { RW, WC_CONFIG_DEFAULT_POSITION_Kp },
+            .Ki         = { RO, WC_CONFIG_DEFAULT_POSITION_Ki },
+            .Kd         = { RO, WC_CONFIG_DEFAULT_POSITION_Kd }
         },
         .speed_l = {
-            .sp =   { RW, 0 },
-            .fb =   { RO, 0 },
-            .acc =  { RO, 0 },
-            .Kp =   { RW, SPEED_Kp },
-            .Ki =   { RO, SPEED_Ki },
-            .Kd =   { RO, 0 }
+            .sp         = { RW, 0 },
+            .fb         = { RO, 0 },
+            .acc        = { RO, 0 },
+            .acc_thres  = { RW, WC_CONFIG_DEFAULT_SPEED_ACC_THRES },
+            .perr       = { RO, 0 },
+            .Kp         = { RW, WC_CONFIG_DEFAULT_SPEED_Kp },
+            .Ki         = { RO, WC_CONFIG_DEFAULT_SPEED_Ki },
+            .Kd         = { RO, WC_CONFIG_DEFAULT_SPEED_Kd }
         },
         .current_l = {
-            .sp =   { RW, 0 },
-            .fb =   { RO, 0 },
-            .acc =  { RO, 0 },
-            .Kp =   { RW, CURRENT_Kp },
-            .Ki =   { RW, CURRENT_Ki },
-            .Kd =   { RO, 0 }
+            .sp         = { RW, 0 },
+            .fb         = { RO, 0 },
+            .acc        = { RO, 0 },
+            .acc_thres  = { RW, WC_CONFIG_DEFAULT_CURR_ACC_THRES },
+            .perr       = { RO, 0 },
+            .Kp         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kp },
+            .Ki         = { RW, WC_CONFIG_DEFAULT_CURRENT_Ki },
+            .Kd         = { RO, WC_CONFIG_DEFAULT_CURRENT_Kd }
         },
-        .output =       { RO, 0 },
-        .encoder_s =    { RW, &ENCODER_2_COUNT },
-        .current_s =    { RO, &(current[1]) },
-        .pwm_duty =     { RO, &PWM_2_DUTY },
-        .dir_pins =     {
-            .frw_port = DRV2_DIR_0_GPIO_Port,
-            .frw_pin =  DRV2_DIR_0_Pin,
-            .rev_port = DRV2_DIR_1_GPIO_Port,
-            .rev_pin =  DRV2_DIR_1_Pin
+        .output         = { RO, 0 },
+        .output_thres   = { RW, WC_CONFIG_DEFAULT_OUTPUT_THRES },
+        .encoder_s      = { RW, &ENCODER_2_COUNT },
+        .current_s      = { RO, &(current[1]) },
+        .pwm_duty       = { RO, &PWM_2_DUTY },
+        .dir_pins       = {
+            .frw_port   = DRV2_DIR_0_GPIO_Port,
+            .frw_pin    = DRV2_DIR_0_Pin,
+            .rev_port   = DRV2_DIR_1_GPIO_Port,
+            .rev_pin    = DRV2_DIR_1_Pin
         }
     },
     { // DRIVE 3
         .torque = { RW, 0 },
         .position_l = { 
-            .sp =   { RW, 0 },
-            .fb =   { RO, 0 },
-            .acc =  { RO, 0 },
-            .Kp =   { RW, POSITION_Kp },
-            .Ki =   { RO, POSITION_Ki },
-            .Kd =   { RO, 0 }
+            .sp         = { RW, 0 },
+            .fb         = { RO, 0 },
+            .acc        = { RO, 0 },
+            .acc_thres  = { RW, WC_CONFIG_DEFAULT_POS_ACC_THRES },
+            .perr       = { RO, 0 },
+            .Kp         = { RW, WC_CONFIG_DEFAULT_POSITION_Kp },
+            .Ki         = { RO, WC_CONFIG_DEFAULT_POSITION_Ki },
+            .Kd         = { RO, WC_CONFIG_DEFAULT_POSITION_Kd }
         },
         .speed_l = {
-            .sp =   { RW, 0 },
-            .fb =   { RO, 0 },
-            .acc =  { RO, 0 },
-            .Kp =   { RW, SPEED_Kp },
-            .Ki =   { RO, SPEED_Ki },
-            .Kd =   { RO, 0 }
+            .sp         = { RW, 0 },
+            .fb         = { RO, 0 },
+            .acc        = { RO, 0 },
+            .acc_thres  = { RW, WC_CONFIG_DEFAULT_SPEED_ACC_THRES },
+            .perr       = { RO, 0 },
+            .Kp         = { RW, WC_CONFIG_DEFAULT_SPEED_Kp },
+            .Ki         = { RO, WC_CONFIG_DEFAULT_SPEED_Ki },
+            .Kd         = { RO, WC_CONFIG_DEFAULT_SPEED_Kd }
         },
         .current_l = {
-            .sp =   { RW, 0 },
-            .fb =   { RO, 0 },
-            .acc =  { RO, 0 },
-            .Kp =   { RW, CURRENT_Kp },
-            .Ki =   { RW, CURRENT_Ki },
-            .Kd =   { RO, 0 }
+            .sp         = { RW, 0 },
+            .fb         = { RO, 0 },
+            .acc        = { RO, 0 },
+            .acc_thres  = { RW, WC_CONFIG_DEFAULT_CURR_ACC_THRES },
+            .perr       = { RO, 0 },
+            .Kp         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kp },
+            .Ki         = { RW, WC_CONFIG_DEFAULT_CURRENT_Ki },
+            .Kd         = { RO, WC_CONFIG_DEFAULT_CURRENT_Kd }
         },
-        .output =       { RO, 0 },
-        .encoder_s =    { RW, &ENCODER_3_COUNT },
-        .current_s =    { RO, &(current[2]) },
-        .pwm_duty =     { RO, &PWM_3_DUTY },
-        .dir_pins =     {
-            .frw_port = DRV3_DIR_0_GPIO_Port,
-            .frw_pin =  DRV3_DIR_0_Pin,
-            .rev_port = DRV3_DIR_1_GPIO_Port,
-            .rev_pin =  DRV3_DIR_1_Pin
+        .output         = { RO, 0 },
+        .output_thres   = { RW, WC_CONFIG_DEFAULT_OUTPUT_THRES },
+        .encoder_s      = { RW, &ENCODER_3_COUNT },
+        .current_s      = { RO, &(current[2]) },
+        .pwm_duty       = { RO, &PWM_3_DUTY },
+        .dir_pins       = {
+            .frw_port   = DRV3_DIR_0_GPIO_Port,
+            .frw_pin    = DRV3_DIR_0_Pin,
+            .rev_port   = DRV3_DIR_1_GPIO_Port,
+            .rev_pin    = DRV3_DIR_1_Pin
         }
     },
     { // DRIVE 4
         .torque = { RW, 0 },
         .position_l = { 
-            .sp =   { RW, 0 },
-            .fb =   { RO, 0 },
-            .acc =  { RO, 0 },
-            .Kp =   { RW, POSITION_Kp },
-            .Ki =   { RO, POSITION_Ki },
-            .Kd =   { RO, 0 }
+            .sp         = { RW, 0 },
+            .fb         = { RO, 0 },
+            .acc        = { RO, 0 },
+            .acc_thres  = { RW, WC_CONFIG_DEFAULT_POS_ACC_THRES },
+            .perr       = { RO, 0 },
+            .Kp         = { RW, WC_CONFIG_DEFAULT_POSITION_Kp },
+            .Ki         = { RW, WC_CONFIG_DEFAULT_POSITION_Ki },
+            .Kd         = { RW, WC_CONFIG_DEFAULT_POSITION_Kd }
         },
         .speed_l = {
-            .sp =   { RW, 0 },
-            .fb =   { RO, 0 },
-            .acc =  { RO, 0 },
-            .Kp =   { RW, SPEED_Kp },
-            .Ki =   { RO, SPEED_Ki },
-            .Kd =   { RO, 0 }
+            .sp         = { RW, 0 },
+            .fb         = { RO, 0 },
+            .acc        = { RO, 0 },
+            .acc_thres  = { RW, WC_CONFIG_DEFAULT_SPEED_ACC_THRES },
+            .perr       = { RO, 0 },
+            .Kp         = { RW, WC_CONFIG_DEFAULT_SPEED_Kp },
+            .Ki         = { RW, WC_CONFIG_DEFAULT_SPEED_Ki },
+            .Kd         = { RW, WC_CONFIG_DEFAULT_SPEED_Kd }
         },
         .current_l = {
-            .sp =   { RW, 0 },
-            .fb =   { RO, 0 },
-            .acc =  { RO, 0 },
-            .Kp =   { RW, CURRENT_Kp },
-            .Ki =   { RW, CURRENT_Ki },
-            .Kd =   { RO, 0 }
+            .sp         = { RW, 0 },
+            .fb         = { RO, 0 },
+            .acc        = { RO, 0 },
+            .acc_thres  = { RW, WC_CONFIG_DEFAULT_CURR_ACC_THRES },
+            .perr       = { RO, 0 },
+            .Kp         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kp },
+            .Ki         = { RW, WC_CONFIG_DEFAULT_CURRENT_Ki },
+            .Kd         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kd }
         },
-        .output =       { RO, 0 },
-        .encoder_s =    { RW, &ENCODER_4_COUNT },
-        .current_s =    { RO, &(current[3]) },
-        .pwm_duty =     { RO, &PWM_4_DUTY },
-        .dir_pins =     {
-            .frw_port = DRV4_DIR_0_GPIO_Port,
-            .frw_pin =  DRV4_DIR_0_Pin,
-            .rev_port = DRV4_DIR_1_GPIO_Port,
-            .rev_pin =  DRV4_DIR_1_Pin
+        .output         = { RO, 0 },
+        .output_thres   = { RW, WC_CONFIG_DEFAULT_OUTPUT_THRES },
+        .encoder_s      = { RW, &ENCODER_4_COUNT },
+        .current_s      = { RO, &(current[3]) },
+        .pwm_duty       = { RO, &PWM_4_DUTY },
+        .dir_pins       = {
+            .frw_port   = DRV4_DIR_0_GPIO_Port,
+            .frw_pin    = DRV4_DIR_0_Pin,
+            .rev_port   = DRV4_DIR_1_GPIO_Port,
+            .rev_pin    = DRV4_DIR_1_Pin
         }
     }
 };
 
-static float GetRealCurrent(uint16_t raw){
-    // ((double)(abs(((int32_t)(bits)) - AVG_CURRENT_MEASURE)) / ADC_RESOLUTION * REF_VOLTAGE / VOLTS_PER_AMP)
+static inline float GetRealCurrent(uint16_t raw){
     return (((float)(abs((int16_t)(raw)) - ADC_CURRENT_0)) / ADC_RESOLUTION * ADC_REFERENCE / ADC_VPA);
 }
 
-static float GetRealRadial(int32_t raw){
+static inline float GetRealRadial(int32_t raw){
     return (((float)(raw)) / ((float)(600.0)) * ((float)(6.28)) / ((float)(2.0)));
 }
 
-static uint32_t VoltsToPWM(float volts){
+static inline uint32_t VoltsToPWM(float volts){
     return ((int32_t)((volts) / ((float)(24.0)) * ((float)(64000.0))));
 }
 
 typedef enum{
-    DIR_STOP = 0x00,
+    DIR_STOP    = 0x00,
     DIR_FORWARD = 0x01,
     DIR_REVERSE = 0x02
-}drive_dir;
+}wc_drive_dir_e;
 
-static drive_dir direction = 0;
+static wc_drive_dir_e direction = 0;
 static inline void DriveForward(uint8_t drive_num){
     if (direction != DIR_FORWARD) direction = DIR_FORWARD;
     else return;
@@ -253,33 +267,54 @@ void PID_DriveCompute(uint8_t drive_num){
             GetRealCurrent(*(DRIVE.current_s.v));
 
     // Position loop compute
-    DRIVE.position_l.acc.v +=
-            (DRIVE.position_l.sp.v - DRIVE.position_l.fb.v) * DRIVE.position_l.Ki.v;
-    if (DRIVE.position_l.acc.v > POSITION_ACC_LIM_UP) DRIVE.position_l.acc.v = POSITION_ACC_LIM_UP;
-    else if (DRIVE.position_l.acc.v < POSITION_ACC_LIM_DOWN) DRIVE.position_l.acc.v = POSITION_ACC_LIM_DOWN;
-
+    if (DRIVE.position_l.Ki.v){
+        DRIVE.position_l.acc.v +=
+                (DRIVE.position_l.sp.v - DRIVE.position_l.fb.v) * DRIVE.position_l.Ki.v;
+        if (DRIVE.position_l.acc.v > DRIVE.position_l.acc_thres.v) DRIVE.position_l.acc.v = DRIVE.position_l.acc_thres.v;
+        else if (DRIVE.position_l.acc.v < -DRIVE.position_l.acc_thres.v) DRIVE.position_l.acc.v = -DRIVE.position_l.acc_thres.v;
+    }
+    float d_part = 0;
+    if (DRIVE.position_l.Kd.v){
+        float nerr = DRIVE.position_l.sp.v - DRIVE.position_l.fb.v;
+        d_part = (nerr - DRIVE.position_l.perr.v) / TIME_CONSTANT;
+        DRIVE.position_l.perr.v = nerr;
+    }
     DRIVE.speed_l.sp.v = 
-            (DRIVE.position_l.sp.v - DRIVE.position_l.fb.v) * DRIVE.position_l.Kp.v + DRIVE.position_l.acc.v;
+            (DRIVE.position_l.sp.v - DRIVE.position_l.fb.v) * DRIVE.position_l.Kp.v + DRIVE.position_l.acc.v + d_part;
     
     // Speed loop compute
-    DRIVE.speed_l.acc.v += 
-            (DRIVE.speed_l.sp.v - DRIVE.speed_l.fb.v) * DRIVE.speed_l.Ki.v;
-    if (DRIVE.speed_l.acc.v > SPEED_ACC_LIM_UP) DRIVE.speed_l.acc.v = SPEED_ACC_LIM_UP;
-    else if (DRIVE.speed_l.acc.v < SPEED_ACC_LIM_DOWN) DRIVE.speed_l.acc.v = SPEED_ACC_LIM_DOWN;
-
+    if (DRIVE.speed_l.Ki.v){
+        DRIVE.speed_l.acc.v += 
+                (DRIVE.speed_l.sp.v - DRIVE.speed_l.fb.v) * DRIVE.speed_l.Ki.v;
+        if (DRIVE.speed_l.acc.v > DRIVE.speed_l.acc_thres.v) DRIVE.speed_l.acc.v = DRIVE.speed_l.acc_thres.v;
+        else if (DRIVE.speed_l.acc.v < -DRIVE.speed_l.acc_thres.v) DRIVE.speed_l.acc.v = -DRIVE.speed_l.acc_thres.v;
+    }
+    d_part = 0;
+    if (DRIVE.speed_l.Kd.v){
+        float nerr = DRIVE.speed_l.sp.v - DRIVE.speed_l.fb.v;
+        d_part = (nerr - DRIVE.speed_l.perr.v) / TIME_CONSTANT;
+        DRIVE.speed_l.perr.v = nerr;
+    }
     DRIVE.current_l.sp.v = 
-            (DRIVE.speed_l.sp.v - DRIVE.speed_l.fb.v) * DRIVE.speed_l.Kp.v + DRIVE.speed_l.acc.v;
+            (DRIVE.speed_l.sp.v - DRIVE.speed_l.fb.v) * DRIVE.speed_l.Kp.v + DRIVE.speed_l.acc.v + d_part;
 
-    // CURRENT ACCUMULATOR COMPUTE
-    DRIVE.current_l.acc.v += 
-            (DRIVE.current_l.sp.v / DRIVE_REDUCTION + DRIVE.torque.v - DRIVE.current_l.fb.v) * DRIVE.current_l.Ki.v;
-    
-    if (DRIVE.current_l.acc.v > CURR_ACC_LIM_UP) DRIVE.current_l.acc.v = CURR_ACC_LIM_UP;
-    else if (DRIVE.current_l.acc.v < CURR_ACC_LIM_DOWN) DRIVE.current_l.acc.v = CURR_ACC_LIM_DOWN;
+    // Current loop compute
+    if (DRIVE.current_l.Ki.v){
+        DRIVE.current_l.acc.v += 
+                (DRIVE.current_l.sp.v / DRIVE_REDUCTION + DRIVE.torque.v - DRIVE.current_l.fb.v) * DRIVE.current_l.Ki.v;
+        if (DRIVE.current_l.acc.v > DRIVE.current_l.acc_thres.v) DRIVE.current_l.acc.v = DRIVE.current_l.acc_thres.v;
+        else if (DRIVE.current_l.acc.v < -DRIVE.current_l.acc_thres.v) DRIVE.current_l.acc.v = -DRIVE.current_l.acc_thres.v;
+    }
+    d_part = 0;
+    if (DRIVE.current_l.Kd.v){
+        float nerr = DRIVE.current_l.sp.v - DRIVE.current_l.fb.v;
+        d_part = (nerr - DRIVE.current_l.perr.v) / TIME_CONSTANT;
+        DRIVE.current_l.perr.v = nerr;
+    }
 
     // OUTPUT COMPUTE
     DRIVE.output.v = 
-            (DRIVE.current_l.sp.v / DRIVE_REDUCTION + DRIVE.torque.v - DRIVE.current_l.fb.v) * DRIVE.current_l.Kp.v + DRIVE.current_l.acc.v;
+            (DRIVE.current_l.sp.v / DRIVE_REDUCTION + DRIVE.torque.v - 0/*DRIVE.current_l.fb.v*/) * DRIVE.current_l.Kp.v + DRIVE.current_l.acc.v + d_part;
     if (DRIVE.output.v > ((float)(24.0))) DRIVE.output.v = ((float)(24.0));
     else if (DRIVE.output.v < ((float)(-24.0))) DRIVE.output.v = ((float)(-24.0));
 

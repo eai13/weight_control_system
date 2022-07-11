@@ -34,6 +34,8 @@ typedef struct{
     float_register_t sp;
     float_register_t fb;
     float_register_t acc;
+    float_register_t acc_thres;
+    float_register_t perr;
     float_register_t Kp;
     float_register_t Ki;
     float_register_t Kd;
@@ -54,8 +56,9 @@ typedef struct{
             loop_t              speed_l;
             loop_t              current_l;
             float_register_t    output;
+            float_register_t    output_thres;
         };
-        float_register_t all_registers[20];
+        float_register_t all_registers[23];
     };
     direction_control_t dir_pins;
     p_uint32_register_t pwm_duty;

@@ -150,8 +150,6 @@ int main(void)
 
   HAL_TIM_Base_Start_IT(&CONTROL_SYSTEM_TIMER);
 
-  print_in("Start\r\n");
-
   PROTOCOL_Start();
 
   /* USER CODE END 2 */
@@ -161,7 +159,6 @@ int main(void)
   while (1)
   {
     
-    HAL_Delay(100);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

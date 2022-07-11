@@ -5,42 +5,49 @@ from time import sleep
 errors = [ 'NO ERROR', 'ERROR CRC', 'ERROR CMD', 'ERROR ID', 'ERROR READ', 'ERROR WRITE', 'INTERNAL ERROR' ]
 
 register_name = [
-    'TORQUE', 'POS_SP', 'POS_FB', 'POS_ACC', 'POS_Kp', 'POS_Ki', 'POS_Kd',
-              'SPD_SP', 'SPD_FB', 'SPD_ACC', 'SPD_Kp', 'SPD_Ki', 'SPD_Kd',
-              'CUR_SP', 'CUR_FB', 'CUR_ACC', 'CUR_Kp', 'CUR_Ki', 'CUR_Kd',
-              'OUTPUT'
+    'TORQUE', 'POS_SP', 'POS_FB', 'POS_ACC', 'POS_ACC_THRES', 'POS_PERR', 'POS_Kp', 'POS_Ki', 'POS_Kd',
+              'SPD_SP', 'SPD_FB', 'SPD_ACC', 'SPD_ACC_THRES', 'SPD_PERR', 'SPD_Kp', 'SPD_Ki', 'SPD_Kd',
+              'CUR_SP', 'CUR_FB', 'CUR_ACC', 'CUR_ACC_THRES', 'CUR_PERR', 'CUR_Kp', 'CUR_Ki', 'CUR_Kd',
+              'OUTPUT', 'OUTPUT_THRES'
 ]
 
-ID_DRIVE_1 = 0
-ID_DRIVE_2 = 1
-ID_DRIVE_3 = 2
-ID_DRIVE_4 = 3
-ID_GLOBAL = 4
-ID_GLOBAL_CMD = 5
+ID_DRIVE_1      = 0
+ID_DRIVE_2      = 1
+ID_DRIVE_3      = 2
+ID_DRIVE_4      = 3
+ID_GLOBAL       = 4
+ID_GLOBAL_CMD   = 5
 
 WRITE = 1
-READ = 2
+READ =  2
 
-TORQUE = 0
-POS_SP = 1
-POS_FB = 2
-POS_ACC = 3
-POS_Kp = 4
-POS_Ki = 5
-POS_Kd = 6
-SPD_SP = 7
-SPD_FB = 8
-SPD_ACC = 9
-SPD_Kp = 10
-SPD_Ki = 11
-SPD_Kd = 12
-CUR_SP = 13
-CUR_FB = 14
-CUR_ACC = 15
-CUR_Kp = 16
-CUR_Ki = 17
-CUR_Kd = 18
-OUTPUT = 19
+TORQUE          = 0
+POS_SP          = 1
+POS_FB          = 2
+POS_ACC         = 3
+POS_ACC_THRES   = 4
+POS_PERR        = 5
+POS_Kp          = 6
+POS_Ki          = 7
+POS_Kd          = 8
+SPD_SP          = 9
+SPD_FB          = 10
+SPD_ACC         = 11
+SPD_ACC_THRES   = 12
+SPD_PERR        = 13
+SPD_Kp          = 14
+SPD_Ki          = 15
+SPD_Kd          = 16
+CUR_SP          = 17
+CUR_FB          = 18
+CUR_ACC         = 19
+CUR_ACC_THRES   = 20
+CUR_PERR        = 21
+CUR_Kp          = 22
+CUR_Ki          = 23
+CUR_Kd          = 24
+OUTPUT          = 25
+OUTPUT_THRES    = 26
 
 ser = serial.Serial('/dev/ttyUSB1', 57600)
 ser.isOpen()

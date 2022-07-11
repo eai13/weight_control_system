@@ -2,20 +2,22 @@
 #define _PID_CONFIG_H_
 
 // PID COEFS
-#define CURRENT_Kp      ((float)(0.35))
-#define CURRENT_Ki      ((float)(0))
-#define SPEED_Kp        ((float)(30.0))
-#define SPEED_Ki        ((float)(5))
-#define POSITION_Kp     ((float)(20.0))
-#define POSITION_Ki     ((float)(0))
+#define WC_CONFIG_DEFAULT_CURRENT_Kp        ((float)(1))
+#define WC_CONFIG_DEFAULT_CURRENT_Ki        ((float)(0))
+#define WC_CONFIG_DEFAULT_CURRENT_Kd        ((float)(0))
+#define WC_CONFIG_DEFAULT_SPEED_Kp          ((float)(30.0))
+#define WC_CONFIG_DEFAULT_SPEED_Ki          ((float)(5))
+#define WC_CONFIG_DEFAULT_SPEED_Kd          ((float)(5))
+#define WC_CONFIG_DEFAULT_POSITION_Kp       ((float)(20.0))
+#define WC_CONFIG_DEFAULT_POSITION_Ki       ((float)(0))
+#define WC_CONFIG_DEFAULT_POSITION_Kd       ((float)(0))
 
 // ACCUMULATOR THRESHOLDS
-#define CURR_ACC_LIM_UP         ((float)(2.0))
-#define CURR_ACC_LIM_DOWN       ((float)(-2.0))
-#define SPEED_ACC_LIM_UP        ((float)(100))
-#define SPEED_ACC_LIM_DOWN      ((float)(-100))
-#define POSITION_ACC_LIM_UP     ((float)(0))
-#define POSITION_ACC_LIM_DOWN   ((float)(0))
+#define WC_CONFIG_DEFAULT_CURR_ACC_THRES    ((float)(2.0))
+#define WC_CONFIG_DEFAULT_SPEED_ACC_THRES   ((float)(100))
+#define WC_CONFIG_DEFAULT_POS_ACC_THRES     ((float)(0))
+
+#define WC_CONFIG_DEFAULT_OUTPUT_THRES      ((uint32_t)(32000))
 
 // TIME CONSTANT FOR INTEGRATOR
 #define TIME_CONSTANT   ((float)(0.1))
