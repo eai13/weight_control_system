@@ -132,3 +132,4 @@ void PROTOCOL_ProcessFrame(void){
 void PROTOCOL_Start(void){
     HAL_UART_Receive_IT(&PROTOCOL_UART, &header, sizeof(frame_header_t));
 }
+

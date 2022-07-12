@@ -71,6 +71,8 @@ void PID_DriveCompute(uint8_t drive_num);
 rw_status_t PID_WriteReg(uint8_t drive_num, uint8_t reg, float data);
 rw_status_t PID_ReadReg(uint8_t drive_num, uint8_t reg, float * data);
 
+void PID_CONTROL_THREAD(void);
+
 extern device_t drives[4];
 extern uint16_t current[4];
 

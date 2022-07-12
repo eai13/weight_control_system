@@ -325,8 +325,8 @@ void PID_DriveCompute(uint8_t drive_num){
     // CONVERT TO PWM
     uint16_t pwm_out = VoltsToPWM(_ABS_FLOAT(DRIVE.output.v));
     
-    if (pwm_out > 32000)
-        *(DRIVE.pwm_duty.v) = 32000;
+    if (pwm_out > DRIVE.output_thres.v)
+        *(DRIVE.pwm_duty.v) = DRIVE.output_thres.v;
     else
         *(DRIVE.pwm_duty.v) = pwm_out;
 }
