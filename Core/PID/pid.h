@@ -48,6 +48,12 @@ typedef struct{
   uint16_t        rev_pin;
 }direction_control_t;
 
+typedef enum{
+    DIR_STOP    = 0x00,
+    DIR_FORWARD = 0x01,
+    DIR_REVERSE = 0x02
+}wc_drive_dir_e;
+
 typedef struct{
     union{
         struct{
@@ -58,12 +64,13 @@ typedef struct{
             float_register_t    output;
             float_register_t    output_thres;
         };
-        float_register_t all_registers[23];
+        float_register_t all_registers[27];
     };
     direction_control_t dir_pins;
     p_uint32_register_t pwm_duty;
     p_uint32_register_t encoder_s;
     p_uint16_register_t current_s;
+    wc_drive_dir_e      direction;
 }device_t;
 
 void PID_DriveCompute(uint8_t drive_num);

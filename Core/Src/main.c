@@ -57,6 +57,7 @@
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * tim){
   if (tim == &CONTROL_SYSTEM_TIMER){
     PID_DriveCompute(3);
+    PID_DriveCompute(2);
   }
 }
 /* USER CODE END PV */

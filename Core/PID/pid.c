@@ -40,8 +40,8 @@ device_t drives[4] = {
             .acc_thres  = { RW, WC_CONFIG_DEFAULT_POS_ACC_THRES },
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_POSITION_Kp },
-            .Ki         = { RO, WC_CONFIG_DEFAULT_POSITION_Ki },
-            .Kd         = { RO, WC_CONFIG_DEFAULT_POSITION_Kd }
+            .Ki         = { RW, WC_CONFIG_DEFAULT_POSITION_Ki },
+            .Kd         = { RW, WC_CONFIG_DEFAULT_POSITION_Kd }
         },
         .speed_l = {
             .sp         = { RW, 0 },
@@ -50,8 +50,8 @@ device_t drives[4] = {
             .acc_thres  = { RW, WC_CONFIG_DEFAULT_SPEED_ACC_THRES },
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_SPEED_Kp},
-            .Ki         = { RO, WC_CONFIG_DEFAULT_SPEED_Ki },
-            .Kd         = { RO, WC_CONFIG_DEFAULT_SPEED_Kd }
+            .Ki         = { RW, WC_CONFIG_DEFAULT_SPEED_Ki },
+            .Kd         = { RW, WC_CONFIG_DEFAULT_SPEED_Kd }
         },
         .current_l = {
             .sp         = { RW, 0 },
@@ -61,7 +61,7 @@ device_t drives[4] = {
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kp },
             .Ki         = { RW, WC_CONFIG_DEFAULT_CURRENT_Ki },
-            .Kd         = { RO, WC_CONFIG_DEFAULT_CURRENT_Kd }
+            .Kd         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kd }
         },
         .output         = { RO, 0 },
         .output_thres   = { RW, WC_CONFIG_DEFAULT_OUTPUT_THRES },
@@ -73,7 +73,8 @@ device_t drives[4] = {
             .frw_pin    = DRV1_DIR_0_Pin,
             .rev_port   = DRV1_DIR_1_GPIO_Port,
             .rev_pin    = DRV1_DIR_1_Pin
-        }
+        },
+        .direction      = DIR_STOP
     },
     { // DRIVE 2
         .torque = { RW, 0 },
@@ -84,8 +85,8 @@ device_t drives[4] = {
             .acc_thres  = { RW, WC_CONFIG_DEFAULT_POS_ACC_THRES },
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_POSITION_Kp },
-            .Ki         = { RO, WC_CONFIG_DEFAULT_POSITION_Ki },
-            .Kd         = { RO, WC_CONFIG_DEFAULT_POSITION_Kd }
+            .Ki         = { RW, WC_CONFIG_DEFAULT_POSITION_Ki },
+            .Kd         = { RW, WC_CONFIG_DEFAULT_POSITION_Kd }
         },
         .speed_l = {
             .sp         = { RW, 0 },
@@ -94,8 +95,8 @@ device_t drives[4] = {
             .acc_thres  = { RW, WC_CONFIG_DEFAULT_SPEED_ACC_THRES },
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_SPEED_Kp },
-            .Ki         = { RO, WC_CONFIG_DEFAULT_SPEED_Ki },
-            .Kd         = { RO, WC_CONFIG_DEFAULT_SPEED_Kd }
+            .Ki         = { RW, WC_CONFIG_DEFAULT_SPEED_Ki },
+            .Kd         = { RW, WC_CONFIG_DEFAULT_SPEED_Kd }
         },
         .current_l = {
             .sp         = { RW, 0 },
@@ -105,7 +106,7 @@ device_t drives[4] = {
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kp },
             .Ki         = { RW, WC_CONFIG_DEFAULT_CURRENT_Ki },
-            .Kd         = { RO, WC_CONFIG_DEFAULT_CURRENT_Kd }
+            .Kd         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kd }
         },
         .output         = { RO, 0 },
         .output_thres   = { RW, WC_CONFIG_DEFAULT_OUTPUT_THRES },
@@ -117,7 +118,8 @@ device_t drives[4] = {
             .frw_pin    = DRV2_DIR_0_Pin,
             .rev_port   = DRV2_DIR_1_GPIO_Port,
             .rev_pin    = DRV2_DIR_1_Pin
-        }
+        },
+        .direction      = DIR_STOP
     },
     { // DRIVE 3
         .torque = { RW, 0 },
@@ -128,8 +130,8 @@ device_t drives[4] = {
             .acc_thres  = { RW, WC_CONFIG_DEFAULT_POS_ACC_THRES },
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_POSITION_Kp },
-            .Ki         = { RO, WC_CONFIG_DEFAULT_POSITION_Ki },
-            .Kd         = { RO, WC_CONFIG_DEFAULT_POSITION_Kd }
+            .Ki         = { RW, WC_CONFIG_DEFAULT_POSITION_Ki },
+            .Kd         = { RW, WC_CONFIG_DEFAULT_POSITION_Kd }
         },
         .speed_l = {
             .sp         = { RW, 0 },
@@ -138,8 +140,8 @@ device_t drives[4] = {
             .acc_thres  = { RW, WC_CONFIG_DEFAULT_SPEED_ACC_THRES },
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_SPEED_Kp },
-            .Ki         = { RO, WC_CONFIG_DEFAULT_SPEED_Ki },
-            .Kd         = { RO, WC_CONFIG_DEFAULT_SPEED_Kd }
+            .Ki         = { RW, WC_CONFIG_DEFAULT_SPEED_Ki },
+            .Kd         = { RW, WC_CONFIG_DEFAULT_SPEED_Kd }
         },
         .current_l = {
             .sp         = { RW, 0 },
@@ -149,7 +151,7 @@ device_t drives[4] = {
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kp },
             .Ki         = { RW, WC_CONFIG_DEFAULT_CURRENT_Ki },
-            .Kd         = { RO, WC_CONFIG_DEFAULT_CURRENT_Kd }
+            .Kd         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kd }
         },
         .output         = { RO, 0 },
         .output_thres   = { RW, WC_CONFIG_DEFAULT_OUTPUT_THRES },
@@ -161,7 +163,8 @@ device_t drives[4] = {
             .frw_pin    = DRV3_DIR_0_Pin,
             .rev_port   = DRV3_DIR_1_GPIO_Port,
             .rev_pin    = DRV3_DIR_1_Pin
-        }
+        },
+        .direction      = DIR_STOP
     },
     { // DRIVE 4
         .torque = { RW, 0 },
@@ -205,7 +208,8 @@ device_t drives[4] = {
             .frw_pin    = DRV4_DIR_0_Pin,
             .rev_port   = DRV4_DIR_1_GPIO_Port,
             .rev_pin    = DRV4_DIR_1_Pin
-        }
+        },
+        .direction      = DIR_STOP
     }
 };
 
@@ -221,31 +225,27 @@ static inline uint32_t VoltsToPWM(float volts){
     return ((int32_t)((volts) / ((float)(24.0)) * ((float)(64000.0))));
 }
 
-typedef enum{
-    DIR_STOP    = 0x00,
-    DIR_FORWARD = 0x01,
-    DIR_REVERSE = 0x02
-}wc_drive_dir_e;
-
-static wc_drive_dir_e direction = 0;
 static inline void DriveForward(uint8_t drive_num){
-    if (direction != DIR_FORWARD) direction = DIR_FORWARD;
+    if (DRIVE.direction != DIR_FORWARD) DRIVE.direction = DIR_FORWARD;
     else return;
     HAL_GPIO_WritePin(DRIVE.dir_pins.rev_port, DRIVE.dir_pins.rev_pin, 0);
-    HAL_Delay(1);
+    for (uint32_t iter = 0; iter < 100; iter++){
+        __NOP();
+    }
     HAL_GPIO_WritePin(DRIVE.dir_pins.frw_port, DRIVE.dir_pins.frw_pin, 1);
 }
 
 static inline void DriveReverse(uint8_t drive_num){
-    if (direction != DIR_REVERSE) direction = DIR_REVERSE;
+    if (DRIVE.direction != DIR_REVERSE) DRIVE.direction = DIR_REVERSE;
     else return;
     HAL_GPIO_WritePin(DRIVE.dir_pins.frw_port, DRIVE.dir_pins.frw_pin, 0);
-    HAL_Delay(1);
+    for (uint32_t iter = 0; iter < 100; iter++){
+        __NOP();
+    }
     HAL_GPIO_WritePin(DRIVE.dir_pins.rev_port, DRIVE.dir_pins.rev_pin, 1);
 }
 
 void PID_DriveCompute(uint8_t drive_num){
-    
     // // GETTING RADIAL POSITION
     float tmp_position = 0;
     if (drive_num == 3){

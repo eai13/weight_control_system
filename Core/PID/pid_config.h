@@ -7,7 +7,7 @@
 #define WC_CONFIG_DEFAULT_CURRENT_Kd        ((float)(0))
 #define WC_CONFIG_DEFAULT_SPEED_Kp          ((float)(30.0))
 #define WC_CONFIG_DEFAULT_SPEED_Ki          ((float)(5))
-#define WC_CONFIG_DEFAULT_SPEED_Kd          ((float)(5))
+#define WC_CONFIG_DEFAULT_SPEED_Kd          ((float)(6.0))
 #define WC_CONFIG_DEFAULT_POSITION_Kp       ((float)(20.0))
 #define WC_CONFIG_DEFAULT_POSITION_Ki       ((float)(0))
 #define WC_CONFIG_DEFAULT_POSITION_Kd       ((float)(0))
@@ -20,6 +20,6 @@
 #define WC_CONFIG_DEFAULT_OUTPUT_THRES      ((uint32_t)(32000))
 
 // TIME CONSTANT FOR INTEGRATOR
-#define TIME_CONSTANT   ((float)(0.1))
+#define TIME_CONSTANT   ((float)(0.01))
 
 #endif

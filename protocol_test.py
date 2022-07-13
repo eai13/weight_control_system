@@ -49,7 +49,7 @@ CUR_Kd          = 24
 OUTPUT          = 25
 OUTPUT_THRES    = 26
 
-ser = serial.Serial('/dev/ttyUSB1', 57600)
+ser = serial.Serial('/dev/ttyUSB0', 57600)
 ser.isOpen()
 
 def send_multiple(id, cmd, reg, val1, val2, val3, val4, crc):
@@ -98,8 +98,9 @@ def send_single(id, cmd, reg, val, crc):
 while(1):
     send_single(ID_DRIVE_4, READ, POS_FB, 0, 0)
     send_single(ID_DRIVE_4, READ, SPD_ACC, 0, 0)
+    send_single(ID_DRIVE_4, READ, SPD_PERR, 0, 0)
     send_single(ID_DRIVE_4, READ, CUR_SP, 0, 0)
-    send_single(ID_DRIVE_4, READ, CUR_FB, 0, 0)
+    send_single(ID_DRIVE_4, READ, SPD_SP, 0, 0)
     send_single(ID_DRIVE_4, READ, OUTPUT, 0, 0)
     print('-----------------')
     sleep(1)
