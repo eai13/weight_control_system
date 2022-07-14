@@ -39,6 +39,7 @@ typedef struct{
     float_register_t Kp;
     float_register_t Ki;
     float_register_t Kd;
+    float_register_t isActive;
 }loop_t;
 
 typedef struct{
@@ -64,7 +65,7 @@ typedef struct{
             float_register_t    output;
             float_register_t    output_thres;
         };
-        float_register_t all_registers[27];
+        float_register_t all_registers[30];
     };
     direction_control_t dir_pins;
     p_uint32_register_t pwm_duty;

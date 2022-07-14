@@ -41,7 +41,8 @@ device_t drives[4] = {
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_POSITION_Kp },
             .Ki         = { RW, WC_CONFIG_DEFAULT_POSITION_Ki },
-            .Kd         = { RW, WC_CONFIG_DEFAULT_POSITION_Kd }
+            .Kd         = { RW, WC_CONFIG_DEFAULT_POSITION_Kd },
+            .isActive   = { RW, 100 }
         },
         .speed_l = {
             .sp         = { RW, 0 },
@@ -51,7 +52,8 @@ device_t drives[4] = {
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_SPEED_Kp},
             .Ki         = { RW, WC_CONFIG_DEFAULT_SPEED_Ki },
-            .Kd         = { RW, WC_CONFIG_DEFAULT_SPEED_Kd }
+            .Kd         = { RW, WC_CONFIG_DEFAULT_SPEED_Kd },
+            .isActive   = { RW, 100 }
         },
         .current_l = {
             .sp         = { RW, 0 },
@@ -61,7 +63,8 @@ device_t drives[4] = {
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kp },
             .Ki         = { RW, WC_CONFIG_DEFAULT_CURRENT_Ki },
-            .Kd         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kd }
+            .Kd         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kd },
+            .isActive   = { RW, -100 }
         },
         .output         = { RO, 0 },
         .output_thres   = { RW, WC_CONFIG_DEFAULT_OUTPUT_THRES },
@@ -86,7 +89,8 @@ device_t drives[4] = {
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_POSITION_Kp },
             .Ki         = { RW, WC_CONFIG_DEFAULT_POSITION_Ki },
-            .Kd         = { RW, WC_CONFIG_DEFAULT_POSITION_Kd }
+            .Kd         = { RW, WC_CONFIG_DEFAULT_POSITION_Kd },
+            .isActive   = { RW, 100 }
         },
         .speed_l = {
             .sp         = { RW, 0 },
@@ -96,7 +100,8 @@ device_t drives[4] = {
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_SPEED_Kp },
             .Ki         = { RW, WC_CONFIG_DEFAULT_SPEED_Ki },
-            .Kd         = { RW, WC_CONFIG_DEFAULT_SPEED_Kd }
+            .Kd         = { RW, WC_CONFIG_DEFAULT_SPEED_Kd },
+            .isActive   = { RW, 100 }
         },
         .current_l = {
             .sp         = { RW, 0 },
@@ -106,7 +111,8 @@ device_t drives[4] = {
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kp },
             .Ki         = { RW, WC_CONFIG_DEFAULT_CURRENT_Ki },
-            .Kd         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kd }
+            .Kd         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kd },
+            .isActive   = { RW, -100 }
         },
         .output         = { RO, 0 },
         .output_thres   = { RW, WC_CONFIG_DEFAULT_OUTPUT_THRES },
@@ -131,7 +137,8 @@ device_t drives[4] = {
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_POSITION_Kp },
             .Ki         = { RW, WC_CONFIG_DEFAULT_POSITION_Ki },
-            .Kd         = { RW, WC_CONFIG_DEFAULT_POSITION_Kd }
+            .Kd         = { RW, WC_CONFIG_DEFAULT_POSITION_Kd },
+            .isActive   = { RW, 100 }
         },
         .speed_l = {
             .sp         = { RW, 0 },
@@ -141,7 +148,8 @@ device_t drives[4] = {
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_SPEED_Kp },
             .Ki         = { RW, WC_CONFIG_DEFAULT_SPEED_Ki },
-            .Kd         = { RW, WC_CONFIG_DEFAULT_SPEED_Kd }
+            .Kd         = { RW, WC_CONFIG_DEFAULT_SPEED_Kd },
+            .isActive   = { RW, 100 }
         },
         .current_l = {
             .sp         = { RW, 0 },
@@ -151,7 +159,8 @@ device_t drives[4] = {
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kp },
             .Ki         = { RW, WC_CONFIG_DEFAULT_CURRENT_Ki },
-            .Kd         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kd }
+            .Kd         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kd },
+            .isActive   = { RW, -100 }
         },
         .output         = { RO, 0 },
         .output_thres   = { RW, WC_CONFIG_DEFAULT_OUTPUT_THRES },
@@ -176,7 +185,8 @@ device_t drives[4] = {
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_POSITION_Kp },
             .Ki         = { RW, WC_CONFIG_DEFAULT_POSITION_Ki },
-            .Kd         = { RW, WC_CONFIG_DEFAULT_POSITION_Kd }
+            .Kd         = { RW, WC_CONFIG_DEFAULT_POSITION_Kd },
+            .isActive   = { RW, 100 }
         },
         .speed_l = {
             .sp         = { RW, 0 },
@@ -186,7 +196,8 @@ device_t drives[4] = {
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_SPEED_Kp },
             .Ki         = { RW, WC_CONFIG_DEFAULT_SPEED_Ki },
-            .Kd         = { RW, WC_CONFIG_DEFAULT_SPEED_Kd }
+            .Kd         = { RW, WC_CONFIG_DEFAULT_SPEED_Kd },
+            .isActive   = { RW, 100 }
         },
         .current_l = {
             .sp         = { RW, 0 },
@@ -196,7 +207,8 @@ device_t drives[4] = {
             .perr       = { RO, 0 },
             .Kp         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kp },
             .Ki         = { RW, WC_CONFIG_DEFAULT_CURRENT_Ki },
-            .Kd         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kd }
+            .Kd         = { RW, WC_CONFIG_DEFAULT_CURRENT_Kd },
+            .isActive   = { RW, -100 }
         },
         .output         = { RO, 0 },
         .output_thres   = { RW, WC_CONFIG_DEFAULT_OUTPUT_THRES },
@@ -267,54 +279,69 @@ void PID_DriveCompute(uint8_t drive_num){
             GetRealCurrent(*(DRIVE.current_s.v));
 
     // Position loop compute
-    if (DRIVE.position_l.Ki.v){
-        DRIVE.position_l.acc.v +=
-                (DRIVE.position_l.sp.v - DRIVE.position_l.fb.v) * DRIVE.position_l.Ki.v;
-        if (DRIVE.position_l.acc.v > DRIVE.position_l.acc_thres.v) DRIVE.position_l.acc.v = DRIVE.position_l.acc_thres.v;
-        else if (DRIVE.position_l.acc.v < -DRIVE.position_l.acc_thres.v) DRIVE.position_l.acc.v = -DRIVE.position_l.acc_thres.v;
+    if (DRIVE.position_l.isActive.v > 0){
+        if (DRIVE.position_l.Ki.v){
+            DRIVE.position_l.acc.v +=
+                    (DRIVE.position_l.sp.v - DRIVE.position_l.fb.v) * DRIVE.position_l.Ki.v;
+            if (DRIVE.position_l.acc.v > DRIVE.position_l.acc_thres.v) DRIVE.position_l.acc.v = DRIVE.position_l.acc_thres.v;
+            else if (DRIVE.position_l.acc.v < -DRIVE.position_l.acc_thres.v) DRIVE.position_l.acc.v = -DRIVE.position_l.acc_thres.v;
+        }
+        float d_part = 0;
+        if (DRIVE.position_l.Kd.v){
+            float nerr = DRIVE.position_l.sp.v - DRIVE.position_l.fb.v;
+            d_part = (nerr - DRIVE.position_l.perr.v) / TIME_CONSTANT;
+            DRIVE.position_l.perr.v = nerr;
+        }
+        DRIVE.speed_l.sp.v = 
+                (DRIVE.position_l.sp.v - DRIVE.position_l.fb.v) * DRIVE.position_l.Kp.v + DRIVE.position_l.acc.v + d_part;
     }
-    float d_part = 0;
-    if (DRIVE.position_l.Kd.v){
-        float nerr = DRIVE.position_l.sp.v - DRIVE.position_l.fb.v;
-        d_part = (nerr - DRIVE.position_l.perr.v) / TIME_CONSTANT;
-        DRIVE.position_l.perr.v = nerr;
+    else{
+        DRIVE.speed_l.sp.v = DRIVE.position_l.sp.v;
     }
-    DRIVE.speed_l.sp.v = 
-            (DRIVE.position_l.sp.v - DRIVE.position_l.fb.v) * DRIVE.position_l.Kp.v + DRIVE.position_l.acc.v + d_part;
     
     // Speed loop compute
-    if (DRIVE.speed_l.Ki.v){
-        DRIVE.speed_l.acc.v += 
-                (DRIVE.speed_l.sp.v - DRIVE.speed_l.fb.v) * DRIVE.speed_l.Ki.v;
-        if (DRIVE.speed_l.acc.v > DRIVE.speed_l.acc_thres.v) DRIVE.speed_l.acc.v = DRIVE.speed_l.acc_thres.v;
-        else if (DRIVE.speed_l.acc.v < -DRIVE.speed_l.acc_thres.v) DRIVE.speed_l.acc.v = -DRIVE.speed_l.acc_thres.v;
+    if (DRIVE.speed_l.isActive.v > 0){
+        if (DRIVE.speed_l.Ki.v){
+            DRIVE.speed_l.acc.v += 
+                    (DRIVE.speed_l.sp.v - DRIVE.speed_l.fb.v) * DRIVE.speed_l.Ki.v;
+            if (DRIVE.speed_l.acc.v > DRIVE.speed_l.acc_thres.v) DRIVE.speed_l.acc.v = DRIVE.speed_l.acc_thres.v;
+            else if (DRIVE.speed_l.acc.v < -DRIVE.speed_l.acc_thres.v) DRIVE.speed_l.acc.v = -DRIVE.speed_l.acc_thres.v;
+        }
+        float d_part = 0;
+        if (DRIVE.speed_l.Kd.v){
+            float nerr = DRIVE.speed_l.sp.v - DRIVE.speed_l.fb.v;
+            d_part = (nerr - DRIVE.speed_l.perr.v) / TIME_CONSTANT;
+            DRIVE.speed_l.perr.v = nerr;
+        }
+        DRIVE.current_l.sp.v = 
+                (DRIVE.speed_l.sp.v - DRIVE.speed_l.fb.v) * DRIVE.speed_l.Kp.v + DRIVE.speed_l.acc.v + d_part;
     }
-    d_part = 0;
-    if (DRIVE.speed_l.Kd.v){
-        float nerr = DRIVE.speed_l.sp.v - DRIVE.speed_l.fb.v;
-        d_part = (nerr - DRIVE.speed_l.perr.v) / TIME_CONSTANT;
-        DRIVE.speed_l.perr.v = nerr;
+    else{
+        DRIVE.current_l.sp.v = DRIVE.speed_l.sp.v;
     }
-    DRIVE.current_l.sp.v = 
-            (DRIVE.speed_l.sp.v - DRIVE.speed_l.fb.v) * DRIVE.speed_l.Kp.v + DRIVE.speed_l.acc.v + d_part;
 
     // Current loop compute
-    if (DRIVE.current_l.Ki.v){
-        DRIVE.current_l.acc.v += 
-                (DRIVE.current_l.sp.v / DRIVE_REDUCTION + DRIVE.torque.v - DRIVE.current_l.fb.v) * DRIVE.current_l.Ki.v;
-        if (DRIVE.current_l.acc.v > DRIVE.current_l.acc_thres.v) DRIVE.current_l.acc.v = DRIVE.current_l.acc_thres.v;
-        else if (DRIVE.current_l.acc.v < -DRIVE.current_l.acc_thres.v) DRIVE.current_l.acc.v = -DRIVE.current_l.acc_thres.v;
+    if (DRIVE.current_l.isActive.v > 0){
+        if (DRIVE.current_l.Ki.v){
+            DRIVE.current_l.acc.v += 
+                    (DRIVE.current_l.sp.v / DRIVE_REDUCTION + DRIVE.torque.v - DRIVE.current_l.fb.v) * DRIVE.current_l.Ki.v;
+            if (DRIVE.current_l.acc.v > DRIVE.current_l.acc_thres.v) DRIVE.current_l.acc.v = DRIVE.current_l.acc_thres.v;
+            else if (DRIVE.current_l.acc.v < -DRIVE.current_l.acc_thres.v) DRIVE.current_l.acc.v = -DRIVE.current_l.acc_thres.v;
+        }
+        float d_part = 0;
+        if (DRIVE.current_l.Kd.v){
+            float nerr = DRIVE.current_l.sp.v - DRIVE.current_l.fb.v;
+            d_part = (nerr - DRIVE.current_l.perr.v) / TIME_CONSTANT;
+            DRIVE.current_l.perr.v = nerr;
+        }
+        DRIVE.output.v = 
+                (DRIVE.current_l.sp.v / DRIVE_REDUCTION + DRIVE.torque.v - DRIVE.current_l.fb.v) * DRIVE.current_l.Kp.v + DRIVE.current_l.acc.v + d_part;
     }
-    d_part = 0;
-    if (DRIVE.current_l.Kd.v){
-        float nerr = DRIVE.current_l.sp.v - DRIVE.current_l.fb.v;
-        d_part = (nerr - DRIVE.current_l.perr.v) / TIME_CONSTANT;
-        DRIVE.current_l.perr.v = nerr;
+    else{
+        DRIVE.output.v = DRIVE.current_l.sp.v / DRIVE_REDUCTION;
     }
 
     // OUTPUT COMPUTE
-    DRIVE.output.v = 
-            (DRIVE.current_l.sp.v / DRIVE_REDUCTION + DRIVE.torque.v - 0/*DRIVE.current_l.fb.v*/) * DRIVE.current_l.Kp.v + DRIVE.current_l.acc.v + d_part;
     if (DRIVE.output.v > ((float)(24.0))) DRIVE.output.v = ((float)(24.0));
     else if (DRIVE.output.v < ((float)(-24.0))) DRIVE.output.v = ((float)(-24.0));
 
@@ -325,8 +352,8 @@ void PID_DriveCompute(uint8_t drive_num){
     // CONVERT TO PWM
     uint16_t pwm_out = VoltsToPWM(_ABS_FLOAT(DRIVE.output.v));
     
-    if (pwm_out > 32000)
-        *(DRIVE.pwm_duty.v) = 32000;
+    if (pwm_out > DRIVE.output_thres.v)
+        *(DRIVE.pwm_duty.v) = DRIVE.output_thres.v;
     else
         *(DRIVE.pwm_duty.v) = pwm_out;
 }

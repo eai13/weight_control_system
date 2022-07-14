@@ -5,3 +5,4 @@ Drivers*
 protocol_send_pos.py
 protocol_set_pid.py
 PID_Monitor*
+__pycache__*

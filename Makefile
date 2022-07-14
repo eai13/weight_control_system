@@ -136,8 +136,8 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32G0xx/Include \
 -IDrivers/CMSIS/Include \
 -ICore/debug \
--ICore/PID \
--ICore/protocol
+-ICore/protocol \
+-ICore/PID
 
 
 # compile gcc flags
