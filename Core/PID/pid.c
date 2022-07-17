@@ -234,7 +234,7 @@ static inline float GetRealRadial(int32_t raw){
 }
 
 static inline uint32_t VoltsToPWM(float volts){
-    return ((int32_t)((volts) / ((float)(24.0)) * ((float)(64000.0))));
+    return ((int32_t)((volts) / ((float)(24.0)) * ((float)(PWM_UPPER_COUNT))));
 }
 
 static inline void DriveForward(uint8_t drive_num){

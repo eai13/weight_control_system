@@ -17,7 +17,7 @@
 #define WC_CONFIG_DEFAULT_SPEED_ACC_THRES   ((float)(100))
 #define WC_CONFIG_DEFAULT_POS_ACC_THRES     ((float)(0))
 
-#define WC_CONFIG_DEFAULT_OUTPUT_THRES      ((uint32_t)(32000))
+#define WC_CONFIG_DEFAULT_OUTPUT_THRES      ((uint32_t)(16000))
 
 // TIME CONSTANT FOR INTEGRATOR
 #define TIME_CONSTANT   ((float)(0.01))

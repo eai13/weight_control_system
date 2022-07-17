@@ -1,12 +1,16 @@
 from time import sleep
-import WC_PyAPI
+from WC_PyAPI import *
+
+# send_single(ID_DRIVE_3, READ, SPD_Kp, 0, 0)
+# send_single(ID_DRIVE_3, READ, SPD_Ki, 0, 0)
+# send_single(ID_DRIVE_3, READ, SPD_Kd, 0, 0)
 
 while(1):
-    WC_PyAPI.send_single(WC_PyAPI.ID_DRIVE_4, WC_PyAPI.READ, WC_PyAPI.POS_FB, 0, 0)
-    WC_PyAPI.send_single(WC_PyAPI.ID_DRIVE_4, WC_PyAPI.READ, WC_PyAPI.SPD_ACC, 0, 0)
-    WC_PyAPI.send_single(WC_PyAPI.ID_DRIVE_4, WC_PyAPI.READ, WC_PyAPI.SPD_PERR, 0, 0)
-    WC_PyAPI.send_single(WC_PyAPI.ID_DRIVE_4, WC_PyAPI.READ, WC_PyAPI.CUR_SP, 0, 0)
-    WC_PyAPI.send_single(WC_PyAPI.ID_DRIVE_4, WC_PyAPI.READ, WC_PyAPI.SPD_SP, 0, 0)
-    WC_PyAPI.send_single(WC_PyAPI.ID_DRIVE_4, WC_PyAPI.READ, WC_PyAPI.OUTPUT, 0, 0)
+    send_single(ID_DRIVE_4, READ, POS_FB, 0, 0)
+    send_single(ID_DRIVE_4, READ, SPD_ACC, 0, 0)
+    send_single(ID_DRIVE_4, READ, SPD_PERR, 0, 0)
+    send_single(ID_DRIVE_4, READ, CUR_SP, 0, 0)
+    send_single(ID_DRIVE_4, READ, SPD_SP, 0, 0)
+    send_single(ID_DRIVE_4, READ, OUTPUT, 0, 0)
     print('-----------------')
     sleep(1)

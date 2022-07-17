@@ -36,5 +36,6 @@
 // DRIVE COMPUTE TIMER
 #define CONTROL_SYSTEM_TIMER      htim14
 
+#define PWM_UPPER_COUNT     32000
 
 #endif
