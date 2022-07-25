@@ -1,9 +1,9 @@
 from time import sleep
 from WC_PyAPI import *
 
-# send_single(ID_DRIVE_3, READ, SPD_Kp, 0, 0)
-# send_single(ID_DRIVE_3, READ, SPD_Ki, 0, 0)
-# send_single(ID_DRIVE_3, READ, SPD_Kd, 0, 0)
+# send_single(ID_DRIVE_4, READ, SPD_Kp, 0, 0)
+# send_single(ID_DRIVE_4, READ, SPD_Ki, 0, 0)
+# send_single(ID_DRIVE_4, READ, SPD_Kd, 0, 0)
 
 while(1):
     send_single(ID_DRIVE_4, READ, POS_FB, 0, 0)
