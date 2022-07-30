@@ -274,8 +274,20 @@
      <property name="enabled">
       <bool>true</bool>
      </property>
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOn</enum>
+     </property>
+     <property name="autoScroll">
+      <bool>true</bool>
+     </property>
+     <property name="autoScrollMargin">
+      <number>16</number>
+     </property>
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <property name="movement">
+      <enum>QListView::Free</enum>
      </property>
     </widget>
    </item>

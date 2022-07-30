@@ -47,12 +47,14 @@ private slots:
                 delete this->file;
             }
         }
+        this->connection_status = CONN_STAT_TIMEOUT;
         ConsoleError("Connection Timeout");
         this->UIUnlock(true);
     }
     void UIUnlock(bool lock);
     void ProcessIncomingData(void);
     void PushDataFromStream(void);
+    void BrowseFile(void);
 
 
 private:
@@ -66,6 +68,12 @@ private:
     enum ErrorCodes{
         WRONG_PARTITION,
         FILE_NOT_CHOSEN
+    };
+
+    enum ConnectionStatus{
+        CONN_STAT_NOT_INIT  = 0x00,
+        CONN_STAT_CONNECTED = 0x01,
+        CONN_STAT_TIMEOUT   = 0x02
     };
 
     enum Commands{
@@ -130,6 +138,8 @@ private:
     uint32_t    filesize = 0;
 
     Ui::Bootloader *ui;
+
+    uint8_t connection_status = CONN_STAT_NOT_INIT;
 
 
 signals:

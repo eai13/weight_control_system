@@ -7,6 +7,8 @@
 #include <QDebug>
 #include <QTimer>
 #include <QFile>
+#include <QFileDialog>
+#include <QThread>
 
 #define CHUNK_SIZE_WORDS    32
 
@@ -16,39 +18,67 @@ Bootloader::Bootloader(QWidget *parent) :
 
     ui->setupUi(this);
 
-    QList<QSerialPortInfo> serial_list = QSerialPortInfo::availablePorts();
-    for (auto iter = serial_list.begin(); iter != serial_list.end(); iter++)
-        ui->label_detect->setText(iter->portName() + " (" + iter->description() + ")");
-
-    this->Serial = new QSerialPort;
-    this->Serial->setPortName("ttyUSB0");
-    this->Serial->setBaudRate(QSerialPort::Baud57600);
-    this->Serial->setDataBits(QSerialPort::Data8);
-    this->Serial->setParity(QSerialPort::NoParity);
-    this->Serial->setStopBits(QSerialPort::OneStop);
-    this->Serial->setFlowControl(QSerialPort::NoFlowControl);
-
-    if (this->Serial->open(QIODevice::ReadWrite)){
-        std::cout << "OK" << std::endl;
-    }
-    else{
-        std::cout << "NOT OK" << std::endl;
-    }
-
-    connect(this->Serial, &QSerialPort::readyRead, this, &Bootloader::PushDataFromStream);
-
-    connect(ui->pushButton_ping,    &QPushButton::released, this, &Bootloader::C_Ping);
-    connect(ui->pushButton_jump,    &QPushButton::released, this, &Bootloader::C_Jump);
-    connect(ui->pushButton_erase,   &QPushButton::released, this, &Bootloader::C_Erase);
-    connect(ui->pushButton_verify,  &QPushButton::released, this, &Bootloader::C_Verify);
-    connect(ui->pushButton_read,    &QPushButton::released, this, &Bootloader::C_Read);
-    connect(ui->pushButton_write,   &QPushButton::released, this, &Bootloader::C_Write);
-
-    this->UIUnlock(true);
+    this->UIUnlock(false);
 
     this->TimeoutTimer = new QTimer(this);
     this->TimeoutTimer->setSingleShot(true);
     connect(this->TimeoutTimer, &QTimer::timeout, this, &Bootloader::Timeout);
+
+    ui->label_detect->setText("Scanning Ports");
+    QList<QSerialPortInfo> serial_list = QSerialPortInfo::availablePorts();
+    for (auto iter = serial_list.begin(); iter != serial_list.end(); iter++){
+        qDebug() << iter->portName();
+        this->Serial = new QSerialPort;
+        this->Serial->setPortName(iter->portName());
+        this->Serial->setBaudRate(QSerialPort::Baud57600);
+        if (!(this->Serial->open(QIODevice::ReadWrite))){
+            this->connection_status = this->CONN_STAT_NOT_INIT;
+            delete this->Serial;
+            continue;
+        }
+
+        this->C_Ping();
+        while((this->connection_status == this->CONN_STAT_NOT_INIT) || (this->Serial->bytesAvailable() < this->PING_AWAIT_SIZE)){
+//            qDebug() << "glitch";
+            QThread::msleep(10);
+        }
+        if (this->TimeoutTimer->isActive()) this->TimeoutTimer->stop();
+        if (connection_status == this->CONN_STAT_CONNECTED){
+            ui->label_detect->setText(iter->portName() + " (" + iter->description() + ")");
+            break;
+        }
+        else{
+            disconnect(this->Serial, &QSerialPort::readyRead, this, &Bootloader::PushDataFromStream);
+            connection_status = this->CONN_STAT_NOT_INIT;
+            this->Serial->close();
+            delete this->Serial;
+        }
+    }
+
+    connect(this->Serial, &QSerialPort::readyRead, this, &Bootloader::PushDataFromStream);
+//    this->Serial = new QSerialPort;
+//    this->Serial->setPortName("ttyUSB0");
+//    this->Serial->setBaudRate(QSerialPort::Baud57600);
+//    this->Serial->setDataBits(QSerialPort::Data8);
+//    this->Serial->setParity(QSerialPort::NoParity);
+//    this->Serial->setStopBits(QSerialPort::OneStop);
+//    this->Serial->setFlowControl(QSerialPort::NoFlowControl);
+
+//    if (this->Serial->open(QIODevice::ReadWrite)){
+//        std::cout << "OK" << std::endl;
+//    }
+//    else{
+//        std::cout << "NOT OK" << std::endl;
+//    }
+
+    connect(ui->pushButton_ping,        &QPushButton::released, this, &Bootloader::C_Ping);
+    connect(ui->pushButton_jump,        &QPushButton::released, this, &Bootloader::C_Jump);
+    connect(ui->pushButton_erase,       &QPushButton::released, this, &Bootloader::C_Erase);
+    connect(ui->pushButton_verify,      &QPushButton::released, this, &Bootloader::C_Verify);
+    connect(ui->pushButton_read,        &QPushButton::released, this, &Bootloader::C_Read);
+    connect(ui->pushButton_write,       &QPushButton::released, this, &Bootloader::C_Write);
+    connect(ui->pushButton_choosefile,  &QPushButton::released, this, &Bootloader::BrowseFile);
+    this->UIUnlock(true);
 }
 
 Bootloader::~Bootloader()
@@ -99,8 +129,10 @@ void Bootloader::C_Verify(void){
 
 void Bootloader::C_Write(void){
     ConsoleBasic("Write Firmware Started");
-    this->file = new QFile(ui->lineEdit_filename);
-    if (!(this->file->open(QFile::ReadOnly | QFile::Text))){
+    this->file = new QFile(ui->lineEdit_filename->text());
+    qDebug() << "Filename Size: " << this->file->size();
+//    return;
+    if (!(this->file->open(QFile::ReadOnly))){
         ConsoleError("Unable to Open Firmware File");
         delete this->file;
         return;
@@ -135,6 +167,7 @@ void Bootloader::ProcessIncomingData(void){
         char * name = reinterpret_cast<char *>(&id);
         ConsoleBasic(QString("Ping OK, Device ID is ") + name[0] + name[1] + name[2] + name[3]);
         this->UIUnlock(true);
+        this->connection_status = 1;
         break;
     }
     case(this->JUMP):{
@@ -153,24 +186,24 @@ void Bootloader::ProcessIncomingData(void){
             break;
         else{
             this->flash_after = 0;
-            this->file = new QFile(ui->lineEdit_filename);
-            this->file->open(QFile::ReadOnly | QFile::Text);
+            this->file = new QFile(ui->lineEdit_filename->text());
+            this->file->open(QFile::ReadOnly);
         }
     }
     case(this->WRITE):{
         char chunk[CHUNK_SIZE_WORDS * 4];
         uint32_t chunk_size = this->file->read(chunk, CHUNK_SIZE_WORDS * 4);
-
         if (chunk_size){
+            ConsoleBasic("Writing a Chunk of " + QString::fromStdString(std::to_string(chunk_size)) + " Bytes");
             MsgHeader msg(this->WRITE, 3 + chunk_size / 4);
             msg.payload.append(ui->comboBox_partition->currentIndex());
             msg.payload.append(chunk_size / 4);
             msg.payload.append(0 /*CRC here*/);
             for (uint32_t iter = 0; iter < chunk_size; iter += 4){
-                msg.payload.append((uint32_t)(chunk[iter]) | (uint32_t)(chunk[iter + 1] << 8) | (uint32_t)(chunk[iter + 2] << 16) | (uint32_t)(chunk[iter + 3] << 24));
+                msg.payload.append(*((uint32_t *)(chunk + iter)));
             }
-
-            this->Serial->write(msg.SetRawFromHeader());
+            this->data_awaited = this->WRITE_AWAIT_SIZE;
+            qDebug() << "Bytes Written : " << this->Serial->write(msg.SetRawFromHeader());
             this->TimeoutTimer->start(1000);
         }
         else{
@@ -237,14 +270,25 @@ void Bootloader::PushDataFromStream(void){
 
 void Bootloader::ConsoleBasic(QString message){
     ui->listWidget_debugconsole->addItem("[INFO] " + message);
+    ui->listWidget_debugconsole->scrollToBottom();
 }
 
 void Bootloader::ConsoleError(QString message){
     ui->listWidget_debugconsole->addItem("[WARNING] " + message);
     ui->listWidget_debugconsole->item(ui->listWidget_debugconsole->count() - 1)->setForeground(QColor(219, 169, 0));
+    ui->listWidget_debugconsole->scrollToBottom();
 }
 
 void Bootloader::ConsoleWarning(QString message){
     ui->listWidget_debugconsole->addItem("[ERROR] " + message);
     ui->listWidget_debugconsole->item(ui->listWidget_debugconsole->count() - 1)->setForeground(QColor(208, 51, 51));
+    ui->listWidget_debugconsole->scrollToBottom();
+}
+
+void Bootloader::BrowseFile(void){
+    QString fname = QFileDialog::getOpenFileName(this,
+                                                 tr("Open Firmware File"),
+                                                 "/home/egor/",
+                                                 tr("Binary Files (*.bin)"));
+    ui->lineEdit_filename->setText(fname);
 }
