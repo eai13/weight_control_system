@@ -12,6 +12,8 @@
 #include <QByteArray>
 #include <QTimer>
 #include <QFile>
+#include <QList>
+#include <QDebug>
 
 namespace Ui {
 class Bootloader;
@@ -21,11 +23,14 @@ class Bootloader : public QWidget
 {
     Q_OBJECT
 
+private:
+    Ui::Bootloader *ui;
+
 public:
     explicit Bootloader(QWidget *parent = nullptr);
     ~Bootloader();
 
-    QSerialPort * Serial;
+    QSerialPort * Serial = nullptr;
 
 public slots:
     void C_Ping(void);
@@ -47,10 +52,18 @@ private slots:
                 delete this->file;
             }
         }
-        this->connection_status = CONN_STAT_TIMEOUT;
+//        this->connection_status = CONN_STAT_TIMEOUT;
         ConsoleError("Connection Timeout");
-        this->UIUnlock(true);
+
+        this->UIUnlock(false);
+        disconnect(this->Serial, &QSerialPort::readyRead, this, &Bootloader::PushDataFromStream);
+        this->console_enabled = false;
+
+        if (!(this->DevicePingTimer->isActive())){
+            this->DevicePingTimer->start(500);
+        }
     }
+    void DevicePing(void);
     void UIUnlock(bool lock);
     void ProcessIncomingData(void);
     void PushDataFromStream(void);
@@ -59,8 +72,10 @@ private slots:
 
 private:
 
-    QTimer * TimeoutTimer = nullptr;
+    QTimer * TimeoutTimer       = nullptr;
+    QTimer * DevicePingTimer    = nullptr;
 
+    bool console_enabled = false;
     void ConsoleBasic(QString message);
     void ConsoleWarning(QString message);
     void ConsoleError(QString message);
@@ -68,12 +83,6 @@ private:
     enum ErrorCodes{
         WRONG_PARTITION,
         FILE_NOT_CHOSEN
-    };
-
-    enum ConnectionStatus{
-        CONN_STAT_NOT_INIT  = 0x00,
-        CONN_STAT_CONNECTED = 0x01,
-        CONN_STAT_TIMEOUT   = 0x02
     };
 
     enum Commands{
@@ -137,10 +146,7 @@ private:
     QFile *     file = nullptr;
     uint32_t    filesize = 0;
 
-    Ui::Bootloader *ui;
-
-    uint8_t connection_status = CONN_STAT_NOT_INIT;
-
+    QList<QSerialPortInfo>  available_ports;
 
 signals:
     void ErrorSignal(uint32_t error_code);
