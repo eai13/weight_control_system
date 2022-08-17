@@ -18,15 +18,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     bootloader.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    systemcontrol.cpp
 
 HEADERS += \
     bootloader.h \
-    mainwindow.h
+    mainwindow.h \
+    systemcontrol.h
 
 FORMS += \
     bootloader.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    systemcontrol.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
