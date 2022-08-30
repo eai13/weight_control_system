@@ -2,6 +2,7 @@
 #include "bootloader.h"
 #include "usart.h"
 #include "main.h"
+#include <string.h>
 
 #define SET_HEADER(s_cmd, s_size)  \
     header.cmd = s_cmd; \
@@ -64,66 +65,73 @@ boot_header_t header = {
     .w_size = 0
 };
 
-uint32_t payload[128] = { 0 };
+uint32_t payload[256] = { 0 };
 
-uint8_t raw_pack[512] = { 0 };
+uint8_t raw_pack[1024] = { 0 };
 
 void Bootloader_Process(void){
-    if (HAL_UART_Receive(&BOOT_UART, &header, sizeof(boot_header_t), 100) == HAL_OK){
-        if (HAL_UART_Receive(&BOOT_UART, payload, header.w_size, 100) == HAL_OK){
-            if ((header.cmd <= CMD_FIRST) || (header.cmd >= CMD_LAST)){
-                SET_HEADER(ERROR_CMD, 0);
+    HAL_StatusTypeDef status = HAL_UART_Receive(&BOOT_UART, (uint8_t *)&header, sizeof(boot_header_t), 100);
+    if (status == HAL_OK){
+        if (header.w_size){
+            if (HAL_UART_Receive(&BOOT_UART, (uint8_t *)payload, header.w_size * 4, 100) != HAL_OK){
+                SET_HEADER(ERROR_LENGTH, 0);
                 HAL_UART_Transmit(&BOOT_UART, (uint8_t *)&header, sizeof(boot_header_t), 100);
-            }
-
-            switch(header.cmd){
-                case(CMD_PING):
-                    C_Ping();
-                    HAL_UART_Transmit(&BOOT_UART, (uint8_t *)&header, sizeof(boot_header_t), 100);
-                    HAL_UART_Transmit(&BOOT_UART, (uint8_t *)payload, header.w_size * 4, 100);
-                    break;
-                case(CMD_VERIFY):
-                    C_Verify(V_REC_PARTITION, V_REC_PARTITION);
-                    HAL_UART_Transmit(&BOOT_UART, (uint8_t *)&header, sizeof(boot_header_t), 100);
-                    HAL_UART_Transmit(&BOOT_UART, (uint8_t *)payload, header.w_size * 4, 100);
-                    break;
-                case(CMD_JUMP):
-                    C_Jump(J_REC_PARTITION);
-                    HAL_UART_Transmit(&BOOT_UART, (uint8_t *)&header, sizeof(boot_header_t), 100);
-                    break;
-                case(CMD_READ):
-                    C_Read(R_REC_PARTITION, R_REC_LENGTH);
-                    HAL_UART_Transmit(&BOOT_UART, (uint8_t *)&header, sizeof(boot_header_t), 100);
-                    HAL_UART_Transmit(&BOOT_UART, (uint8_t *)payload, header.w_size * 4, 100);
-                    break;
-                case(CMD_WRITE):
-                    C_Write(W_REC_PARTITION, W_REC_LENGTH, W_REC_CRC);
-                    HAL_UART_Transmit(&BOOT_UART, (uint8_t *)&header, sizeof(boot_header_t), 100);
-                    break;
-                case(CMD_ERASE):
-                    C_Erase(E_REC_PARTITION);
-                    HAL_UART_Transmit(&BOOT_UART, (uint8_t *)&header, sizeof(boot_header_t), 100);
-                    break;
-                default:
-                    SET_HEADER(ERROR_CMD, 0);
-                    HAL_UART_Transmit(&BOOT_UART, (uint8_t *)&header, sizeof(boot_header_t), 100);
-                    break;
+                return;
             }
         }
-        else{
-            SET_HEADER(ERROR_LENGTH, 0);
+
+        if ((header.cmd <= CMD_FIRST) || (header.cmd >= CMD_LAST)){
+            SET_HEADER(ERROR_CMD, 0);
             HAL_UART_Transmit(&BOOT_UART, (uint8_t *)&header, sizeof(boot_header_t), 100);
         }
+
+        switch(header.cmd){
+            case(CMD_PING):
+                C_Ping();
+                HAL_UART_Transmit(&BOOT_UART, (uint8_t *)&header, sizeof(boot_header_t), 100);
+                HAL_UART_Transmit(&BOOT_UART, (uint8_t *)payload, header.w_size * 4, 100);
+                break;
+            case(CMD_VERIFY):
+                C_Verify(V_REC_PARTITION, V_REC_PARTITION);
+                HAL_UART_Transmit(&BOOT_UART, (uint8_t *)&header, sizeof(boot_header_t), 100);
+                HAL_UART_Transmit(&BOOT_UART, (uint8_t *)payload, header.w_size * 4, 100);
+                break;
+            case(CMD_JUMP):
+                C_Jump(J_REC_PARTITION);
+                HAL_UART_Transmit(&BOOT_UART, (uint8_t *)&header, sizeof(boot_header_t), 100);
+                break;
+            case(CMD_READ):
+                C_Read(R_REC_PARTITION, R_REC_LENGTH);
+                HAL_UART_Transmit(&BOOT_UART, (uint8_t *)&header, sizeof(boot_header_t), 100);
+                HAL_UART_Transmit(&BOOT_UART, (uint8_t *)payload, header.w_size * 4, 100);
+                break;
+            case(CMD_WRITE):
+                C_Write(W_REC_PARTITION, W_REC_LENGTH, W_REC_CRC);
+                HAL_UART_Transmit(&BOOT_UART, (uint8_t *)&header, sizeof(boot_header_t), 100);
+                break;
+            case(CMD_ERASE):
+                C_Erase(E_REC_PARTITION);
+                HAL_UART_Transmit(&BOOT_UART, (uint8_t *)&header, sizeof(boot_header_t), 100);
+                break;
+            default:
+                SET_HEADER(ERROR_CMD, 0);
+                HAL_UART_Transmit(&BOOT_UART, (uint8_t *)&header, sizeof(boot_header_t), 100);
+                break;
+        }
+    }
+    else if (status != HAL_TIMEOUT){
+        __NOP();
+        __NOP();
     }
 }
 
 void   C_Ping(void){
     SET_HEADER(CMD_PING, 1);
-    memcpy(&P_ANS_ID, id, 4);
+    memcpy((void *)&P_ANS_ID, id, 4);
 }
 
 void   C_Jump(boot_part_e partition){
-    if ((partition <= PART_FIRST) || (partition >= PART_LAST)){
+    if (partition >= PART_LAST){
         SET_HEADER(ERROR_PARTITION, 0);
         return;
     }
@@ -147,7 +155,7 @@ void   C_Jump(boot_part_e partition){
 }
 
 void   C_Verify(boot_part_e partition, uint32_t wlen){
-    if ((partition <= PART_FIRST) || (partition >= PART_LAST)){
+    if (partition >= PART_LAST){
         SET_HEADER(ERROR_PARTITION, 0);
         return;
     }
@@ -156,7 +164,7 @@ void   C_Verify(boot_part_e partition, uint32_t wlen){
 }
 
 void   C_Erase(boot_part_e partition){
-    if ((partition <= PART_FIRST) || (partition >= PART_LAST)){
+    if (partition >= PART_LAST){
         SET_HEADER(ERROR_PARTITION, 0);
         return;
     }
@@ -181,7 +189,7 @@ void   C_Erase(boot_part_e partition){
 }
 
 void   C_Write(boot_part_e partition, uint32_t wlen, uint32_t crc32){
-    if ((partition <= PART_FIRST) || (partition >= PART_LAST)){
+    if (partition >= PART_LAST){
         SET_HEADER(ERROR_PARTITION, 0);
         return;
     }
@@ -193,10 +201,12 @@ void   C_Write(boot_part_e partition, uint32_t wlen, uint32_t crc32){
     if (HAL_GetTick() - partitions[partition].write_last_call > LAST_CALL_TIMEOUT)
         partitions[partition].write_address = partitions[partition].address;
 
+    HAL_FLASH_Unlock();
+
     partitions[partition].write_last_call = HAL_GetTick();
 
     for (uint32_t iter = 0; iter < wlen; iter += 2){
-        if (HAL_FLASH_Program(TYPEPROGRAM_DOUBLEWORD, partitions[partition].write_address, *((uint64_t *)(&W_REC_DATA + iter))) != HAL_OK){
+        if (HAL_FLASH_Program(TYPEPROGRAM_DOUBLEWORD, partitions[partition].write_address, *((uint64_t *)(payload + 3 + iter))) != HAL_OK){
             HAL_FLASH_Lock();
             SET_HEADER(ERROR_INTERNAL, 0);
             return;
@@ -210,7 +220,7 @@ void   C_Write(boot_part_e partition, uint32_t wlen, uint32_t crc32){
 }
 
 void   C_Read(boot_part_e partition, uint32_t wlen){
-    if ((partition <= PART_FIRST) || (partition >= PART_LAST)){
+    if (partition >= PART_LAST){
         SET_HEADER(ERROR_PARTITION, 0);
         return;
     }

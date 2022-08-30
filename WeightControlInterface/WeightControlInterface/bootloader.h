@@ -46,6 +46,7 @@ private slots:
     void Timeout(void){
         this->Serial->readAll();
         this->data_awaited = 0;
+        this->flash_after = 0;
         if (this->file != nullptr){
             if (this->file->isOpen()){
                 this->file->close();
@@ -71,6 +72,12 @@ private slots:
 
 
 private:
+
+    enum FlashMapping{
+        FLASH_MAP_APP_1 = 40960,
+        FLASH_MAP_APP_2 = 32768,
+        FLASH_MAP_APP_USER = 40960
+    };
 
     QTimer * TimeoutTimer       = nullptr;
     QTimer * DevicePingTimer    = nullptr;

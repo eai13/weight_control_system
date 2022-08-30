@@ -23,10 +23,9 @@ typedef enum{
 }boot_cmd_e;
 
 typedef enum{
-    PART_FIRST,
-    PART_1      = 0x01,
-    PART_2      = 0x02,
-    PART_USER   = 0x03,
+    PART_1      = 0x00,
+    PART_2      = 0x01,
+    PART_USER   = 0x02,
     PART_LAST
 }boot_part_e;
 

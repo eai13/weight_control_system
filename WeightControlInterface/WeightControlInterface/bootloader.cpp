@@ -10,7 +10,7 @@
 #include <QFileDialog>
 #include <QThread>
 
-#define CHUNK_SIZE_WORDS    32
+#define CHUNK_SIZE_WORDS    128
 
 Bootloader::Bootloader(QWidget *parent) :
     QWidget(parent),
@@ -65,7 +65,7 @@ void Bootloader::C_Erase(void){
     this->data_awaited = this->ERASE_AWAIT_SIZE;
     qDebug() << "Data Size: " << header.SetRawFromHeader().size();
     this->Serial->write(header.SetRawFromHeader());
-    this->TimeoutTimer->start(1000);
+    this->TimeoutTimer->start(2500);
     this->UIUnlock(false);
 }
 
@@ -96,11 +96,13 @@ void Bootloader::C_Write(void){
         delete this->file;
         return;
     }
-    if (this->file->size() > 20480){
-        ConsoleError("Firmware Size Error");
-        this->file->close();
-        delete this->file;
-        return;
+    if (((ui->comboBox_partition->currentIndex() == 0) && (this->file->size() > FLASH_MAP_APP_1)) ||
+        ((ui->comboBox_partition->currentIndex() == 1) && (this->file->size() > FLASH_MAP_APP_2)) ||
+        ((ui->comboBox_partition->currentIndex() == 2) && (this->file->size() > FLASH_MAP_APP_USER))){
+            ConsoleError("Firmware Size Error");
+            this->file->close();
+            delete this->file;
+            return;
     }
     this->file->close();
     delete this->file;
@@ -163,7 +165,7 @@ void Bootloader::ProcessIncomingData(void){
                 msg.payload.append(*((uint32_t *)(chunk + iter)));
             }
             this->data_awaited = this->WRITE_AWAIT_SIZE;
-//            qDebug() << "Bytes Written : " << this->Serial->write(msg.SetRawFromHeader());
+            qDebug() << "Bytes Written : " << this->Serial->write(msg.SetRawFromHeader());
             this->TimeoutTimer->start(1000);
         }
         else{

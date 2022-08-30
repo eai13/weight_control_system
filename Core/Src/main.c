@@ -54,10 +54,11 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+uint8_t PID_ComputeFlag = 0;
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * tim){
   if (tim == &CONTROL_SYSTEM_TIMER){
-    PID_DriveCompute(3);
-    PID_DriveCompute(2);
+    PID_ComputeFlag = 1;
   }
 }
 /* USER CODE END PV */
@@ -80,7 +81,10 @@ extern uint16_t current[4];
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  
+  __set_PRIMASK(1);
+  SCB->VTOR = 0x08004000;
+  __set_PRIMASK(0);
+  __enable_irq();
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -159,7 +163,16 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    
+    if (PID_ComputeFlag){
+      PID_DriveCompute(3);
+      PID_DriveCompute(2);
+      PID_ComputeFlag = 0;
+    }
+
+    if (PROTOCOL_MessagePending()){
+      PROTOCOL_ProcessFrame();
+      PROTOCOL_ResetPendingFlag();
+    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

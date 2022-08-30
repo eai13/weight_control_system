@@ -5,9 +5,20 @@
 #include "stm32g071xx.h"
 #include "usart.h"
 
+uint8_t Protocol_ProcessFlag = 0;
+
+uint8_t PROTOCOL_MessagePending(void){
+    return Protocol_ProcessFlag;
+}
+
+void PROTOCOL_ResetPendingFlag(void){
+    Protocol_ProcessFlag = 0;
+}
+
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
     if (huart == &PROTOCOL_UART){
-        PROTOCOL_ProcessFrame();
+        Protocol_ProcessFlag = 1;
+        // PROTOCOL_ProcessFrame();
     }
 }
 

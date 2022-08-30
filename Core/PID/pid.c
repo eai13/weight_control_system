@@ -67,7 +67,7 @@ device_t drives[4] = {
             .isActive   = { RW, -100 }
         },
         .output         = { RO, 0 },
-        .output_thres   = { RW, WC_CONFIG_DEFAULT_OUTPUT_THRES },
+        .output_thres   = { RW, PWM_UPPER_COUNT / 2 },
         .encoder_s      = { RW, &ENCODER_1_COUNT },
         .current_s      = { RO, &(current[0]) },
         .pwm_duty       = { RO, &PWM_1_DUTY },
@@ -115,7 +115,7 @@ device_t drives[4] = {
             .isActive   = { RW, -100 }
         },
         .output         = { RO, 0 },
-        .output_thres   = { RW, WC_CONFIG_DEFAULT_OUTPUT_THRES },
+        .output_thres   = { RW, PWM_UPPER_COUNT / 2 },
         .encoder_s      = { RW, &ENCODER_2_COUNT },
         .current_s      = { RO, &(current[1]) },
         .pwm_duty       = { RO, &PWM_2_DUTY },
@@ -163,7 +163,7 @@ device_t drives[4] = {
             .isActive   = { RW, -100 }
         },
         .output         = { RO, 0 },
-        .output_thres   = { RW, WC_CONFIG_DEFAULT_OUTPUT_THRES },
+        .output_thres   = { RW, PWM_UPPER_COUNT / 2 },
         .encoder_s      = { RW, &ENCODER_3_COUNT },
         .current_s      = { RO, &(current[2]) },
         .pwm_duty       = { RO, &PWM_3_DUTY },
@@ -211,7 +211,7 @@ device_t drives[4] = {
             .isActive   = { RW, -100 }
         },
         .output         = { RO, 0 },
-        .output_thres   = { RW, WC_CONFIG_DEFAULT_OUTPUT_THRES },
+        .output_thres   = { RW, PWM_UPPER_COUNT / 2 },
         .encoder_s      = { RW, &ENCODER_4_COUNT },
         .current_s      = { RO, &(current[3]) },
         .pwm_duty       = { RO, &PWM_4_DUTY },
