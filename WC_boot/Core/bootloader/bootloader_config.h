@@ -3,7 +3,7 @@
 
 #define BOOT_UART   huart1
 
-#define DEV_NAME    "EGOR"
+#define DEV_NAME    "BOOT"
 
 #define PAGES_AMOUNT            32
 

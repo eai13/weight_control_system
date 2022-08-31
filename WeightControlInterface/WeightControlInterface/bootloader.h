@@ -1,6 +1,8 @@
 #ifndef BOOTLOADER_H
 #define BOOTLOADER_H
 
+#include "global_config.h"
+
 #if QT_VERSION >= 0x050000
 #include <QtWidgets/QWidget>
 #else
@@ -16,6 +18,24 @@
 #include <QDebug>
 
 namespace Ui {
+class Locker{
+private:
+    bool is_locked = false;
+
+public:
+    void Unlock(void){
+        this->is_locked = false;
+    }
+    bool Lock(void){
+        if (this->is_locked)
+            return false;
+        else{
+            this->is_locked = false;
+            return true;
+        }
+    }
+};
+
 class Bootloader;
 }
 
@@ -32,19 +52,28 @@ public:
 
     QSerialPort * Serial = nullptr;
 
+    Ui::Locker SerialLock;
+
 public slots:
     void C_Ping(void);
+    void C_PingSilent(void);
     void C_Read(void);
     void C_Write(void);
     void C_Verify(void);
     void C_Erase(void);
     void C_Jump(void);
 
+    void slReceiveSerial(QSerialPort * p_serial){
+        this->Serial = p_serial;
+    }
+
     void ErrorCatch(uint32_t error_code);
 
 private slots:
     void Timeout(void){
+        if (this->DeviceCheckTimer->isActive()) this->DeviceCheckTimer->stop();
         this->Serial->readAll();
+        this->SerialLock.Unlock();
         this->data_awaited = 0;
         this->flash_after = 0;
         if (this->file != nullptr){
@@ -53,7 +82,7 @@ private slots:
                 delete this->file;
             }
         }
-//        this->connection_status = CONN_STAT_TIMEOUT;
+
         ConsoleError("Connection Timeout");
 
         this->UIUnlock(false);
@@ -81,6 +110,7 @@ private:
 
     QTimer * TimeoutTimer       = nullptr;
     QTimer * DevicePingTimer    = nullptr;
+    QTimer * DeviceCheckTimer   = nullptr;
 
     bool console_enabled = false;
     void ConsoleBasic(QString message);
@@ -157,6 +187,8 @@ private:
 
 signals:
     void ErrorSignal(uint32_t error_code);
+    void siChooseTab(uint16_t tab);
+    void siSendSerial(QSerialPort * p_serial);
 };
 
 #endif // BOOTLOADER_H

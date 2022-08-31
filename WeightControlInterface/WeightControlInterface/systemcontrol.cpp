@@ -6,6 +6,8 @@ SystemControl::SystemControl(QWidget *parent) :
     ui(new Ui::SystemControl)
 {
     ui->setupUi(this);
+
+
 }
 
 SystemControl::~SystemControl()

@@ -23,6 +23,7 @@ SOURCES += \
 
 HEADERS += \
     bootloader.h \
+    global_config.h \
     mainwindow.h \
     systemcontrol.h
 

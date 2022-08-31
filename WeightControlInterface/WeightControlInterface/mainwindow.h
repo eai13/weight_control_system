@@ -22,5 +22,8 @@ public:
 
 private:
     Ui::MainWindow *ui;
+
+public slots:
+    void slChooseTab(uint16_t tab);
 };
 #endif // MAINWINDOW_H

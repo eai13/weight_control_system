@@ -27,6 +27,9 @@ Bootloader::Bootloader(QWidget *parent) :
     this->DevicePingTimer = new QTimer(this);
     connect(this->DevicePingTimer, &QTimer::timeout, this, &Bootloader::DevicePing);
 
+    this->DeviceCheckTimer = new QTimer(this);
+    connect(this->DeviceCheckTimer, &QTimer::timeout, this, &Bootloader::C_PingSilent);
+
     ui->label_detect->setText("Scanning Ports");
 
     connect(ui->pushButton_ping,        &QPushButton::released, this, &Bootloader::C_Ping);
@@ -47,7 +50,11 @@ Bootloader::~Bootloader()
     delete ui;
 }
 
+// Ping Button
 void Bootloader::C_Ping(void){
+    if (!(this->SerialLock.Lock())){
+        return;
+    }
     ConsoleBasic("Ping");
     MsgHeader header(this->PING, 0);
 
@@ -57,7 +64,26 @@ void Bootloader::C_Ping(void){
     this->UIUnlock(false);
 }
 
+// For Device Check Ping
+void Bootloader::C_PingSilent(void){
+    if (!(this->SerialLock.Lock())){
+        return;
+    }
+
+    this->console_enabled = false;
+    MsgHeader header(this->PING, 0);
+
+    this->data_awaited = this->PING_AWAIT_SIZE;
+    this->Serial->write(header.SetRawFromHeader());
+    this->TimeoutTimer->start(50);
+    this->UIUnlock(false);
+}
+
+// Erase Button
 void Bootloader::C_Erase(void){
+    if (!(this->SerialLock.Lock())){
+        return;
+    }
     ConsoleBasic("Erase");
     MsgHeader header(this->ERASE, 1);
     header.payload.append(ui->comboBox_partition->currentIndex());
@@ -69,7 +95,11 @@ void Bootloader::C_Erase(void){
     this->UIUnlock(false);
 }
 
+// Jump Button
 void Bootloader::C_Jump(void){
+    if (!(this->SerialLock.Lock())){
+        return;
+    }
     ConsoleBasic("Jumping to Program " + ui->comboBox_partition->currentText());
     MsgHeader header(this->JUMP, 1);
     header.payload.append(ui->comboBox_partition->currentIndex());
@@ -78,14 +108,23 @@ void Bootloader::C_Jump(void){
     this->Serial->write(header.SetRawFromHeader());
 }
 
+// Read Button
 void Bootloader::C_Read(void){
+    if (!(this->SerialLock.Lock())){
+        return;
+    }
     ConsoleBasic("Reading From");
 }
 
+// Verify Button
 void Bootloader::C_Verify(void){
+    if (!(this->SerialLock.Lock())){
+        return;
+    }
     ConsoleBasic("Firmware Verification Started");
 }
 
+// Write Button
 void Bootloader::C_Write(void){
     ConsoleBasic("Write Firmware Started");
     this->file = new QFile(ui->lineEdit_filename->text());
@@ -126,10 +165,34 @@ void Bootloader::ProcessIncomingData(void){
     case(this->PING):{
         uint32_t id = header.payload[0];
         char * name = reinterpret_cast<char *>(&id);
-        ConsoleBasic(QString("Ping OK, Device ID is ") + name[0] + name[1] + name[2] + name[3]);
+        QString s_name = "";
+        s_name += name[0]; s_name += name[1]; s_name += name[2]; s_name += name[3];
+
+        ConsoleBasic(QString("Ping OK, Device ID is ") + s_name);
+
+        if ((s_name != BOOTLOADER_ID) && (s_name != APP_1_ID) && (s_name != APP_2_ID)){
+            ConsoleWarning("Unknown Device " + s_name);
+            this->Timeout();
+            break;
+        }
+
         this->UIUnlock(true);
         this->console_enabled = true;
-        if (this->DevicePingTimer->isActive()) this->DevicePingTimer->stop();
+
+        emit siSendSerial(this->Serial);
+        if (this->DevicePingTimer->isActive()){
+            this->DevicePingTimer->stop();
+            this->DeviceCheckTimer->start(1000);
+        }
+
+        if (s_name == APP_1_ID){
+            disconnect(this->Serial, &QSerialPort::readyRead, this, &Bootloader::PushDataFromStream);
+            emit siChooseTab(APP_1_TAB);
+        }
+        else if (s_name == APP_2_ID){
+            disconnect(this->Serial, &QSerialPort::readyRead, this, &Bootloader::PushDataFromStream);
+            emit siChooseTab(APP_2_TAB);
+        }
         break;
     }
     case(this->JUMP):{
@@ -215,6 +278,8 @@ void Bootloader::ProcessIncomingData(void){
         break;
     }
     }
+
+    this->SerialLock.Unlock();
 }
 
 void Bootloader::ErrorCatch(uint32_t error_code){
