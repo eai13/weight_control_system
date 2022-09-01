@@ -61,6 +61,7 @@ void Bootloader::C_Ping(void){
     this->data_awaited = this->PING_AWAIT_SIZE;
     this->Serial->write(header.SetRawFromHeader());
     this->TimeoutTimer->start(50);
+
     this->UIUnlock(false);
 }
 
@@ -69,13 +70,14 @@ void Bootloader::C_PingSilent(void){
     if (!(this->SerialLock.Lock())){
         return;
     }
-
+    qDebug() << "Ping Silent";
     this->console_enabled = false;
     MsgHeader header(this->PING, 0);
 
     this->data_awaited = this->PING_AWAIT_SIZE;
     this->Serial->write(header.SetRawFromHeader());
     this->TimeoutTimer->start(50);
+
     this->UIUnlock(false);
 }
 
@@ -89,9 +91,9 @@ void Bootloader::C_Erase(void){
     header.payload.append(ui->comboBox_partition->currentIndex());
 
     this->data_awaited = this->ERASE_AWAIT_SIZE;
-    qDebug() << "Data Size: " << header.SetRawFromHeader().size();
     this->Serial->write(header.SetRawFromHeader());
     this->TimeoutTimer->start(2500);
+
     this->UIUnlock(false);
 }
 
@@ -106,6 +108,8 @@ void Bootloader::C_Jump(void){
 
     this->data_awaited = this->JUMP_AWAIT_SIZE;
     this->Serial->write(header.SetRawFromHeader());
+    this->TimeoutTimer->start(100);
+    this->UIUnlock(false);
 }
 
 // Read Button
@@ -126,10 +130,12 @@ void Bootloader::C_Verify(void){
 
 // Write Button
 void Bootloader::C_Write(void){
+//    if (!(this->SerialLock.Lock()))
+//        return;
+
     ConsoleBasic("Write Firmware Started");
     this->file = new QFile(ui->lineEdit_filename->text());
-    qDebug() << "Filename Size: " << this->file->size();
-//    return;
+
     if (!(this->file->open(QFile::ReadOnly))){
         ConsoleError("Unable to Open Firmware File");
         delete this->file;
@@ -173,6 +179,7 @@ void Bootloader::ProcessIncomingData(void){
         if ((s_name != BOOTLOADER_ID) && (s_name != APP_1_ID) && (s_name != APP_2_ID)){
             ConsoleWarning("Unknown Device " + s_name);
             this->Timeout();
+            this->SerialLock.Unlock();
             break;
         }
 
@@ -187,28 +194,34 @@ void Bootloader::ProcessIncomingData(void){
 
         if (s_name == APP_1_ID){
             disconnect(this->Serial, &QSerialPort::readyRead, this, &Bootloader::PushDataFromStream);
+            if (this->DeviceCheckTimer->isActive()) this->DeviceCheckTimer->stop();
             emit siChooseTab(APP_1_TAB);
         }
         else if (s_name == APP_2_ID){
             disconnect(this->Serial, &QSerialPort::readyRead, this, &Bootloader::PushDataFromStream);
+            if (this->DeviceCheckTimer->isActive()) this->DeviceCheckTimer->stop();
             emit siChooseTab(APP_2_TAB);
         }
+        this->SerialLock.Unlock();
         break;
     }
     case(this->JUMP):{
         ConsoleBasic("Jump to " + ui->comboBox_partition->currentText() + " Completed Successfully");
         this->UIUnlock(true);
+        this->SerialLock.Unlock();
         break;
     }
     case(this->VERIFY):{
-
+        this->SerialLock.Unlock();
         break;
     }
     case(this->ERASE):{
         ConsoleBasic("Erasing Partition " + ui->comboBox_partition->currentText() + " Completed");
-        this->UIUnlock(true);
-        if (!(this->flash_after))
+        if (!(this->flash_after)){
+            this->UIUnlock(true);
+            this->SerialLock.Unlock();
             break;
+        }
         else{
             this->flash_after = 0;
             this->file = new QFile(ui->lineEdit_filename->text());
@@ -232,6 +245,8 @@ void Bootloader::ProcessIncomingData(void){
             this->TimeoutTimer->start(1000);
         }
         else{
+            this->UIUnlock(true);
+            this->SerialLock.Unlock();
             ConsoleBasic("Writing Ended! Jolly Good!");
             this->file->close();
             delete this->file;
@@ -239,47 +254,52 @@ void Bootloader::ProcessIncomingData(void){
         break;
     }
     case(this->READ):{
-
+        this->SerialLock.Unlock();
         break;
     }
     case(this->INTERNAL_ERROR):{
         ConsoleError("Internal Error Occured");
         this->UIUnlock(true);
+        this->SerialLock.Unlock();
         break;
     }
     case(this->CRC_ERROR):{
         ConsoleError("CRC Error");
         this->UIUnlock(true);
+        this->SerialLock.Unlock();
         break;
     }
     case(this->CMD_ERROR):{
         ConsoleError("Wrong Command for Device");
         this->UIUnlock(true);
+        this->SerialLock.Unlock();
         break;
     }
     case(this->PARTITION_ERROR):{
         ConsoleError("Wrong Partition");
         this->UIUnlock(true);
+        this->SerialLock.Unlock();
         break;
     }
     case(this->LENGTH_ERROR):{
         ConsoleError("Length Error");
         this->UIUnlock(true);
+        this->SerialLock.Unlock();
         break;
     }
     case(this->DATA_ERROR):{
         ConsoleError("Wrong Data");
         this->UIUnlock(true);
+        this->SerialLock.Unlock();
         break;
     }
     default:{
         ConsoleError("Unknown Error");
         this->UIUnlock(true);
+        this->SerialLock.Unlock();
         break;
     }
     }
-
-    this->SerialLock.Unlock();
 }
 
 void Bootloader::ErrorCatch(uint32_t error_code){

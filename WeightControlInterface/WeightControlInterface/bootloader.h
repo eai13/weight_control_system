@@ -27,10 +27,12 @@ public:
         this->is_locked = false;
     }
     bool Lock(void){
-        if (this->is_locked)
+        if (this->is_locked){
+            qDebug() << "LOCKED";
             return false;
+        }
         else{
-            this->is_locked = false;
+            this->is_locked = true;
             return true;
         }
     }

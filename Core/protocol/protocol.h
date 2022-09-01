@@ -5,6 +5,26 @@
 #include "drive_config.h"
 #include "pid.h"
 
+#define SELF_ID "APP1"
+
+typedef enum{
+    HEADER_BASIC    = 0x01,
+    HEADER_DATA     = 0x02
+}protocol_header_e;
+
+typedef enum{
+    BP_CMD_PING             = 0x01,
+    BP_ERROR_UNKNOWN_CMD    = 0xE0,
+    BP_CMD_CONTROL          = 0xF0
+}bp_cmd_e;
+
+#pragma pack(push, 1)
+typedef struct{
+    bp_cmd_e    cmd;
+    uint32_t    w_size;
+}bp_header_t;
+#pragma pack(pop)
+
 typedef enum{
     ERROR_NO_ERROR          = 0x00,
     ERROR_CRC               = 0x01,
@@ -65,35 +85,33 @@ typedef enum{
     REGISTER_CUR_Kd         = 0x1A,
     REGISTER_CUR_IS_ACT     = 0x1B,
     REGISTER_OUTPUT         = 0x1C,
-    REGISTER_OUTPUT_THRES   = 0x1D
+    REGISTER_OUTPUT_THRES   = 0x1D,
+    REGISTER_LAST
 }wc_registers_e;
 
 #pragma pack(push, 1)
 typedef struct{
-    wc_id_e         id;
-    wc_commands_e   cmd;
-}frame_header_t;
+    uint32_t        id;
+    uint32_t        cmd;
+}control_header_t;
 
 typedef struct{
-    wc_registers_e  reg;
+    uint32_t        reg;
     float           data;
-    uint8_t         crc8;
 }single_reg_data_t;
 
 typedef struct{
-    wc_registers_e  reg;
+    uint32_t        reg;
     float           data[4];
-    uint8_t         crc8;
 }multiple_reg_data_t;
 
 typedef struct{
-    uint8_t         arg;
-    uint8_t         crc8;
+    uint32_t        arg;
 }global_cmd_data_t;
 
 typedef struct{
-    wc_id_e         id;
-    wc_errors_e     status;
+    uint32_t        id;
+    uint32_t        status;
 }response_header_t;
 #pragma pack(pop)
 
