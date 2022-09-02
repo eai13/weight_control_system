@@ -371,3 +371,7 @@ void Bootloader::DevicePing(void){
     this->C_Ping();
 
 }
+
+void Bootloader::slActivate(void){
+    this->DeviceCheckTimer->start(1000);
+}

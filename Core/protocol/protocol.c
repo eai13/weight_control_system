@@ -207,6 +207,7 @@ void PROTOCOL_ProcessFrame(void){
                     }
                     break;
             }
+            break;
         default:
             MAKE_BP_HEADER(BP_ERROR_UNKNOWN_CMD, 0);
             HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&bp_header, sizeof(bp_header_t), 10);

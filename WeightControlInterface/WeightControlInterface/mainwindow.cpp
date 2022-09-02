@@ -17,7 +17,11 @@ MainWindow::MainWindow(QWidget *parent)
     systemcontrol_ui = new SystemControl();
     ui->tabWidget_main->addTab(systemcontrol_ui, "Control System");
 
+    connect(this, &MainWindow::siActivateBOOT, bootloader_ui, &Bootloader::slActivate);
+    connect(this, &MainWindow::siActivateAPP1, systemcontrol_ui, &SystemControl::slActivate);
+
     connect(bootloader_ui, &Bootloader::siChooseTab, this, &MainWindow::slChooseTab);
+    connect(systemcontrol_ui, &SystemControl::siChooseTab, this, &MainWindow::slChooseTab);
 
     connect(bootloader_ui, &Bootloader::siSendSerial, systemcontrol_ui, &SystemControl::slReceiveSerial);
     connect(systemcontrol_ui, &SystemControl::siSendSerial, bootloader_ui, &Bootloader::slReceiveSerial);
@@ -38,5 +42,19 @@ void MainWindow::slChooseTab(uint16_t tab){
     for (int iter = 0; iter < ui->tabWidget_main->count(); iter++){
         if (iter != tab)
             ui->tabWidget_main->setTabEnabled(iter, false);
+    }
+
+    switch(tab){
+    case(0):
+        emit this->siActivateBOOT();
+        break;
+    case(1):
+        emit this->siActivateAPP1();
+        break;
+    case(2):
+        emit this->siActivateAPP2();
+        break;
+    default:
+        break;
     }
 }

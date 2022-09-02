@@ -25,5 +25,11 @@ private:
 
 public slots:
     void slChooseTab(uint16_t tab);
+
+signals:
+    void siActivateBOOT(void);
+    void siActivateAPP1(void);
+    void siActivateAPP2(void);
+
 };
 #endif // MAINWINDOW_H

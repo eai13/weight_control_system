@@ -11,6 +11,10 @@ register_name = [
               'OUTPUT', 'OUTPUT_THRES'
 ]
 
+BP_CMD_PING             = 0x01
+BP_ERROR_UNKNOWN_CMD    = 0xE0
+BP_CMD_CONTROL          = 0xF0
+
 ID_DRIVE_1      = 0
 ID_DRIVE_2      = 1
 ID_DRIVE_3      = 2
@@ -55,33 +59,33 @@ OUTPUT_THRES    = 29
 ser = serial.Serial('/dev/ttyUSB0', 57600)
 ser.isOpen()
 
-def send_multiple(id, cmd, reg, val1, val2, val3, val4, crc):
-    ser.write(struct.pack('<BBBffffB', id, cmd, reg, val1, val2, val3, val4, crc))
+def send_multiple(cnt_id, cnt_cmd, reg, val1, val2, val3, val4):
+    ser.write(struct.pack('<BIIIIffff', BP_CMD_CONTROL, 7, id, cmd, reg, val1, val2, val3, val4))
 
-    if (cmd == READ):
-        rx_data = ser.read(20)
-        id, status, reg, data1, data2, data3, data4, crc = struct.unpack('<BBBffffB', rx_data)
+    if (cnt_cmd == READ):
+        rx_data = ser.read(5+8+20)
+        bp_id, bp_cmd, cnt_id, cnt_cmd, reg, data1, data2, data3, data4, crc = struct.unpack('<BIIIIffff', rx_data)
         print('MULTIPLE READ CMD')
-        print('\tID: ', id)
-        print('\tSTATUS: ', errors[status])
+        # print('\tID: ', cnt_id)
+        # print('\tSTATUS: ', errors[status])
         print('\tREGISTER: ', register_name[reg])
         print('\tDATA: ', data1, data2, data3, data4)
-        print('\tCRC: ', crc)
+        # print('\tCRC: ', crc)
         print('\n')
     else:
-        rx_data = ser.read(2)
-        id, status = struct.unpack('<BB', rx_data)
-        print('MULTIPLE WRITE CMD')
-        print('\tID: ', id)
-        print('\tSTATUS: ', errors[status])
+        rx_data = ser.read(5+8+20)
+        bp_id, bp_cmd, cnt_id, cnt_cmd, reg, data1, data2, data3, data4, crc = struct.unpack('<BIIIIffff', rx_data)
+        print('\tREGISTER: ', register_name[reg])
+        print('\tDATA: ', data1, data2, data3, data4)
         print('\n')
 
-def send_single(id, cmd, reg, val, crc):
-    ser.write(struct.pack('<BBBfB', id, cmd, reg, val, crc))
-    if (cmd == READ):
-        rx_data = ser.read(8)
-        id, status, reg, data, crc = struct.unpack('<BBBfB', rx_data)
-        # print('SINGLE READ CMD')
+def send_single(cnt_id, cnt_cmd, reg, val):
+    ser.write(struct.pack('<BIIIIf', BP_CMD_CONTROL, 4, cnt_id, cnt_cmd, reg, val))
+    if (cnt_cmd == READ):
+        rx_data = ser.read(5+8+8)
+        bp_id, bp_cmd, cnt_id, cnt_cmd, reg, data = struct.unpack('<BIIIIf', rx_data)
+        print('DATA: ', bp_id, bp_cmd, cnt_id, cnt_cmd, reg, data)
+        print('SINGLE READ CMD')
         # print('\tID: ', id)
         # print('\tSTATUS: ', errors[status])
         print('\tREGISTER: ', register_name[reg])
@@ -89,11 +93,11 @@ def send_single(id, cmd, reg, val, crc):
         # print('\tCRC: ', crc)
         print('\n')
     else:
-        rx_data = ser.read(2)
-        id, status = struct.unpack('<BB', rx_data)
+        rx_data = ser.read(5+8+8)
+        bp_id, bp_cmd, cnt_id, cnt_cmd, reg, data = struct.unpack('<BIIIIf', rx_data)
         print('SINGLE WRITE CMD')
-        print('\tID: ', id)
-        print('\tSTATUS: ', errors[status])
+        print('\tREGISTER: ', register_name[reg])
+        print('\tDATA: ', data)
         print('\n') 
 
 

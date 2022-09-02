@@ -69,6 +69,8 @@ public slots:
         this->Serial = p_serial;
     }
 
+    void slActivate(void);
+
     void ErrorCatch(uint32_t error_code);
 
 private slots:
@@ -97,7 +99,6 @@ private slots:
     }
     void DevicePing(void);
     void UIUnlock(bool lock);
-    void ProcessIncomingData(void);
     void PushDataFromStream(void);
     void BrowseFile(void);
 
@@ -178,7 +179,9 @@ private:
         }
     };
 
-    QByteArray  serial_stream;
+    void ProcessIncomingData(void);
+
+//    QByteArray  serial_stream;
     uint32_t    data_awaited = 0;
     uint8_t     flash_after = 0;
 
