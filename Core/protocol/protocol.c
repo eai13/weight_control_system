@@ -60,6 +60,17 @@ void PROTOCOL_ProcessFrame(void){
             HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&bp_header, sizeof(bp_header_t), 10);
             HAL_UART_Transmit(&PROTOCOL_UART, SELF_ID, 4, 10);
             break;
+        case(BP_CMD_JUMP):
+            if (*((uint32_t *)buffer) != 0){
+                MAKE_BP_HEADER(BP_ERROR_UNKNOWN_CMD, 0);
+                HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&bp_header, sizeof(bp_header_t), 10);
+                break;
+            }
+            MAKE_BP_HEADER(BP_CMD_JUMP, 0);
+            HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&bp_header, sizeof(bp_header_t), 10);
+
+            HAL_NVIC_SystemReset();
+            
         case(BP_CMD_CONTROL):
             memcpy((void *)&cnt_header, buffer, sizeof(control_header_t));
             if (cnt_header.id >= ID_LAST){

@@ -71,7 +71,7 @@ public slots:
 
     void slActivate(void);
 
-    void ErrorCatch(uint32_t error_code);
+//    void ErrorCatch(uint32_t error_code);
 
 private slots:
     void Timeout(void){

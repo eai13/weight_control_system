@@ -1,6 +1,6 @@
 QT       += core gui serialport
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 CONFIG += c++11
 
@@ -19,12 +19,14 @@ SOURCES += \
     bootloader.cpp \
     main.cpp \
     mainwindow.cpp \
-    systemcontrol.cpp
+    qcustomplot.cpp \
+    systemcontrol.cpp \
 
 HEADERS += \
     bootloader.h \
     global_config.h \
     mainwindow.h \
+    qcustomplot.h \
     systemcontrol.h
 
 FORMS += \

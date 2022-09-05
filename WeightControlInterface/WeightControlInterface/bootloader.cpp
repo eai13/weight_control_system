@@ -183,6 +183,7 @@ void Bootloader::ProcessIncomingData(void){
             break;
         }
 
+        qDebug() << "Ping receive";
         this->UIUnlock(true);
         this->console_enabled = true;
 
@@ -195,11 +196,13 @@ void Bootloader::ProcessIncomingData(void){
         if (s_name == APP_1_ID){
             disconnect(this->Serial, &QSerialPort::readyRead, this, &Bootloader::PushDataFromStream);
             if (this->DeviceCheckTimer->isActive()) this->DeviceCheckTimer->stop();
+            this->UIUnlock(false);
             emit siChooseTab(APP_1_TAB);
         }
         else if (s_name == APP_2_ID){
             disconnect(this->Serial, &QSerialPort::readyRead, this, &Bootloader::PushDataFromStream);
             if (this->DeviceCheckTimer->isActive()) this->DeviceCheckTimer->stop();
+            this->UIUnlock(false);
             emit siChooseTab(APP_2_TAB);
         }
         this->SerialLock.Unlock();
@@ -212,6 +215,7 @@ void Bootloader::ProcessIncomingData(void){
         break;
     }
     case(this->VERIFY):{
+        this->UIUnlock(true);
         this->SerialLock.Unlock();
         break;
     }
@@ -254,6 +258,7 @@ void Bootloader::ProcessIncomingData(void){
         break;
     }
     case(this->READ):{
+        this->UIUnlock(true);
         this->SerialLock.Unlock();
         break;
     }
@@ -302,19 +307,19 @@ void Bootloader::ProcessIncomingData(void){
     }
 }
 
-void Bootloader::ErrorCatch(uint32_t error_code){
-    std::cout << "Error Code" << error_code << std::endl;
-}
+//void Bootloader::ErrorCatch(uint32_t error_code){
+//    std::cout << "Error Code" << error_code << std::endl;
+//}
 
 void Bootloader::UIUnlock(bool lock){
-    ui->pushButton_choosefile->setEnabled(lock);
-    ui->pushButton_erase->setEnabled(lock);
-    ui->pushButton_jump->setEnabled(lock);
-    ui->pushButton_ping->setEnabled(lock);
-    ui->pushButton_read->setEnabled(lock);
-    ui->pushButton_verify->setEnabled(lock);
-    ui->pushButton_write->setEnabled(lock);
-    ui->comboBox_partition->setEnabled(lock);
+//    ui->pushButton_choosefile->setEnabled(lock);
+//    ui->pushButton_erase->setEnabled(lock);
+//    ui->pushButton_jump->setEnabled(lock);
+//    ui->pushButton_ping->setEnabled(lock);
+//    ui->pushButton_read->setEnabled(lock);
+//    ui->pushButton_verify->setEnabled(lock);
+//    ui->pushButton_write->setEnabled(lock);
+//    ui->comboBox_partition->setEnabled(lock);
 }
 
 void Bootloader::PushDataFromStream(void){
@@ -330,15 +335,15 @@ void Bootloader::ConsoleBasic(QString message){
 
 void Bootloader::ConsoleError(QString message){
     if (!(this->console_enabled)) return;
-    ui->listWidget_debugconsole->addItem("[WARNING] " + message);
-    ui->listWidget_debugconsole->item(ui->listWidget_debugconsole->count() - 1)->setForeground(QColor(219, 169, 0));
+    ui->listWidget_debugconsole->addItem("[ERROR] " + message);
+    ui->listWidget_debugconsole->item(ui->listWidget_debugconsole->count() - 1)->setForeground(QColor(208, 51, 51));
     ui->listWidget_debugconsole->scrollToBottom();
 }
 
 void Bootloader::ConsoleWarning(QString message){
     if (!(this->console_enabled)) return;
-    ui->listWidget_debugconsole->addItem("[ERROR] " + message);
-    ui->listWidget_debugconsole->item(ui->listWidget_debugconsole->count() - 1)->setForeground(QColor(208, 51, 51));
+    ui->listWidget_debugconsole->addItem("[WARNING] " + message);
+    ui->listWidget_debugconsole->item(ui->listWidget_debugconsole->count() - 1)->setForeground(QColor(219, 169, 0));
     ui->listWidget_debugconsole->scrollToBottom();
 }
 
@@ -373,5 +378,6 @@ void Bootloader::DevicePing(void){
 }
 
 void Bootloader::slActivate(void){
+    connect(this->Serial, &QSerialPort::readyRead, this, &Bootloader::PushDataFromStream);
     this->DeviceCheckTimer->start(1000);
 }

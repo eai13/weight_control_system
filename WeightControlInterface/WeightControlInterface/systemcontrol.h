@@ -8,6 +8,8 @@
 #include <QTimer>
 #include <QVector>
 #include <QByteArray>
+#include <qcustomplot.h>
+#include <QMenu>
 
 #if QT_VERSION >= 0x050000
 #include <QtWidgets/QWidget>
@@ -36,7 +38,8 @@ private:
     QTimer * TimeoutTimer       = nullptr;
     QTimer * DeviceCheckTimer   = nullptr;
 
-    uint32_t data_awaited = 0;
+    uint32_t    data_awaited = 0;
+    bool        console_enabled = false;
 
     void ConsoleBasic(QString message);
     void ConsoleWarning(QString message);
@@ -46,6 +49,7 @@ private:
 
     enum BP_Commands{
         BP_PING     = 0x01,
+        BP_JUMP     = 0x03,
         BP_CONTROL  = 0xF0
     };
 
@@ -98,8 +102,14 @@ private:
         CNT_REG_OUTPUT_THRES    = 0x1D
     };
 
+    QVector<double> x1, y1;
+    QVector<double> x2, y2;
+    QVector<double> x3, y3;
+    QVector<double> x4, y4;
+
     enum DataAwaited{
         BP_PING_AWAIT_SIZE                  = 9,
+        BP_JUMP_AWAIT_SIZE                  = 5,
         BP_CNT_WRITE_SINGLE_AWAIT_SIZE      = 21,
         BP_CNT_WRITE_MULTIPLE_AWAIT_SIZE    = 33,
         BP_CNT_READ_SINGLE_AWAIT_SIZE       = 21,
@@ -208,6 +218,12 @@ private:
 private slots:
     void PushDataFromStream(void);
 
+    void Timeout(void){
+        if (this->DeviceCheckTimer->isActive()) this->DeviceCheckTimer->stop();
+        this->Serial->readAll();
+        this->SerialLock.Unlock();
+        this->data_awaited = 0;
+    }
 
 public slots:
     void slReceiveSerial(QSerialPort * p_serial){
@@ -215,6 +231,7 @@ public slots:
     }
 
     void C_PingSilent(void);
+    void C_Quit(void);
 
     void slActivate(void);
 

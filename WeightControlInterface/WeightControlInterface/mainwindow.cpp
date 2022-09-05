@@ -42,6 +42,8 @@ void MainWindow::slChooseTab(uint16_t tab){
     for (int iter = 0; iter < ui->tabWidget_main->count(); iter++){
         if (iter != tab)
             ui->tabWidget_main->setTabEnabled(iter, false);
+        else
+            ui->tabWidget_main->setTabEnabled(iter, true);
     }
 
     switch(tab){

@@ -14,6 +14,7 @@ typedef enum{
 
 typedef enum{
     BP_CMD_PING             = 0x01,
+    BP_CMD_JUMP             = 0x03,
     BP_ERROR_UNKNOWN_CMD    = 0xE0,
     BP_CMD_CONTROL          = 0xF0
 }bp_cmd_e;
