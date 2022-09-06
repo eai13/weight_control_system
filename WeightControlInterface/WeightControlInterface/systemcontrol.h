@@ -7,9 +7,11 @@
 #include <QtSerialPort/QSerialPortInfo>
 #include <QTimer>
 #include <QVector>
+#include <QString>
 #include <QByteArray>
 #include <qcustomplot.h>
 #include <QMenu>
+#include <QMap>
 
 #if QT_VERSION >= 0x050000
 #include <QtWidgets/QWidget>
@@ -99,13 +101,28 @@ private:
         CNT_REG_CUR_Kd          = 0x1A,
         CNT_REG_CUR_ACTIVE      = 0x1B,
         CNT_REG_OUTPUT          = 0x1C,
-        CNT_REG_OUTPUT_THRES    = 0x1D
+        CNT_REG_OUTPUT_THRES    = 0x1D,
+        CNT_REG_LAST
     };
 
-    QVector<double> x1, y1;
-    QVector<double> x2, y2;
-    QVector<double> x3, y3;
-    QVector<double> x4, y4;
+    struct RegisterStatus{
+        QString name;
+        bool    is_active;
+    };
+
+    QMap<uint8_t, RegisterStatus> RegisterNames = {
+        { CNT_REG_TORQUE,   { "Torque, Nm",                         false } },
+        { CNT_REG_POS_SP,   { "Position Setpoint, rad",             false } },
+        { CNT_REG_POS_FB,   { "Position, rad",                      false } },
+        { CNT_REG_POS_ACC,  { "Position Loop Accumulator, rad",     false } },
+        { CNT_REG_SPD_SP,   { "Velocity Setpoint, rad/s",           false } },
+        { CNT_REG_SPD_FB,   { "Velocity, rad/s",                    false } },
+        { CNT_REG_SPD_ACC,  { "Velocity Loop Accumulator, rad/s",   false } },
+        { CNT_REG_CUR_SP,   { "Current Setpoint, A",                false } },
+        { CNT_REG_CUR_FB,   { "Current, A",                         false } },
+        { CNT_REG_CUR_ACC,  { "Current Loop Accumulator, A",        false } },
+        { CNT_REG_OUTPUT,   { "Motor Output Voltage, V",            false } }
+    };
 
     enum DataAwaited{
         BP_PING_AWAIT_SIZE                  = 9,
@@ -238,6 +255,24 @@ public slots:
 signals:
     void siSendSerial(QSerialPort * p_serial);
     void siChooseTab(uint16_t tab);
+
+// GRAPHS
+
+private:
+    QCustomPlot * plot_handles[4];
+    uint8_t plot_register[4] = { 0, 0, 0, 0 };
+    QMenu plot_context_menu;
+
+    void InitGraphs(void);
+
+private slots:
+
+    void slShowContextMenu(const QPoint & pos);
+    void slClearPlots(void);
+    void slRescalePlots(void);
+    void slAutoRescalePlots(void);
+    void slParameterHandle(bool state);
+//    void slChooseParameter(void);
 
 };
 

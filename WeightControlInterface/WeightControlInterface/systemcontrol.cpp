@@ -3,6 +3,9 @@
 #include "qcustomplot.h"
 #include <QVector>
 #include <QMenu>
+#include <QCursor>
+#include <QAction>
+#include <QActionGroup>
 
 SystemControl::SystemControl(QWidget *parent) :
     QWidget(parent),
@@ -10,9 +13,7 @@ SystemControl::SystemControl(QWidget *parent) :
 {
     ui->setupUi(this);
 
-//    ui->widget_plot1->setContextMenuPolicy(Qt::CustomContextMenu);
-//    ui->pushButton->setContextMenuPolicy(Qt::CustomContextMenu);
-//    connect(ui->widget_plot1, &QCustomPlot::customContextMenuRequested, this, &SystemControl::ShowContextMenu);
+    this->InitGraphs();
 
     this->TimeoutTimer = new QTimer(this);
     connect(this->TimeoutTimer, &QTimer::timeout, this, &SystemControl::Timeout);
@@ -22,64 +23,14 @@ SystemControl::SystemControl(QWidget *parent) :
 
 
     connect(ui->pushButton_quitapp, &QPushButton::released, this, &SystemControl::C_Quit);
-
-    QVector<double> x(101), y(101); // initialize with entries 0..100
-    for (int i=0; i<101; ++i)
-    {
-      x[i] = i/50.0 - 1; // x goes from -1 to 1
-      y[i] = x[i]*x[i]; // let's plot a quadratic function
-    }
-
-//    connect(ui->widget_plot1, )
-    // create graph and assign data to it:
-//    ui->widget_plot1->addGraph();
-    ui->widget_plot1->addGraph();
-    ui->widget_plot1->graph(0)->setData(x, y);
-    // give the axes some labels:
-    ui->widget_plot1->yAxis->setLabel("y");
-    ui->widget_plot1->xAxis->setLabel("x");
-    // set axes ranges, so we see all data:
-    ui->widget_plot1->xAxis->setRange(-1, 1);
-    ui->widget_plot1->yAxis->setRange(0, 1);
-    ui->widget_plot1->replot();
-    ui->widget_plot1->graph(0)->addData(0, 1);
-
-    ui->widget_plot2->addGraph();
-    ui->widget_plot2->graph(0)->setData(x, y);
-    // give the axes some labels:
-    ui->widget_plot2->yAxis->setLabel("y");
-    ui->widget_plot2->xAxis->setLabel("x");
-    // set axes ranges, so we see all data:
-    ui->widget_plot2->xAxis->setRange(-1, 1);
-    ui->widget_plot2->yAxis->setRange(0, 1);
-    ui->widget_plot2->replot();
-
-    ui->widget_plot3->addGraph();
-    ui->widget_plot3->graph(0)->setData(x, y);
-    // give the axes some labels:
-    ui->widget_plot3->yAxis->setLabel("y");
-    ui->widget_plot3->xAxis->setLabel("x");
-    // set axes ranges, so we see all data:
-    ui->widget_plot3->xAxis->setRange(-1, 1);
-    ui->widget_plot3->yAxis->setRange(0, 1);
-    ui->widget_plot3->replot();
-
-    ui->widget_plot4->addGraph();
-    ui->widget_plot4->graph(0)->setData(x, y);
-    // give the axes some labels:
-    ui->widget_plot4->yAxis->setLabel("y");
-    ui->widget_plot4->xAxis->setLabel("x");
-    // set axes ranges, so we see all data:
-    ui->widget_plot4->xAxis->setRange(-1, 1);
-    ui->widget_plot4->yAxis->setRange(0, 1);
-    ui->widget_plot4->replot();
+    qDebug() << senderSignalIndex();
 }
 
 void SystemControl::C_PingSilent(void){
     if (!(this->SerialLock.Lock())){
         return;
     }
-    qDebug() << "Ping Silent APP1";
+//    qDebug() << "Ping Silent APP1";
     BP_Header header(this->BP_PING, 0);
 
     this->data_awaited = this->BP_PING_AWAIT_SIZE;
@@ -119,7 +70,7 @@ void SystemControl::ProcessIncomingData(void){
 
     switch(bp_header.cmd){
     case(this->BP_PING):{
-        qDebug() << "ping receive app1";
+//        qDebug() << "ping receive app1";
         uint32_t id = bp_header.payload[0];
         char * name = reinterpret_cast<char *>(&id);
         QString s_name = "";
@@ -190,4 +141,104 @@ void SystemControl::ConsoleWarning(QString message){
     ui->listWidget_debugconsole->addItem("[ERROR] " + message);
     ui->listWidget_debugconsole->item(ui->listWidget_debugconsole->count() - 1)->setForeground(QColor(208, 51, 51));
     ui->listWidget_debugconsole->scrollToBottom();
+}
+
+// GRAPHS
+
+void SystemControl::InitGraphs(void){
+
+    this->plot_handles[0] = ui->widget_plot1;
+    this->plot_handles[1] = ui->widget_plot2;
+    this->plot_handles[2] = ui->widget_plot3;
+    this->plot_handles[3] = ui->widget_plot4;
+
+    for (uint8_t iter = 0; iter < 4; iter++){
+        this->plot_handles[iter]->clearItems();
+        this->plot_handles[iter]->addGraph();
+        this->plot_handles[iter]->xAxis->setLabel("Time");
+        this->plot_handles[iter]->yAxis->setLabel("Parameter");
+    }
+
+    this->plot_context_menu.addAction("Clear", this, &SystemControl::slClearPlots);
+    this->plot_context_menu.addAction("Rescale", this, &SystemControl::slRescalePlots);
+    this->plot_context_menu.addAction("Auto Rescale", this, &SystemControl::slAutoRescalePlots);
+
+        QMenu * parameter_menu = this->plot_context_menu.addMenu("Parameter");
+        parameter_menu->setObjectName(QString("Parameter Menu"));
+
+        parameter_menu->addAction("Torque")->setObjectName(this->RegisterNames[CNT_REG_TORQUE].name);
+        parameter_menu->addAction("Position Setpoint")->setObjectName(this->RegisterNames[CNT_REG_POS_SP].name);
+        parameter_menu->addAction("Position")->setObjectName(this->RegisterNames[CNT_REG_POS_FB].name);
+        parameter_menu->addAction("Position Loop Accumulator")->setObjectName(this->RegisterNames[CNT_REG_POS_ACC].name);
+        parameter_menu->addAction("Velocity Setpoint")->setObjectName(this->RegisterNames[CNT_REG_SPD_SP].name);
+        parameter_menu->addAction("Velocity")->setObjectName(this->RegisterNames[CNT_REG_SPD_FB].name);
+        parameter_menu->addAction("Velocity Loop Accumulator")->setObjectName(this->RegisterNames[CNT_REG_SPD_ACC].name);
+        parameter_menu->addAction("Current Setpoint")->setObjectName(this->RegisterNames[CNT_REG_CUR_SP].name);
+        parameter_menu->addAction("Current")->setObjectName(this->RegisterNames[CNT_REG_CUR_FB].name);
+        parameter_menu->addAction("Current Loop Accumulator")->setObjectName(this->RegisterNames[CNT_REG_CUR_ACC].name);
+        parameter_menu->addAction("Motor Output Voltage")->setObjectName(this->RegisterNames[CNT_REG_OUTPUT].name);
+
+        for (auto iter = parameter_menu->actions().begin(); iter != parameter_menu->actions().end(); iter++){
+            (*iter)->setCheckable(true);
+            connect((*iter), &QAction::triggered, this, &SystemControl::slParameterHandle);
+        }
+
+        QMenu * tmp = this->plot_context_menu.findChild<QMenu *>("Parameter Menu");
+        for (auto iter = tmp->children().begin(); iter != tmp->children().end(); iter++)
+            qDebug() << (*iter)->objectName();
+
+    for (uint8_t iter = 0; iter < 4; iter++){
+        this->plot_handles[iter]->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(this->plot_handles[iter], &QCustomPlot::customContextMenuRequested, this, &SystemControl::slShowContextMenu);
+    }
+}
+
+void SystemControl::slClearPlots(void){
+    qDebug() << "cleared plots";
+    for (uint8_t iter = 0; iter < 4; iter++)
+        this->plot_handles[iter]->clearGraphs();
+}
+
+void SystemControl::slShowContextMenu(const QPoint & pos){
+    qDebug() << senderSignalIndex();
+    this->plot_context_menu.exec(QCursor::pos());
+}
+
+void SystemControl::slRescalePlots(void){
+    qDebug() << "Rescale plots " << sender()->objectName();
+}
+
+void SystemControl::slAutoRescalePlots(void){
+    qDebug() << "Auto Rescale Plots";
+}
+
+void SystemControl::slParameterHandle(bool state){
+    QString sender_name = sender()->objectName();
+    QMenu * tmp = this->plot_context_menu.findChild<QMenu *>("Parameter Menu");
+    if (sender_name == this->RegisterNames[CNT_REG_TORQUE].name){
+        this->RegisterNames[CNT_REG_TORQUE].is_active = state;
+        for (auto iter = tmp->actions().begin(); iter != tmp->actions().end(); iter++){
+            if ((*iter)->objectName() != this->RegisterNames[CNT_REG_TORQUE].name)
+                (*iter)->setEnabled(!state);
+        }
+    }
+    if ((sender_name == this->RegisterNames[CNT_REG_POS_SP].name) ||
+        (sender_name == this->RegisterNames[CNT_REG_POS_FB].name) ||
+        (sender_name == this->RegisterNames[CNT_REG_POS_ACC].name)){
+
+        QString sp = this->RegisterNames[CNT_REG_POS_SP].name;
+        QString fb = this->RegisterNames[CNT_REG_POS_FB].name;
+        QString acc = this->RegisterNames[CNT_REG_POS_ACC].name;
+            if (sender_name == sp) this->RegisterNames[CNT_REG_POS_SP].is_active = state;
+            else if (sender_name == fb) this->RegisterNames[CNT_REG_POS_FB].is_active = state;
+            else if (sender_name == acc) this->RegisterNames[CNT_REG_POS_ACC].is_active = state;
+
+            if ((!(this->RegisterNames[CNT_REG_POS_SP].is_active)) &&
+                (!(this->RegisterNames[CNT_REG_POS_FB].is_active)) &&
+                (!(this->RegisterNames[CNT_REG_POS_ACC].is_active)))
+                    for (auto iter = tmp->actions().begin(); iter != tmp->actions().end(); iter++){
+                        if ((sender_name != sp) && (sender_name != fb) && (sender_name != acc))
+                            (*iter)->setEnabled(!state);
+                    }
+    }
 }
