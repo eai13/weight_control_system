@@ -57,20 +57,59 @@ void SystemControl::C_ReadMultipleData(CONTROL_Registers reg){
     CNT_Register    cnt_register(reg, tmp_data);
 
     this->data_awaited = this->BP_CNT_READ_MULTIPLE_AWAIT_SIZE;
-    qDebug() << "Bytes Written " << this->Serial->write(bp_header.SetRawFromHeader());
-    qDebug() << "Bytes Written " << this->Serial->write(cnt_header.SetRawFromHeader());
-    qDebug() << "Bytes Written " << this->Serial->write(cnt_register.SetRawFromHeader());
+    this->Serial->write(bp_header.SetRawFromHeader());
+    this->Serial->write(cnt_header.SetRawFromHeader());
+    this->Serial->write(cnt_register.SetRawFromHeader());
     this->TimeoutTimer->start(100);
 }
+
 void SystemControl::C_ReadSingleData(CONTROL_IDs id, CONTROL_Registers reg){
-    return;
+    if (!(this->SerialLock.Lock())){
+        return;
+    }
+    QVector<float> tmp_data; tmp_data.append(0);
+    BP_Header       bp_header(this->BP_CONTROL, 4);
+    CNT_Header      cnt_header(id, CNT_READ_REG);
+    CNT_Register    cnt_register(reg, tmp_data);
+
+    this->data_awaited = this->BP_CNT_READ_SINGLE_AWAIT_SIZE;
+    this->Serial->write(bp_header.SetRawFromHeader());
+    this->Serial->write(cnt_header.SetRawFromHeader());
+    this->Serial->write(cnt_register.SetRawFromHeader());
+    this->TimeoutTimer->start(100);
 }
+
 void SystemControl::C_WriteMultipleData(CONTROL_Registers reg, QVector<float> data){
-    return;
+    if (!(this->SerialLock.Lock())){
+        return;
+    }
+    BP_Header       bp_header(this->BP_CONTROL, 7);
+    CNT_Header      cnt_header(CNT_ID_GLOBAL, CNT_WRITE_REG);
+    CNT_Register    cnt_register(reg, data);
+
+    this->data_awaited = this->BP_CNT_WRITE_MULTIPLE_AWAIT_SIZE;
+    this->Serial->write(bp_header.SetRawFromHeader());
+    this->Serial->write(cnt_header.SetRawFromHeader());
+    this->Serial->write(cnt_register.SetRawFromHeader());
+    this->TimeoutTimer->start(100);
 }
+
 void SystemControl::C_WriteSingleData(CONTROL_IDs id, CONTROL_Registers reg, float data){
-    return;
+    if (!(this->SerialLock.Lock())){
+        return;
+    }
+    QVector<float>  tmp_data; tmp_data.append(data);
+    BP_Header       bp_header(this->BP_CONTROL, 4);
+    CNT_Header      cnt_header(id, CNT_WRITE_REG);
+    CNT_Register    cnt_register(reg, tmp_data);
+
+    this->data_awaited = this->BP_CNT_WRITE_SINGLE_AWAIT_SIZE;
+    this->Serial->write(bp_header.SetRawFromHeader());
+    this->Serial->write(cnt_header.SetRawFromHeader());
+    this->Serial->write(cnt_register.SetRawFromHeader());
+    this->TimeoutTimer->start(100);
 }
+
 void SystemControl::C_SendCmd(CONTROL_Commands cmd){
     return;
 }
@@ -131,6 +170,30 @@ void SystemControl::ProcessIncomingData(void){
         cnt_header.SetHeaderFromBPPayload(&bp_header);
         CNT_Register cnt_register;
         cnt_register.SetHeaderFromCNTPayload(&cnt_header);
+        switch(cnt_header.cmd){
+        case(CNT_WRITE_REG):
+            switch(cnt_header.id){
+            case(CNT_ID_GLOBAL):
+                break;
+            default:
+                break;
+            }
+            break;
+        case(CNT_READ_REG):
+            switch(cnt_header.id){
+            case(CNT_ID_GLOBAL):
+                break;
+            default:
+                break;
+            }
+            break;
+        case(CNT_BLOCK_DRIVE):
+
+            break;
+        case(CNT_ENABLE_DRIVE):
+            break;
+        }
+
         qDebug() << "Control request";
         qDebug() << "BP:    CMD " << bp_header.cmd << " W_Size " << bp_header.w_size;
         qDebug() << "CNT:   ID  " << cnt_header.id << " CMD    " << cnt_header.cmd;
