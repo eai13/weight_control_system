@@ -111,17 +111,36 @@ private:
     };
 
     QMap<uint8_t, RegisterStatus> RegisterNames = {
-        { CNT_REG_TORQUE,   { "Torque, Nm",                         false } },
-        { CNT_REG_POS_SP,   { "Position Setpoint, rad",             false } },
-        { CNT_REG_POS_FB,   { "Position, rad",                      false } },
-        { CNT_REG_POS_ACC,  { "Position Loop Accumulator, rad",     false } },
-        { CNT_REG_SPD_SP,   { "Velocity Setpoint, rad/s",           false } },
-        { CNT_REG_SPD_FB,   { "Velocity, rad/s",                    false } },
-        { CNT_REG_SPD_ACC,  { "Velocity Loop Accumulator, rad/s",   false } },
-        { CNT_REG_CUR_SP,   { "Current Setpoint, A",                false } },
-        { CNT_REG_CUR_FB,   { "Current, A",                         false } },
-        { CNT_REG_CUR_ACC,  { "Current Loop Accumulator, A",        false } },
-        { CNT_REG_OUTPUT,   { "Motor Output Voltage, V",            false } }
+        { CNT_REG_TORQUE,           { "Torque, Nm",                         false } },
+        { CNT_REG_POS_SP,           { "Position Setpoint, rad",             false } },
+        { CNT_REG_POS_FB,           { "Position, rad",                      false } },
+        { CNT_REG_POS_ACC,          { "Position Loop Accumulator, rad",     false } },
+        { CNT_REG_POS_ACC_THRES,    { "POS_ACC_THRES",                      true } },
+        { CNT_REG_POS_PERR,         { "POS_PERR",                           true } },
+        { CNT_REG_POS_Kp,           { "POS_Kp",                             true } },
+        { CNT_REG_POS_Ki,           { "POS_Ki",                             true } },
+        { CNT_REG_POS_Kd,           { "POS_Kd",                             true } },
+        { CNT_REG_POS_ACTIVE,       { "POS_ACTIVE",                         true } },
+        { CNT_REG_SPD_SP,           { "Velocity Setpoint, rad/s",           false } },
+        { CNT_REG_SPD_FB,           { "Velocity, rad/s",                    false } },
+        { CNT_REG_SPD_ACC,          { "Velocity Loop Accumulator, rad/s",   false } },
+        { CNT_REG_SPD_ACC_THRES,    { "SPD_ACC_THRES",                      true } },
+        { CNT_REG_SPD_PERR,         { "SPD_PERR",                           true } },
+        { CNT_REG_SPD_Kp,           { "SPD_Kp",                             true } },
+        { CNT_REG_SPD_Ki,           { "SPD_Ki",                             true } },
+        { CNT_REG_SPD_Kd,           { "SPD_Kd",                             true } },
+        { CNT_REG_SPD_ACTIVE,       { "SPD_ACTIVE",                         true } },
+        { CNT_REG_CUR_SP,           { "Current Setpoint, A",                false } },
+        { CNT_REG_CUR_FB,           { "Current, A",                         false } },
+        { CNT_REG_CUR_ACC,          { "Current Loop Accumulator, A",        false } },
+        { CNT_REG_CUR_ACC_THRES,    { "CUR_ACC_THRES",                      true } },
+        { CNT_REG_CUR_PERR,         { "CUR_PERR",                           true } },
+        { CNT_REG_CUR_Kp,           { "CUR_Kp",                             true } },
+        { CNT_REG_CUR_Ki,           { "CUR_Ki",                             true } },
+        { CNT_REG_CUR_Kd,           { "CUR_Kd",                             true } },
+        { CNT_REG_CUR_ACTIVE,       { "CUR_ACTIVE",                         true } },
+        { CNT_REG_OUTPUT,           { "Motor Output Voltage, V",            false } },
+        { CNT_REG_OUTPUT_THRES,     { "OUTPUT_THRES",                       true } }
     };
 
     enum DataAwaited{
@@ -156,9 +175,9 @@ private:
             s_data.setByteOrder(QDataStream::LittleEndian);
             s_data << this->cmd;
             s_data << this->w_size;
-            for (uint32_t iter = 0; iter < this->w_size; iter++){
-                s_data << this->payload[iter];
-            }
+//            for (uint32_t iter = 0; iter < this->w_size; iter++){
+//                s_data << this->payload[iter];
+//            }
             return data;
         }
         QVector<uint32_t> PassPayload(void){
@@ -203,10 +222,10 @@ private:
 
     struct CNT_Register{
         uint32_t            reg;
-        QVector<uint32_t>   data;
+        QVector<float>      data;
 
         CNT_Register(void){};
-        CNT_Register(CONTROL_Registers r, QVector<uint32_t> v){
+        CNT_Register(CONTROL_Registers r, QVector<float> v){
             this->reg = r;
             for (uint32_t iter = 0; iter < v.size(); iter++){
                 if (iter >= 4) break;
@@ -218,15 +237,17 @@ private:
 
             this->reg = tmp[0];
             tmp.pop_front();
-            this->data = tmp;
+            this->data = *(reinterpret_cast<QVector<float> *>(&tmp));
         }
         QByteArray SetRawFromHeader(void){
             QByteArray data;
             QDataStream s_data(&data, QIODevice::WriteOnly);
             s_data.setByteOrder(QDataStream::LittleEndian);
             s_data << this->reg;
-            for (auto iter = this->data.begin(); iter != this->data.end(); iter++){
-                s_data << *iter;
+            for (uint16_t iter = 0; iter < this->data.size(); iter++){
+                float tmp_f = this->data[iter];
+                uint32_t * tmp_pi = reinterpret_cast<uint32_t *>(&tmp_f);
+                s_data << *tmp_pi;
             }
             return data;
         }
@@ -250,6 +271,12 @@ public slots:
     void C_PingSilent(void);
     void C_Quit(void);
 
+    void C_ReadMultipleData(CONTROL_Registers reg);
+    void C_ReadSingleData(CONTROL_IDs id, CONTROL_Registers reg);
+    void C_WriteMultipleData(CONTROL_Registers reg, QVector<float> data);
+    void C_WriteSingleData(CONTROL_IDs id, CONTROL_Registers reg, float data);
+    void C_SendCmd(CONTROL_Commands cmd);
+
     void slActivate(void);
 
 signals:
@@ -272,7 +299,6 @@ private slots:
     void slRescalePlots(void);
     void slAutoRescalePlots(void);
     void slParameterHandle(bool state);
-//    void slChooseParameter(void);
 
 };
 

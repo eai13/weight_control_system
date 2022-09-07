@@ -117,7 +117,7 @@ typedef struct{
 #pragma pack(pop)
 
 uint8_t PROTOCOL_MessagePending(void);
-void PROTOCOL_ResetPendingFlag(void);
+void    PROTOCOL_ResetPendingFlag(void);
 
 void PROTOCOL_ProcessFrame(void);
 void PROTOCOL_Start(void);
