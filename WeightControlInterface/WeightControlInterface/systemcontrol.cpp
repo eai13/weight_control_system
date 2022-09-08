@@ -7,15 +7,27 @@
 #include <QAction>
 #include <QActionGroup>
 
+uint32_t flag = 0;
+
 SystemControl::SystemControl(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::SystemControl)
 {
     ui->setupUi(this);
 
+    this->SystemTime = new QTime();
+    this->SystemTime->start();
+
+    this->PlotDataTimer = new QTimer(this);
+    connect(this->PlotDataTimer, &QTimer::timeout, this, &SystemControl::slPlotDataRequest);
+
+    this->TransmitHandlerTimer = new QTimer(this);
+    connect(this->TransmitHandlerTimer, &QTimer::timeout, this, &SystemControl::SerialTxHandler);
+
     this->InitGraphs();
 
     this->TimeoutTimer = new QTimer(this);
+    this->TimeoutTimer->setSingleShot(true);
     connect(this->TimeoutTimer, &QTimer::timeout, this, &SystemControl::Timeout);
 
     this->DeviceCheckTimer = new QTimer(this);
@@ -25,89 +37,73 @@ SystemControl::SystemControl(QWidget *parent) :
 }
 
 void SystemControl::C_PingSilent(void){
-    if (!(this->SerialLock.Lock())){
-        return;
-    }
     BP_Header header(this->BP_PING, 0);
 
-    this->data_awaited = this->BP_PING_AWAIT_SIZE;
-    this->Serial->write(header.SetRawFromHeader());
-    this->TimeoutTimer->start(50);
+    Packet pack(header.SetRawFromHeader(), this->BP_PING_AWAIT_SIZE, 50);
+    this->serial_tx_queue.push_back(pack);
 }
 
 void SystemControl::C_Quit(void){
-    if (!(this->SerialLock.Lock())){
-        return;
-    }
     BP_Header header(this->BP_JUMP, 1);
     header.payload.append(0);
 
-    this->data_awaited = this->BP_JUMP_AWAIT_SIZE;
-    this->Serial->write(header.SetRawFromHeader());
-    this->TimeoutTimer->start(100);
+    Packet pack(header.SetRawFromHeader(), this->BP_JUMP_AWAIT_SIZE, 100);
+    this->serial_tx_queue.push_back(pack);
 }
 
 void SystemControl::C_ReadMultipleData(CONTROL_Registers reg){
-    if (!(this->SerialLock.Lock())){
-        return;
-    }
     QVector<float> tmp_data; tmp_data.append(1); tmp_data.append(2); tmp_data.append(3); tmp_data.append(4);
     BP_Header       bp_header(this->BP_CONTROL, 7);
     CNT_Header      cnt_header(CNT_ID_GLOBAL, CNT_READ_REG);
     CNT_Register    cnt_register(reg, tmp_data);
 
-    this->data_awaited = this->BP_CNT_READ_MULTIPLE_AWAIT_SIZE;
-    this->Serial->write(bp_header.SetRawFromHeader());
-    this->Serial->write(cnt_header.SetRawFromHeader());
-    this->Serial->write(cnt_register.SetRawFromHeader());
-    this->TimeoutTimer->start(100);
+    QByteArray b_data = bp_header.SetRawFromHeader();
+    b_data.append(cnt_header.SetRawFromHeader());
+    b_data.append(cnt_register.SetRawFromHeader());
+
+    Packet pack(b_data, this->BP_CNT_READ_MULTIPLE_AWAIT_SIZE, 100);
+    this->serial_tx_queue.push_back(pack);
 }
 
 void SystemControl::C_ReadSingleData(CONTROL_IDs id, CONTROL_Registers reg){
-    if (!(this->SerialLock.Lock())){
-        return;
-    }
     QVector<float> tmp_data; tmp_data.append(0);
     BP_Header       bp_header(this->BP_CONTROL, 4);
     CNT_Header      cnt_header(id, CNT_READ_REG);
     CNT_Register    cnt_register(reg, tmp_data);
 
-    this->data_awaited = this->BP_CNT_READ_SINGLE_AWAIT_SIZE;
-    this->Serial->write(bp_header.SetRawFromHeader());
-    this->Serial->write(cnt_header.SetRawFromHeader());
-    this->Serial->write(cnt_register.SetRawFromHeader());
-    this->TimeoutTimer->start(100);
+    QByteArray b_data = bp_header.SetRawFromHeader();
+    b_data.append(cnt_header.SetRawFromHeader());
+    b_data.append(cnt_register.SetRawFromHeader());
+
+    Packet pack(b_data, this->BP_CNT_READ_SINGLE_AWAIT_SIZE, 100);
+    this->serial_tx_queue.push_back(pack);
 }
 
 void SystemControl::C_WriteMultipleData(CONTROL_Registers reg, QVector<float> data){
-    if (!(this->SerialLock.Lock())){
-        return;
-    }
     BP_Header       bp_header(this->BP_CONTROL, 7);
     CNT_Header      cnt_header(CNT_ID_GLOBAL, CNT_WRITE_REG);
     CNT_Register    cnt_register(reg, data);
 
-    this->data_awaited = this->BP_CNT_WRITE_MULTIPLE_AWAIT_SIZE;
-    this->Serial->write(bp_header.SetRawFromHeader());
-    this->Serial->write(cnt_header.SetRawFromHeader());
-    this->Serial->write(cnt_register.SetRawFromHeader());
-    this->TimeoutTimer->start(100);
+    QByteArray b_data = bp_header.SetRawFromHeader();
+    b_data.append(cnt_header.SetRawFromHeader());
+    b_data.append(cnt_register.SetRawFromHeader());
+
+    Packet pack(b_data, this->BP_CNT_WRITE_MULTIPLE_AWAIT_SIZE, 100);
+    this->serial_tx_queue.push_back(pack);
 }
 
 void SystemControl::C_WriteSingleData(CONTROL_IDs id, CONTROL_Registers reg, float data){
-    if (!(this->SerialLock.Lock())){
-        return;
-    }
     QVector<float>  tmp_data; tmp_data.append(data);
     BP_Header       bp_header(this->BP_CONTROL, 4);
     CNT_Header      cnt_header(id, CNT_WRITE_REG);
     CNT_Register    cnt_register(reg, tmp_data);
 
-    this->data_awaited = this->BP_CNT_WRITE_SINGLE_AWAIT_SIZE;
-    this->Serial->write(bp_header.SetRawFromHeader());
-    this->Serial->write(cnt_header.SetRawFromHeader());
-    this->Serial->write(cnt_register.SetRawFromHeader());
-    this->TimeoutTimer->start(100);
+    QByteArray b_data = bp_header.SetRawFromHeader();
+    b_data.append(cnt_header.SetRawFromHeader());
+    b_data.append(cnt_register.SetRawFromHeader());
+
+    Packet pack(b_data, this->BP_CNT_WRITE_SINGLE_AWAIT_SIZE, 100);
+    this->serial_tx_queue.push_back(pack);
 }
 
 void SystemControl::C_SendCmd(CONTROL_Commands cmd){
@@ -149,11 +145,13 @@ void SystemControl::ProcessIncomingData(void){
         if (s_name == BOOTLOADER_ID){
             disconnect(this->Serial, &QSerialPort::readyRead, this, &SystemControl::PushDataFromStream);
             if (this->DeviceCheckTimer->isActive()) this->DeviceCheckTimer->stop();
+            if (this->TransmitHandlerTimer->isActive()) this->TransmitHandlerTimer->stop();
             emit siChooseTab(BOOTLOADER_TAB);
         }
         else if (s_name == APP_2_ID){
             disconnect(this->Serial, &QSerialPort::readyRead, this, &SystemControl::PushDataFromStream);
             if (this->DeviceCheckTimer->isActive()) this->DeviceCheckTimer->stop();
+            if (this->TransmitHandlerTimer->isActive()) this->TransmitHandlerTimer->stop();
             emit siChooseTab(APP_2_TAB);
         }
 
@@ -182,15 +180,28 @@ void SystemControl::ProcessIncomingData(void){
         case(CNT_READ_REG):
             switch(cnt_header.id){
             case(CNT_ID_GLOBAL):
+                if (this->RegisterNames[cnt_register.reg].is_active){
+                    QAction * p_act = this->plot_context_menu.findChild<QAction *>("Auto Rescale");
+                    for (uint8_t iter = 0; iter < 4; iter++){
+                        this->RegisterNames[cnt_register.reg].graph_id[iter]->addData(flag, cnt_register.data[iter]);
+                        if (p_act->isChecked()) this->plot_handles[iter]->rescaleAxes();
+                        this->plot_handles[iter]->replot();
+                    }
+                    flag++;
+                }
+
+                qDebug() << "New data acquired";
+                this->SerialLock.Unlock();
                 break;
             default:
                 break;
             }
             break;
         case(CNT_BLOCK_DRIVE):
-
+            qDebug() << "Drive Locked";
             break;
         case(CNT_ENABLE_DRIVE):
+            qDebug() << "Drive Enabled";
             break;
         }
 
@@ -217,6 +228,7 @@ void SystemControl::PushDataFromStream(void){
 void SystemControl::slActivate(void){
     connect(this->Serial, &QSerialPort::readyRead, this, &SystemControl::PushDataFromStream);
     this->DeviceCheckTimer->start(1000);
+    this->TransmitHandlerTimer->start(10);
 }
 
 void SystemControl::ConsoleBasic(QString message){
@@ -250,14 +262,19 @@ void SystemControl::InitGraphs(void){
 
     for (uint8_t iter = 0; iter < 4; iter++){
         this->plot_handles[iter]->clearItems();
-        this->plot_handles[iter]->addGraph();
         this->plot_handles[iter]->xAxis->setLabel("Time");
         this->plot_handles[iter]->yAxis->setLabel("Parameter");
+        this->plot_handles[iter]->xAxis->setRange(0, 10);
+        this->plot_handles[iter]->yAxis->setRange(-1, 1);
     }
 
-    this->plot_context_menu.addAction("Clear", this, &SystemControl::slClearPlots);
-    this->plot_context_menu.addAction("Rescale", this, &SystemControl::slRescalePlots);
-    this->plot_context_menu.addAction("Auto Rescale", this, &SystemControl::slAutoRescalePlots);
+    QAction * p_act = nullptr;
+    this->plot_context_menu.addAction("Clear", this, &SystemControl::slClearPlots)->setObjectName("Clear");
+    this->plot_context_menu.addAction("Rescale", this, &SystemControl::slRescalePlots)->setObjectName("Rescale");
+    p_act = this->plot_context_menu.addAction("Auto Rescale");
+    p_act->setObjectName("Auto Rescale");
+    p_act->setCheckable(true);
+    connect(p_act, &QAction::triggered, this, &SystemControl::slAutoRescalePlots);
 
         QMenu * parameter_menu = this->plot_context_menu.addMenu("Parameter");
         parameter_menu->setObjectName(QString("Parameter Menu"));
@@ -287,8 +304,8 @@ void SystemControl::InitGraphs(void){
 
 void SystemControl::slClearPlots(void){
     this->C_ReadMultipleData(CNT_REG_CUR_FB);
-    for (uint8_t iter = 0; iter < 4; iter++)
-        this->plot_handles[iter]->clearGraphs();
+//    for (uint8_t iter = 0; iter < 4; iter++)
+//        this->plot_handles[iter]->clearGraphs();
 }
 
 void SystemControl::slShowContextMenu(const QPoint & pos){
@@ -299,8 +316,9 @@ void SystemControl::slRescalePlots(void){
 
 }
 
-void SystemControl::slAutoRescalePlots(void){
-
+void SystemControl::slAutoRescalePlots(bool state){
+    QAction * p_act = this->plot_context_menu.findChild<QAction *>("Rescale");
+    p_act->setEnabled(!state);
 }
 
 void SystemControl::slParameterHandle(bool state){
@@ -309,6 +327,7 @@ void SystemControl::slParameterHandle(bool state){
 
     if (sender_name == this->RegisterNames[CNT_REG_TORQUE].name){
         this->RegisterNames[CNT_REG_TORQUE].is_active = state;
+        this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_TORQUE].graph_id, state);
         for (auto iter = tmp->actions().begin(); iter != tmp->actions().end(); iter++){
             if ((*iter)->objectName() != this->RegisterNames[CNT_REG_TORQUE].name)
                 (*iter)->setEnabled(!state);
@@ -321,9 +340,19 @@ void SystemControl::slParameterHandle(bool state){
         QString sp = this->RegisterNames[CNT_REG_POS_SP].name;
         QString fb = this->RegisterNames[CNT_REG_POS_FB].name;
         QString acc = this->RegisterNames[CNT_REG_POS_ACC].name;
-            if (sender_name == sp) this->RegisterNames[CNT_REG_POS_SP].is_active = state;
-            else if (sender_name == fb) this->RegisterNames[CNT_REG_POS_FB].is_active = state;
-            else if (sender_name == acc) this->RegisterNames[CNT_REG_POS_ACC].is_active = state;
+
+            if (sender_name == sp){
+                this->RegisterNames[CNT_REG_POS_SP].is_active = state;
+                this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_POS_SP].graph_id, state);
+            }
+            else if (sender_name == fb){
+                this->RegisterNames[CNT_REG_POS_FB].is_active = state;
+                this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_POS_FB].graph_id, state);
+            }
+            else if (sender_name == acc){
+                this->RegisterNames[CNT_REG_POS_ACC].is_active = state;
+                this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_POS_ACC].graph_id, state);
+            }
 
             if ((!(this->RegisterNames[CNT_REG_POS_SP].is_active)) &&
                 (!(this->RegisterNames[CNT_REG_POS_FB].is_active)) &&
@@ -346,9 +375,18 @@ void SystemControl::slParameterHandle(bool state){
         QString sp = this->RegisterNames[CNT_REG_SPD_SP].name;
         QString fb = this->RegisterNames[CNT_REG_SPD_FB].name;
         QString acc = this->RegisterNames[CNT_REG_SPD_ACC].name;
-            if (sender_name == sp) this->RegisterNames[CNT_REG_SPD_SP].is_active = state;
-            else if (sender_name == fb) this->RegisterNames[CNT_REG_SPD_FB].is_active = state;
-            else if (sender_name == acc) this->RegisterNames[CNT_REG_SPD_ACC].is_active = state;
+            if (sender_name == sp){
+                this->RegisterNames[CNT_REG_SPD_SP].is_active = state;
+                this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_SPD_SP].graph_id, state);
+            }
+            else if (sender_name == fb){
+                this->RegisterNames[CNT_REG_SPD_FB].is_active = state;
+                this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_SPD_FB].graph_id, state);
+            }
+            else if (sender_name == acc){
+                this->RegisterNames[CNT_REG_SPD_ACC].is_active = state;
+                this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_POS_ACC].graph_id, state);
+            }
 
             if ((!(this->RegisterNames[CNT_REG_SPD_SP].is_active)) &&
                 (!(this->RegisterNames[CNT_REG_SPD_FB].is_active)) &&
@@ -371,9 +409,18 @@ void SystemControl::slParameterHandle(bool state){
         QString sp = this->RegisterNames[CNT_REG_CUR_SP].name;
         QString fb = this->RegisterNames[CNT_REG_CUR_FB].name;
         QString acc = this->RegisterNames[CNT_REG_CUR_ACC].name;
-            if (sender_name == sp) this->RegisterNames[CNT_REG_CUR_SP].is_active = state;
-            else if (sender_name == fb) this->RegisterNames[CNT_REG_CUR_FB].is_active = state;
-            else if (sender_name == acc) this->RegisterNames[CNT_REG_CUR_ACC].is_active = state;
+            if (sender_name == sp){
+                this->RegisterNames[CNT_REG_CUR_SP].is_active = state;
+                this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_CUR_SP].graph_id, state);
+            }
+            else if (sender_name == fb){
+                this->RegisterNames[CNT_REG_CUR_FB].is_active = state;
+                this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_CUR_FB].graph_id, state);
+            }
+            else if (sender_name == acc){
+                this->RegisterNames[CNT_REG_CUR_ACC].is_active = state;
+                this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_CUR_ACC].graph_id, state);
+            }
 
             if ((!(this->RegisterNames[CNT_REG_CUR_SP].is_active)) &&
                 (!(this->RegisterNames[CNT_REG_CUR_FB].is_active)) &&
@@ -391,9 +438,26 @@ void SystemControl::slParameterHandle(bool state){
     }
     else if (sender_name == this->RegisterNames[CNT_REG_OUTPUT].name){
         this->RegisterNames[CNT_REG_OUTPUT].is_active = state;
+        this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_OUTPUT].graph_id, state);
         for (auto iter = tmp->actions().begin(); iter != tmp->actions().end(); iter++){
             if ((*iter)->objectName() != this->RegisterNames[CNT_REG_OUTPUT].name)
                 (*iter)->setEnabled(!state);
         }
     }
 }
+
+void SystemControl::AttachRegisterToGraph(QCPGraph ** graph, bool state){
+    if (state){
+        graph[0] = ui->widget_plot1->addGraph();
+        graph[1] = ui->widget_plot2->addGraph();
+        graph[2] = ui->widget_plot3->addGraph();
+        graph[3] = ui->widget_plot4->addGraph();
+    }
+    else{
+        ui->widget_plot1->removeGraph(graph[0]);
+        ui->widget_plot2->removeGraph(graph[1]);
+        ui->widget_plot3->removeGraph(graph[2]);
+        ui->widget_plot4->removeGraph(graph[3]);
+    }
+}
+

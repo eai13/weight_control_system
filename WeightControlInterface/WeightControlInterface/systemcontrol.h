@@ -12,6 +12,8 @@
 #include <qcustomplot.h>
 #include <QMenu>
 #include <QMap>
+#include <QQueue>
+#include <QTime>
 
 #if QT_VERSION >= 0x050000
 #include <QtWidgets/QWidget>
@@ -34,6 +36,36 @@ public:
     Ui::Locker SerialLock;
 
 private:
+    // Serial Transmit Handler //
+    QTimer * TransmitHandlerTimer = nullptr;
+    QTime * SystemTime = nullptr;
+
+    struct Packet{
+        Packet(QByteArray d, uint32_t as, uint32_t to){
+            this->data = d;
+            this->await_size = as;
+            this->timeout = to;
+        }
+        QByteArray data;
+        uint32_t await_size;
+        uint32_t timeout;
+    };
+
+    QQueue<Packet> serial_tx_queue;
+
+    void SerialTxHandler(void){
+        if (!(this->serial_tx_queue.isEmpty())){
+            if (this->SerialLock.Lock()){
+                Packet pack = this->serial_tx_queue.takeFirst();
+                this->data_awaited = pack.await_size;
+                this->Serial->write(pack.data);
+                this->TimeoutTimer->start(pack.timeout);
+            }
+        }
+    }
+
+    // Serial Transmit Handler //
+
     Ui::SystemControl * ui;
     QSerialPort *       Serial;
 
@@ -106,42 +138,45 @@ private:
     };
 
     struct RegisterStatus{
-        QString name;
-        bool    is_active;
+        QString     name;
+        bool        is_active;
+        QCPGraph *  graph_id[4];
     };
 
     QMap<uint8_t, RegisterStatus> RegisterNames = {
-        { CNT_REG_TORQUE,           { "Torque, Nm",                         false } },
-        { CNT_REG_POS_SP,           { "Position Setpoint, rad",             false } },
-        { CNT_REG_POS_FB,           { "Position, rad",                      false } },
-        { CNT_REG_POS_ACC,          { "Position Loop Accumulator, rad",     false } },
-        { CNT_REG_POS_ACC_THRES,    { "POS_ACC_THRES",                      true } },
-        { CNT_REG_POS_PERR,         { "POS_PERR",                           true } },
-        { CNT_REG_POS_Kp,           { "POS_Kp",                             true } },
-        { CNT_REG_POS_Ki,           { "POS_Ki",                             true } },
-        { CNT_REG_POS_Kd,           { "POS_Kd",                             true } },
-        { CNT_REG_POS_ACTIVE,       { "POS_ACTIVE",                         true } },
-        { CNT_REG_SPD_SP,           { "Velocity Setpoint, rad/s",           false } },
-        { CNT_REG_SPD_FB,           { "Velocity, rad/s",                    false } },
-        { CNT_REG_SPD_ACC,          { "Velocity Loop Accumulator, rad/s",   false } },
-        { CNT_REG_SPD_ACC_THRES,    { "SPD_ACC_THRES",                      true } },
-        { CNT_REG_SPD_PERR,         { "SPD_PERR",                           true } },
-        { CNT_REG_SPD_Kp,           { "SPD_Kp",                             true } },
-        { CNT_REG_SPD_Ki,           { "SPD_Ki",                             true } },
-        { CNT_REG_SPD_Kd,           { "SPD_Kd",                             true } },
-        { CNT_REG_SPD_ACTIVE,       { "SPD_ACTIVE",                         true } },
-        { CNT_REG_CUR_SP,           { "Current Setpoint, A",                false } },
-        { CNT_REG_CUR_FB,           { "Current, A",                         false } },
-        { CNT_REG_CUR_ACC,          { "Current Loop Accumulator, A",        false } },
-        { CNT_REG_CUR_ACC_THRES,    { "CUR_ACC_THRES",                      true } },
-        { CNT_REG_CUR_PERR,         { "CUR_PERR",                           true } },
-        { CNT_REG_CUR_Kp,           { "CUR_Kp",                             true } },
-        { CNT_REG_CUR_Ki,           { "CUR_Ki",                             true } },
-        { CNT_REG_CUR_Kd,           { "CUR_Kd",                             true } },
-        { CNT_REG_CUR_ACTIVE,       { "CUR_ACTIVE",                         true } },
-        { CNT_REG_OUTPUT,           { "Motor Output Voltage, V",            false } },
-        { CNT_REG_OUTPUT_THRES,     { "OUTPUT_THRES",                       true } }
+        { CNT_REG_TORQUE,           { "Torque, Nm",                         false,  { nullptr, } } },
+        { CNT_REG_POS_SP,           { "Position Setpoint, rad",             false,  { nullptr, } } },
+        { CNT_REG_POS_FB,           { "Position, rad",                      false,  { nullptr, } } },
+        { CNT_REG_POS_ACC,          { "Position Loop Accumulator, rad",     false,  { nullptr, } } },
+        { CNT_REG_POS_ACC_THRES,    { "POS_ACC_THRES",                      false,  { nullptr, } } },
+        { CNT_REG_POS_PERR,         { "POS_PERR",                           false,  { nullptr, } } },
+        { CNT_REG_POS_Kp,           { "POS_Kp",                             false,  { nullptr, } } },
+        { CNT_REG_POS_Ki,           { "POS_Ki",                             false,  { nullptr, } } },
+        { CNT_REG_POS_Kd,           { "POS_Kd",                             false,  { nullptr, } } },
+        { CNT_REG_POS_ACTIVE,       { "POS_ACTIVE",                         false,  { nullptr, } } },
+        { CNT_REG_SPD_SP,           { "Velocity Setpoint, rad/s",           false,  { nullptr, } } },
+        { CNT_REG_SPD_FB,           { "Velocity, rad/s",                    false,  { nullptr, } } },
+        { CNT_REG_SPD_ACC,          { "Velocity Loop Accumulator, rad/s",   false,  { nullptr, } } },
+        { CNT_REG_SPD_ACC_THRES,    { "SPD_ACC_THRES",                      false,  { nullptr, } } },
+        { CNT_REG_SPD_PERR,         { "SPD_PERR",                           false,  { nullptr, } } },
+        { CNT_REG_SPD_Kp,           { "SPD_Kp",                             false,  { nullptr, } } },
+        { CNT_REG_SPD_Ki,           { "SPD_Ki",                             false,  { nullptr, } } },
+        { CNT_REG_SPD_Kd,           { "SPD_Kd",                             false,  { nullptr, } } },
+        { CNT_REG_SPD_ACTIVE,       { "SPD_ACTIVE",                         false,  { nullptr, } } },
+        { CNT_REG_CUR_SP,           { "Current Setpoint, A",                false,  { nullptr, } } },
+        { CNT_REG_CUR_FB,           { "Current, A",                         false,  { nullptr, } } },
+        { CNT_REG_CUR_ACC,          { "Current Loop Accumulator, A",        false,  { nullptr, } } },
+        { CNT_REG_CUR_ACC_THRES,    { "CUR_ACC_THRES",                      false,  { nullptr, } } },
+        { CNT_REG_CUR_PERR,         { "CUR_PERR",                           false,  { nullptr, } } },
+        { CNT_REG_CUR_Kp,           { "CUR_Kp",                             false,  { nullptr, } } },
+        { CNT_REG_CUR_Ki,           { "CUR_Ki",                             false,  { nullptr, } } },
+        { CNT_REG_CUR_Kd,           { "CUR_Kd",                             false,  { nullptr, } } },
+        { CNT_REG_CUR_ACTIVE,       { "CUR_ACTIVE",                         false,  { nullptr, } } },
+        { CNT_REG_OUTPUT,           { "Motor Output Voltage, V",            false,  { nullptr, } } },
+        { CNT_REG_OUTPUT_THRES,     { "OUTPUT_THRES",                       false,  { nullptr, } } }
     };
+
+    void AttachRegisterToGraph(QCPGraph ** graph, bool state);
 
     enum DataAwaited{
         BP_PING_AWAIT_SIZE                  = 9,
@@ -175,9 +210,9 @@ private:
             s_data.setByteOrder(QDataStream::LittleEndian);
             s_data << this->cmd;
             s_data << this->w_size;
-//            for (uint32_t iter = 0; iter < this->w_size; iter++){
-//                s_data << this->payload[iter];
-//            }
+            for (uint32_t iter = 0; iter < this->payload.size(); iter++){
+                s_data << this->payload[iter];
+            }
             return data;
         }
         QVector<uint32_t> PassPayload(void){
@@ -261,6 +296,7 @@ private slots:
         this->Serial->readAll();
         this->SerialLock.Unlock();
         this->data_awaited = 0;
+        qDebug() << "Timeout";
     }
 
 public slots:
@@ -286,6 +322,8 @@ signals:
 // GRAPHS
 
 private:
+    QTimer * PlotDataTimer = nullptr;
+
     QCustomPlot * plot_handles[4];
     uint8_t plot_register[4] = { 0, 0, 0, 0 };
     QMenu plot_context_menu;
@@ -294,10 +332,12 @@ private:
 
 private slots:
 
+    void slPlotDataRequest(void);
+
     void slShowContextMenu(const QPoint & pos);
     void slClearPlots(void);
     void slRescalePlots(void);
-    void slAutoRescalePlots(void);
+    void slAutoRescalePlots(bool state);
     void slParameterHandle(bool state);
 
 };
