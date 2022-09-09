@@ -14,6 +14,8 @@
 #include <QMap>
 #include <QQueue>
 #include <QTime>
+#include <QFont>
+#include <QColor>
 
 #if QT_VERSION >= 0x050000
 #include <QtWidgets/QWidget>
@@ -36,6 +38,14 @@ public:
     Ui::Locker SerialLock;
 
 private:
+
+    enum TIMER_PERIODS{
+        PERIODTransmitHandlerTimer  = 10,
+        PERIODPlotDataTimer         = 100,
+        PERIODDeviceCheckTimer      = 1000,
+        PERIODTimeoutTimer          = 100
+    };
+
     // Serial Transmit Handler //
     QTimer * TransmitHandlerTimer = nullptr;
     QTime * SystemTime = nullptr;
@@ -54,6 +64,7 @@ private:
     QQueue<Packet> serial_tx_queue;
 
     void SerialTxHandler(void){
+//        qDebug() << "Queue Size " << this->serial_tx_queue.size();
         if (!(this->serial_tx_queue.isEmpty())){
             if (this->SerialLock.Lock()){
                 Packet pack = this->serial_tx_queue.takeFirst();
@@ -176,7 +187,7 @@ private:
         { CNT_REG_OUTPUT_THRES,     { "OUTPUT_THRES",                       false,  { nullptr, } } }
     };
 
-    void AttachRegisterToGraph(QCPGraph ** graph, bool state);
+    void AttachRegisterToGraph(RegisterStatus * reg, bool state);
 
     enum DataAwaited{
         BP_PING_AWAIT_SIZE                  = 9,
@@ -228,7 +239,7 @@ private:
         QVector<uint32_t>   payload;
 
         CNT_Header(void){};
-        CNT_Header(CONTROL_IDs i, CONTROL_Commands c){
+        CNT_Header(uint16_t i, uint16_t c){
             this->cmd = c;
             this->id = i;
         }
@@ -260,7 +271,7 @@ private:
         QVector<float>      data;
 
         CNT_Register(void){};
-        CNT_Register(CONTROL_Registers r, QVector<float> v){
+        CNT_Register(uint16_t r, QVector<float> v){
             this->reg = r;
             for (uint32_t iter = 0; iter < v.size(); iter++){
                 if (iter >= 4) break;
@@ -307,11 +318,11 @@ public slots:
     void C_PingSilent(void);
     void C_Quit(void);
 
-    void C_ReadMultipleData(CONTROL_Registers reg);
-    void C_ReadSingleData(CONTROL_IDs id, CONTROL_Registers reg);
-    void C_WriteMultipleData(CONTROL_Registers reg, QVector<float> data);
-    void C_WriteSingleData(CONTROL_IDs id, CONTROL_Registers reg, float data);
-    void C_SendCmd(CONTROL_Commands cmd);
+    void C_ReadMultipleData(uint16_t reg);
+    void C_ReadSingleData(uint16_t id, uint16_t reg);
+    void C_WriteMultipleData(uint16_t reg, QVector<float> data);
+    void C_WriteSingleData(uint16_t id, uint16_t reg, float data);
+    void C_SendCmd(uint16_t cmd);
 
     void slActivate(void);
 
@@ -322,10 +333,19 @@ signals:
 // GRAPHS
 
 private:
+
+    QList<QColor> PenColorChoose;
+
+    QColor GrabPenColor(void){
+        return this->PenColorChoose.takeFirst();
+    }
+    void ReturnPenColor(QColor col){
+        this->PenColorChoose.push_back(col);
+    }
+
     QTimer * PlotDataTimer = nullptr;
 
     QCustomPlot * plot_handles[4];
-    uint8_t plot_register[4] = { 0, 0, 0, 0 };
     QMenu plot_context_menu;
 
     void InitGraphs(void);
@@ -335,7 +355,7 @@ private slots:
     void slPlotDataRequest(void);
 
     void slShowContextMenu(const QPoint & pos);
-    void slClearPlots(void);
+    void slPlotActive(bool state);
     void slRescalePlots(void);
     void slAutoRescalePlots(bool state);
     void slParameterHandle(bool state);

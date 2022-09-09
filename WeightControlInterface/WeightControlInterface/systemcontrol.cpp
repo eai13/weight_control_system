@@ -7,13 +7,17 @@
 #include <QAction>
 #include <QActionGroup>
 
-uint32_t flag = 0;
+// tmp
 
 SystemControl::SystemControl(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::SystemControl)
 {
     ui->setupUi(this);
+
+    this->PenColorChoose.push_back(QColor(255, 0, 0));
+    this->PenColorChoose.push_back(QColor(0, 255, 0));
+    this->PenColorChoose.push_back(QColor(0, 0, 255));
 
     this->SystemTime = new QTime();
     this->SystemTime->start();
@@ -24,8 +28,6 @@ SystemControl::SystemControl(QWidget *parent) :
     this->TransmitHandlerTimer = new QTimer(this);
     connect(this->TransmitHandlerTimer, &QTimer::timeout, this, &SystemControl::SerialTxHandler);
 
-    this->InitGraphs();
-
     this->TimeoutTimer = new QTimer(this);
     this->TimeoutTimer->setSingleShot(true);
     connect(this->TimeoutTimer, &QTimer::timeout, this, &SystemControl::Timeout);
@@ -34,12 +36,14 @@ SystemControl::SystemControl(QWidget *parent) :
     connect(this->DeviceCheckTimer, &QTimer::timeout, this, &SystemControl::C_PingSilent);
 
     connect(ui->pushButton_quitapp, &QPushButton::released, this, &SystemControl::C_Quit);
+
+    this->InitGraphs();
 }
 
 void SystemControl::C_PingSilent(void){
     BP_Header header(this->BP_PING, 0);
 
-    Packet pack(header.SetRawFromHeader(), this->BP_PING_AWAIT_SIZE, 50);
+    Packet pack(header.SetRawFromHeader(), this->BP_PING_AWAIT_SIZE, this->PERIODTimeoutTimer);
     this->serial_tx_queue.push_back(pack);
 }
 
@@ -47,11 +51,11 @@ void SystemControl::C_Quit(void){
     BP_Header header(this->BP_JUMP, 1);
     header.payload.append(0);
 
-    Packet pack(header.SetRawFromHeader(), this->BP_JUMP_AWAIT_SIZE, 100);
+    Packet pack(header.SetRawFromHeader(), this->BP_JUMP_AWAIT_SIZE, this->PERIODTimeoutTimer);
     this->serial_tx_queue.push_back(pack);
 }
 
-void SystemControl::C_ReadMultipleData(CONTROL_Registers reg){
+void SystemControl::C_ReadMultipleData(uint16_t reg){
     QVector<float> tmp_data; tmp_data.append(1); tmp_data.append(2); tmp_data.append(3); tmp_data.append(4);
     BP_Header       bp_header(this->BP_CONTROL, 7);
     CNT_Header      cnt_header(CNT_ID_GLOBAL, CNT_READ_REG);
@@ -61,11 +65,11 @@ void SystemControl::C_ReadMultipleData(CONTROL_Registers reg){
     b_data.append(cnt_header.SetRawFromHeader());
     b_data.append(cnt_register.SetRawFromHeader());
 
-    Packet pack(b_data, this->BP_CNT_READ_MULTIPLE_AWAIT_SIZE, 100);
+    Packet pack(b_data, this->BP_CNT_READ_MULTIPLE_AWAIT_SIZE, this->PERIODTimeoutTimer);
     this->serial_tx_queue.push_back(pack);
 }
 
-void SystemControl::C_ReadSingleData(CONTROL_IDs id, CONTROL_Registers reg){
+void SystemControl::C_ReadSingleData(uint16_t id, uint16_t reg){
     QVector<float> tmp_data; tmp_data.append(0);
     BP_Header       bp_header(this->BP_CONTROL, 4);
     CNT_Header      cnt_header(id, CNT_READ_REG);
@@ -75,11 +79,11 @@ void SystemControl::C_ReadSingleData(CONTROL_IDs id, CONTROL_Registers reg){
     b_data.append(cnt_header.SetRawFromHeader());
     b_data.append(cnt_register.SetRawFromHeader());
 
-    Packet pack(b_data, this->BP_CNT_READ_SINGLE_AWAIT_SIZE, 100);
+    Packet pack(b_data, this->BP_CNT_READ_SINGLE_AWAIT_SIZE, this->PERIODTimeoutTimer);
     this->serial_tx_queue.push_back(pack);
 }
 
-void SystemControl::C_WriteMultipleData(CONTROL_Registers reg, QVector<float> data){
+void SystemControl::C_WriteMultipleData(uint16_t reg, QVector<float> data){
     BP_Header       bp_header(this->BP_CONTROL, 7);
     CNT_Header      cnt_header(CNT_ID_GLOBAL, CNT_WRITE_REG);
     CNT_Register    cnt_register(reg, data);
@@ -88,11 +92,11 @@ void SystemControl::C_WriteMultipleData(CONTROL_Registers reg, QVector<float> da
     b_data.append(cnt_header.SetRawFromHeader());
     b_data.append(cnt_register.SetRawFromHeader());
 
-    Packet pack(b_data, this->BP_CNT_WRITE_MULTIPLE_AWAIT_SIZE, 100);
+    Packet pack(b_data, this->BP_CNT_WRITE_MULTIPLE_AWAIT_SIZE, this->PERIODTimeoutTimer);
     this->serial_tx_queue.push_back(pack);
 }
 
-void SystemControl::C_WriteSingleData(CONTROL_IDs id, CONTROL_Registers reg, float data){
+void SystemControl::C_WriteSingleData(uint16_t id, uint16_t reg, float data){
     QVector<float>  tmp_data; tmp_data.append(data);
     BP_Header       bp_header(this->BP_CONTROL, 4);
     CNT_Header      cnt_header(id, CNT_WRITE_REG);
@@ -102,11 +106,11 @@ void SystemControl::C_WriteSingleData(CONTROL_IDs id, CONTROL_Registers reg, flo
     b_data.append(cnt_header.SetRawFromHeader());
     b_data.append(cnt_register.SetRawFromHeader());
 
-    Packet pack(b_data, this->BP_CNT_WRITE_SINGLE_AWAIT_SIZE, 100);
+    Packet pack(b_data, this->BP_CNT_WRITE_SINGLE_AWAIT_SIZE, this->PERIODTimeoutTimer);
     this->serial_tx_queue.push_back(pack);
 }
 
-void SystemControl::C_SendCmd(CONTROL_Commands cmd){
+void SystemControl::C_SendCmd(uint16_t cmd){
     return;
 }
 
@@ -183,14 +187,11 @@ void SystemControl::ProcessIncomingData(void){
                 if (this->RegisterNames[cnt_register.reg].is_active){
                     QAction * p_act = this->plot_context_menu.findChild<QAction *>("Auto Rescale");
                     for (uint8_t iter = 0; iter < 4; iter++){
-                        this->RegisterNames[cnt_register.reg].graph_id[iter]->addData(flag, cnt_register.data[iter]);
+                        this->RegisterNames[cnt_register.reg].graph_id[iter]->addData(((float)this->SystemTime->elapsed()) / 1000.0, cnt_register.data[iter]);
                         if (p_act->isChecked()) this->plot_handles[iter]->rescaleAxes();
                         this->plot_handles[iter]->replot();
                     }
-                    flag++;
                 }
-
-                qDebug() << "New data acquired";
                 this->SerialLock.Unlock();
                 break;
             default:
@@ -205,11 +206,11 @@ void SystemControl::ProcessIncomingData(void){
             break;
         }
 
-        qDebug() << "Control request";
-        qDebug() << "BP:    CMD " << bp_header.cmd << " W_Size " << bp_header.w_size;
-        qDebug() << "CNT:   ID  " << cnt_header.id << " CMD    " << cnt_header.cmd;
-        qDebug() << "REG:   " << cnt_register.reg;
-        qDebug() << "DATA:  " << cnt_register.data[0] << " " << cnt_register.data[1] << " " << cnt_register.data[2] << " " << cnt_register.data[3];
+//        qDebug() << "Control request";
+//        qDebug() << "BP:    CMD " << bp_header.cmd << " W_Size " << bp_header.w_size;
+//        qDebug() << "CNT:   ID  " << cnt_header.id << " CMD    " << cnt_header.cmd;
+//        qDebug() << "REG:   " << cnt_register.reg;
+//        qDebug() << "DATA:  " << cnt_register.data[0] << " " << cnt_register.data[1] << " " << cnt_register.data[2] << " " << cnt_register.data[3];
         this->SerialLock.Unlock();
         break;
     }
@@ -227,8 +228,9 @@ void SystemControl::PushDataFromStream(void){
 
 void SystemControl::slActivate(void){
     connect(this->Serial, &QSerialPort::readyRead, this, &SystemControl::PushDataFromStream);
-    this->DeviceCheckTimer->start(1000);
-    this->TransmitHandlerTimer->start(10);
+    this->DeviceCheckTimer->start(this->PERIODDeviceCheckTimer);
+    this->PlotDataTimer->start(this->PERIODPlotDataTimer);
+    this->TransmitHandlerTimer->start(this->PERIODTransmitHandlerTimer);
 }
 
 void SystemControl::ConsoleBasic(QString message){
@@ -266,15 +268,28 @@ void SystemControl::InitGraphs(void){
         this->plot_handles[iter]->yAxis->setLabel("Parameter");
         this->plot_handles[iter]->xAxis->setRange(0, 10);
         this->plot_handles[iter]->yAxis->setRange(-1, 1);
+        this->plot_handles[iter]->legend->setVisible(true);
+        this->plot_handles[iter]->setInteraction(QCP::iSelectAxes, true);
+        this->plot_handles[iter]->setInteraction(QCP::iSelectPlottables, true);
+//        this->plot_handles[iter]->setInteraction(QCP::iSelectItems, true);
     }
 
     QAction * p_act = nullptr;
-    this->plot_context_menu.addAction("Clear", this, &SystemControl::slClearPlots)->setObjectName("Clear");
+    p_act = this->plot_context_menu.addAction("is Active");
+    p_act->setObjectName("is Active");
+    p_act->setCheckable(true);
+    p_act->setChecked(true);
+    connect(p_act, &QAction::triggered, this, &SystemControl::slPlotActive);
+
+    this->plot_context_menu.addSeparator();
+
     this->plot_context_menu.addAction("Rescale", this, &SystemControl::slRescalePlots)->setObjectName("Rescale");
     p_act = this->plot_context_menu.addAction("Auto Rescale");
     p_act->setObjectName("Auto Rescale");
     p_act->setCheckable(true);
     connect(p_act, &QAction::triggered, this, &SystemControl::slAutoRescalePlots);
+
+    this->plot_context_menu.addSeparator();
 
         QMenu * parameter_menu = this->plot_context_menu.addMenu("Parameter");
         parameter_menu->setObjectName(QString("Parameter Menu"));
@@ -302,10 +317,23 @@ void SystemControl::InitGraphs(void){
     }
 }
 
-void SystemControl::slClearPlots(void){
-    this->C_ReadMultipleData(CNT_REG_CUR_FB);
-//    for (uint8_t iter = 0; iter < 4; iter++)
-//        this->plot_handles[iter]->clearGraphs();
+void SystemControl::slPlotActive(bool state){
+    if (state){
+        if (!(this->PlotDataTimer->isActive())){
+            for (uint8_t iter = 0; iter < 4; iter++){
+                for (uint8_t gr = 0; gr < this->plot_handles[iter]->graphCount(); gr++){
+                    this->plot_handles[iter]->graph(gr)->data()->clear();
+                }
+            }
+            this->PlotDataTimer->start(this->PERIODPlotDataTimer);
+            this->SystemTime->restart();
+        }
+    }
+    else{
+        if (this->PlotDataTimer->isActive()){
+            this->PlotDataTimer->stop();
+        }
+    }
 }
 
 void SystemControl::slShowContextMenu(const QPoint & pos){
@@ -327,7 +355,7 @@ void SystemControl::slParameterHandle(bool state){
 
     if (sender_name == this->RegisterNames[CNT_REG_TORQUE].name){
         this->RegisterNames[CNT_REG_TORQUE].is_active = state;
-        this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_TORQUE].graph_id, state);
+        this->AttachRegisterToGraph(&(this->RegisterNames[CNT_REG_TORQUE]), state);
         for (auto iter = tmp->actions().begin(); iter != tmp->actions().end(); iter++){
             if ((*iter)->objectName() != this->RegisterNames[CNT_REG_TORQUE].name)
                 (*iter)->setEnabled(!state);
@@ -343,15 +371,15 @@ void SystemControl::slParameterHandle(bool state){
 
             if (sender_name == sp){
                 this->RegisterNames[CNT_REG_POS_SP].is_active = state;
-                this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_POS_SP].graph_id, state);
+                this->AttachRegisterToGraph(&(this->RegisterNames[CNT_REG_POS_SP]), state);
             }
             else if (sender_name == fb){
                 this->RegisterNames[CNT_REG_POS_FB].is_active = state;
-                this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_POS_FB].graph_id, state);
+                this->AttachRegisterToGraph(&(this->RegisterNames[CNT_REG_POS_FB]), state);
             }
             else if (sender_name == acc){
                 this->RegisterNames[CNT_REG_POS_ACC].is_active = state;
-                this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_POS_ACC].graph_id, state);
+                this->AttachRegisterToGraph(&(this->RegisterNames[CNT_REG_POS_ACC]), state);
             }
 
             if ((!(this->RegisterNames[CNT_REG_POS_SP].is_active)) &&
@@ -377,15 +405,15 @@ void SystemControl::slParameterHandle(bool state){
         QString acc = this->RegisterNames[CNT_REG_SPD_ACC].name;
             if (sender_name == sp){
                 this->RegisterNames[CNT_REG_SPD_SP].is_active = state;
-                this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_SPD_SP].graph_id, state);
+                this->AttachRegisterToGraph(&(this->RegisterNames[CNT_REG_SPD_SP]), state);
             }
             else if (sender_name == fb){
                 this->RegisterNames[CNT_REG_SPD_FB].is_active = state;
-                this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_SPD_FB].graph_id, state);
+                this->AttachRegisterToGraph(&(this->RegisterNames[CNT_REG_SPD_FB]), state);
             }
             else if (sender_name == acc){
                 this->RegisterNames[CNT_REG_SPD_ACC].is_active = state;
-                this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_POS_ACC].graph_id, state);
+                this->AttachRegisterToGraph(&(this->RegisterNames[CNT_REG_POS_ACC]), state);
             }
 
             if ((!(this->RegisterNames[CNT_REG_SPD_SP].is_active)) &&
@@ -411,15 +439,15 @@ void SystemControl::slParameterHandle(bool state){
         QString acc = this->RegisterNames[CNT_REG_CUR_ACC].name;
             if (sender_name == sp){
                 this->RegisterNames[CNT_REG_CUR_SP].is_active = state;
-                this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_CUR_SP].graph_id, state);
+                this->AttachRegisterToGraph(&(this->RegisterNames[CNT_REG_CUR_SP]), state);
             }
             else if (sender_name == fb){
                 this->RegisterNames[CNT_REG_CUR_FB].is_active = state;
-                this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_CUR_FB].graph_id, state);
+                this->AttachRegisterToGraph(&(this->RegisterNames[CNT_REG_CUR_FB]), state);
             }
             else if (sender_name == acc){
                 this->RegisterNames[CNT_REG_CUR_ACC].is_active = state;
-                this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_CUR_ACC].graph_id, state);
+                this->AttachRegisterToGraph(&(this->RegisterNames[CNT_REG_CUR_ACC]), state);
             }
 
             if ((!(this->RegisterNames[CNT_REG_CUR_SP].is_active)) &&
@@ -438,26 +466,45 @@ void SystemControl::slParameterHandle(bool state){
     }
     else if (sender_name == this->RegisterNames[CNT_REG_OUTPUT].name){
         this->RegisterNames[CNT_REG_OUTPUT].is_active = state;
-        this->AttachRegisterToGraph(this->RegisterNames[CNT_REG_OUTPUT].graph_id, state);
+        this->AttachRegisterToGraph(&(this->RegisterNames[CNT_REG_OUTPUT]), state);
         for (auto iter = tmp->actions().begin(); iter != tmp->actions().end(); iter++){
             if ((*iter)->objectName() != this->RegisterNames[CNT_REG_OUTPUT].name)
                 (*iter)->setEnabled(!state);
         }
     }
+
+    for (uint8_t iter = 0; iter < 4; iter++){
+        for (auto gr = 0; gr < this->plot_handles[iter]->graphCount(); gr++){
+            this->plot_handles[iter]->graph(gr)->data()->clear();
+        }
+        this->plot_handles[iter]->replot();
+    }
+    this->SystemTime->restart();
 }
 
-void SystemControl::AttachRegisterToGraph(QCPGraph ** graph, bool state){
+void SystemControl::AttachRegisterToGraph(RegisterStatus * reg, bool state){
     if (state){
-        graph[0] = ui->widget_plot1->addGraph();
-        graph[1] = ui->widget_plot2->addGraph();
-        graph[2] = ui->widget_plot3->addGraph();
-        graph[3] = ui->widget_plot4->addGraph();
+        QColor tmp = this->GrabPenColor();
+        for (uint8_t iter = 0; iter < 4; iter++){
+            reg->graph_id[iter] = this->plot_handles[iter]->addGraph();
+            reg->graph_id[iter]->setPen(tmp);
+            reg->graph_id[iter]->setName(reg->name);
+        }
     }
     else{
-        ui->widget_plot1->removeGraph(graph[0]);
-        ui->widget_plot2->removeGraph(graph[1]);
-        ui->widget_plot3->removeGraph(graph[2]);
-        ui->widget_plot4->removeGraph(graph[3]);
+        QColor tmp = reg->graph_id[0]->pen().color();
+        for (uint8_t iter = 0; iter < 4; iter++){
+            this->plot_handles[iter]->removeGraph(reg->graph_id[iter]);
+        }
+        this->ReturnPenColor(tmp);
+    }
+}
+
+void SystemControl::slPlotDataRequest(void){
+    for (uint16_t iter = CNT_REG_TORQUE; iter < CNT_REG_LAST; iter++){
+        if (this->RegisterNames[iter].is_active){
+            this->C_ReadMultipleData(iter);
+        }
     }
 }
 
