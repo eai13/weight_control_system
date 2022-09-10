@@ -366,8 +366,21 @@ private:
     void InitDials(void);
 
     struct DialValues{
-        int32_t old_value       = 0;
-        int16_t counter         = 0;
+
+        void SetDial(int32_t ov, int16_t cnt, QDial * dh, QRadioButton * th, QRadioButton * rh, QLineEdit * lh){
+            this->old_value = ov;
+            this->counter = cnt;
+            this->dial_handle = dh;
+            this->set_turn = th;
+            this->set_rads = rh;
+            this->edit_line_handle = lh;
+        }
+        int32_t old_value               = 0;
+        int16_t counter                 = 0;
+        QDial * dial_handle             = nullptr;
+        QRadioButton * set_turn         = nullptr;
+        QRadioButton * set_rads         = nullptr;
+        QLineEdit * edit_line_handle    = nullptr;
     };
 
     DialValues DialParameters[4];
@@ -375,6 +388,7 @@ private:
 private slots:
 
     void slProcessDial(int data);
+    void slSendPosFromDial(void);
 
 };
 

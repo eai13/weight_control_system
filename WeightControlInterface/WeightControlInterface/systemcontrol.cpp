@@ -8,6 +8,7 @@
 #include <QActionGroup>
 
 // tmp
+#include <iostream>
 
 SystemControl::SystemControl(QWidget *parent) :
     QWidget(parent),
@@ -165,6 +166,8 @@ void SystemControl::ProcessIncomingData(void){
     }
     case(this->BP_JUMP):{
         ConsoleBasic("Jump back to boot");
+        this->PlotDataTimer->stop();
+        this->serial_tx_queue.clear();
         this->SerialLock.Unlock();
         break;
     }
@@ -179,6 +182,8 @@ void SystemControl::ProcessIncomingData(void){
             case(CNT_ID_GLOBAL):
                 break;
             default:
+                qDebug() << cnt_header.cmd << " " << cnt_header.id;
+                qDebug() << cnt_register.reg << " " << cnt_register.data;
                 break;
             }
             break;
@@ -512,15 +517,25 @@ void SystemControl::slPlotDataRequest(void){
 // POSITION CONTROL
 
 void SystemControl::InitDials(void){
-    ui->dial_motor1->setObjectName("Dial 1");
-    ui->dial_motor2->setObjectName("Dial 2");
-    ui->dial_motor3->setObjectName("Dial 3");
-    ui->dial_motor4->setObjectName("Dial 4");
+    DialParameters[0].SetDial(0, 0, ui->dial_motor1, ui->radioButton_m1turns, ui->radioButton_m1rads, ui->lineEdit_motor1pos);
+    DialParameters[1].SetDial(0, 0, ui->dial_motor2, ui->radioButton_m2turns, ui->radioButton_m2rads, ui->lineEdit_motor2pos);
+    DialParameters[2].SetDial(0, 0, ui->dial_motor3, ui->radioButton_m3turns, ui->radioButton_m3rads, ui->lineEdit_motor3pos);
+    DialParameters[3].SetDial(0, 0, ui->dial_motor4, ui->radioButton_m4turns, ui->radioButton_m4rads, ui->lineEdit_motor4pos);
 
-    connect(ui->dial_motor1, &QDial::sliderMoved, this, &SystemControl::slProcessDial);
-    connect(ui->dial_motor2, &QDial::sliderMoved, this, &SystemControl::slProcessDial);
-    connect(ui->dial_motor3, &QDial::sliderMoved, this, &SystemControl::slProcessDial);
-    connect(ui->dial_motor4, &QDial::sliderMoved, this, &SystemControl::slProcessDial);
+    for (uint8_t iter = 0; iter < 4; iter++){
+        DialParameters[iter].dial_handle->setObjectName("Dial " + QString::fromStdString(std::to_string(iter + 1)));
+        connect(DialParameters[iter].dial_handle, &QDial::sliderMoved, this, &SystemControl::slProcessDial);
+        connect(DialParameters[iter].dial_handle, &QDial::sliderReleased, this, &SystemControl::slSendPosFromDial);
+    }
+    //    ui->dial_motor1->setObjectName("Dial 1");
+//    ui->dial_motor2->setObjectName("Dial 2");
+//    ui->dial_motor3->setObjectName("Dial 3");
+//    ui->dial_motor4->setObjectName("Dial 4");
+
+//    connect(ui->dial_motor1, &QDial::sliderMoved, this, &SystemControl::slProcessDial);
+//    connect(ui->dial_motor2, &QDial::sliderMoved, this, &SystemControl::slProcessDial);
+//    connect(ui->dial_motor3, &QDial::sliderMoved, this, &SystemControl::slProcessDial);
+//    connect(ui->dial_motor4, &QDial::sliderMoved, this, &SystemControl::slProcessDial);
 
     ui->lineEdit_motor1pos->setObjectName("M1 pos");
     ui->lineEdit_motor2pos->setObjectName("M2 pos");
@@ -554,10 +569,10 @@ void SystemControl::slProcessDial(int data){
         DialParameters[1].old_value = data;
         if (ui->radioButton_m2turns->isChecked())
             ui->lineEdit_motor2pos->setText(QString::fromStdString(std::to_string(
-                float(data + DialParameters[1].counter * (ui->dial_motor2->maximum() + 1)) / (ui->dial_motor2->maximum() + 1))));
+                double(data + DialParameters[1].counter * (ui->dial_motor2->maximum() + 1)) / (ui->dial_motor2->maximum() + 1))));
         else
             ui->lineEdit_motor2pos->setText(QString::fromStdString(std::to_string(
-                float(data + DialParameters[1].counter * (ui->dial_motor2->maximum() + 1)) / (ui->dial_motor2->maximum() + 1) * 6.28)));
+                double(data + DialParameters[1].counter * (ui->dial_motor2->maximum() + 1)) / (ui->dial_motor2->maximum() + 1) * 6.28)));
     }
     else if (sender()->objectName() == "Dial 3"){
         if (std::abs(DialParameters[2].old_value - data) > ui->dial_motor3->maximum() / 2){
@@ -591,3 +606,33 @@ void SystemControl::slProcessDial(int data){
     }
 }
 
+void SystemControl::slSendPosFromDial(void){
+    if (sender()->objectName() == "Dial 1"){
+        QString str = DialParameters[0].edit_line_handle->text();
+        for (auto iter = str.begin(); iter != str.end(); iter++)
+            if (*iter == ',') *iter = '.';
+        qDebug() << str.toFloat();
+//        C_WriteSingleData(CNT_ID_DRIVE_1, CNT_REG_POS_SP, data);
+    }
+    else if (sender()->objectName() == "Dial 2"){
+        QString str = DialParameters[1].edit_line_handle->text();
+        for (auto iter = str.begin(); iter != str.end(); iter++)
+            if (*iter == ',') *iter = '.';
+        qDebug() << str.toFloat();
+//        C_WriteSingleData(CNT_ID_DRIVE_2, CNT_REG_POS_SP, data);
+    }
+    else if (sender()->objectName() == "Dial 3"){
+        QString str = DialParameters[2].edit_line_handle->text();
+        for (auto iter = str.begin(); iter != str.end(); iter++)
+            if (*iter == ',') *iter = '.';
+        qDebug() << str.toFloat();
+        C_WriteSingleData(CNT_ID_DRIVE_3, CNT_REG_POS_SP, str.toFloat());
+    }
+    else if (sender()->objectName() == "Dial 4"){
+        QString str = DialParameters[3].edit_line_handle->text();
+        for (auto iter = str.begin(); iter != str.end(); iter++)
+            if (*iter == ',') *iter = '.';
+        qDebug() << str.toFloat();
+        C_WriteSingleData(CNT_ID_DRIVE_4, CNT_REG_POS_SP, str.toFloat());
+    }
+}
