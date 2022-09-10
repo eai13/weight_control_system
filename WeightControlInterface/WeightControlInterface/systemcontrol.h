@@ -360,6 +360,22 @@ private slots:
     void slAutoRescalePlots(bool state);
     void slParameterHandle(bool state);
 
+// POSTITION CONTROL
+
+private:
+    void InitDials(void);
+
+    struct DialValues{
+        int32_t old_value       = 0;
+        int16_t counter         = 0;
+    };
+
+    DialValues DialParameters[4];
+
+private slots:
+
+    void slProcessDial(int data);
+
 };
 
 #endif // SYSTEMCONTROL_H

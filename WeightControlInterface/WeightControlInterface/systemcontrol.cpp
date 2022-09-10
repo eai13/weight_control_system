@@ -38,6 +38,7 @@ SystemControl::SystemControl(QWidget *parent) :
     connect(ui->pushButton_quitapp, &QPushButton::released, this, &SystemControl::C_Quit);
 
     this->InitGraphs();
+    this->InitDials();
 }
 
 void SystemControl::C_PingSilent(void){
@@ -505,6 +506,88 @@ void SystemControl::slPlotDataRequest(void){
         if (this->RegisterNames[iter].is_active){
             this->C_ReadMultipleData(iter);
         }
+    }
+}
+
+// POSITION CONTROL
+
+void SystemControl::InitDials(void){
+    ui->dial_motor1->setObjectName("Dial 1");
+    ui->dial_motor2->setObjectName("Dial 2");
+    ui->dial_motor3->setObjectName("Dial 3");
+    ui->dial_motor4->setObjectName("Dial 4");
+
+    connect(ui->dial_motor1, &QDial::sliderMoved, this, &SystemControl::slProcessDial);
+    connect(ui->dial_motor2, &QDial::sliderMoved, this, &SystemControl::slProcessDial);
+    connect(ui->dial_motor3, &QDial::sliderMoved, this, &SystemControl::slProcessDial);
+    connect(ui->dial_motor4, &QDial::sliderMoved, this, &SystemControl::slProcessDial);
+
+    ui->lineEdit_motor1pos->setObjectName("M1 pos");
+    ui->lineEdit_motor2pos->setObjectName("M2 pos");
+    ui->lineEdit_motor3pos->setObjectName("M3 pos");
+    ui->lineEdit_motor4pos->setObjectName("M4 pos");
+}
+
+void SystemControl::slProcessDial(int data){
+    if (sender()->objectName() == "Dial 1"){
+        if (std::abs(DialParameters[0].old_value - data) > ui->dial_motor1->maximum() / 2){
+            if (DialParameters[0].old_value - data > 0)
+                DialParameters[0].counter++;
+            else
+                DialParameters[0].counter--;
+        }
+        DialParameters[0].old_value = data;
+        if (ui->radioButton_m1turns->isChecked())
+            ui->lineEdit_motor1pos->setText(QString::fromStdString(std::to_string(
+                float(data + DialParameters[0].counter * (ui->dial_motor1->maximum() + 1)) / (ui->dial_motor1->maximum() + 1))));
+        else
+            ui->lineEdit_motor1pos->setText(QString::fromStdString(std::to_string(
+                float(data + DialParameters[0].counter * (ui->dial_motor1->maximum() + 1)) / (ui->dial_motor1->maximum() + 1) * 6.28)));
+    }
+    else if (sender()->objectName() == "Dial 2"){
+        if (std::abs(DialParameters[1].old_value - data) > ui->dial_motor2->maximum() / 2){
+            if (DialParameters[1].old_value - data > 0)
+                DialParameters[1].counter++;
+            else
+                DialParameters[1].counter--;
+        }
+        DialParameters[1].old_value = data;
+        if (ui->radioButton_m2turns->isChecked())
+            ui->lineEdit_motor2pos->setText(QString::fromStdString(std::to_string(
+                float(data + DialParameters[1].counter * (ui->dial_motor2->maximum() + 1)) / (ui->dial_motor2->maximum() + 1))));
+        else
+            ui->lineEdit_motor2pos->setText(QString::fromStdString(std::to_string(
+                float(data + DialParameters[1].counter * (ui->dial_motor2->maximum() + 1)) / (ui->dial_motor2->maximum() + 1) * 6.28)));
+    }
+    else if (sender()->objectName() == "Dial 3"){
+        if (std::abs(DialParameters[2].old_value - data) > ui->dial_motor3->maximum() / 2){
+            if (DialParameters[2].old_value - data > 0)
+                DialParameters[2].counter++;
+            else
+                DialParameters[2].counter--;
+        }
+        DialParameters[2].old_value = data;
+        if (ui->radioButton_m3turns->isChecked())
+            ui->lineEdit_motor3pos->setText(QString::fromStdString(std::to_string(
+                float(data + DialParameters[2].counter * (ui->dial_motor3->maximum() + 1)) / (ui->dial_motor3->maximum() + 1))));
+        else
+            ui->lineEdit_motor3pos->setText(QString::fromStdString(std::to_string(
+                float(data + DialParameters[2].counter * (ui->dial_motor3->maximum() + 1)) / (ui->dial_motor3->maximum() + 1) * 6.28)));
+    }
+    else if (sender()->objectName() == "Dial 4"){
+        if (std::abs(DialParameters[3].old_value - data) > ui->dial_motor4->maximum() / 2){
+            if (DialParameters[3].old_value - data > 0)
+                DialParameters[3].counter++;
+            else
+                DialParameters[3].counter--;
+        }
+        DialParameters[3].old_value = data;
+        if (ui->radioButton_m4turns->isChecked())
+            ui->lineEdit_motor4pos->setText(QString::fromStdString(std::to_string(
+                float(data + DialParameters[3].counter * (ui->dial_motor4->maximum() + 1)) / (ui->dial_motor4->maximum() + 1))));
+        else
+            ui->lineEdit_motor4pos->setText(QString::fromStdString(std::to_string(
+                float(data + DialParameters[3].counter * (ui->dial_motor4->maximum() + 1)) / (ui->dial_motor4->maximum() + 1) * 6.28)));
     }
 }
 
