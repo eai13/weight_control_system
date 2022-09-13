@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1418</width>
+    <width>1774</width>
     <height>887</height>
    </rect>
   </property>
@@ -431,7 +431,13 @@
       </widget>
      </item>
      <item row="0" column="2">
-      <widget class="QGroupBox" name="groupBox_6">
+      <widget class="QGroupBox" name="groupBox_plot3d">
+       <property name="minimumSize">
+        <size>
+         <width>500</width>
+         <height>300</height>
+        </size>
+       </property>
        <property name="maximumSize">
         <size>
          <width>16777215</width>
@@ -439,8 +445,9 @@
         </size>
        </property>
        <property name="title">
-        <string>Object Trajectory</string>
+        <string/>
        </property>
+       <layout class="QGridLayout" name="gridLayout_7"/>
       </widget>
      </item>
     </layout>

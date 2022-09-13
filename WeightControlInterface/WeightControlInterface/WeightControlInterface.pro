@@ -1,6 +1,6 @@
-QT       += core gui serialport printsupport
+QT       += core gui serialport printsupport datavisualization
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets datavisualization
 
 CONFIG += c++11
 
@@ -19,6 +19,7 @@ SOURCES += \
     bootloader.cpp \
     main.cpp \
     mainwindow.cpp \
+    plot3d.cpp \
     qcustomplot.cpp \
     systemcontrol.cpp \
 
@@ -26,6 +27,7 @@ HEADERS += \
     bootloader.h \
     global_config.h \
     mainwindow.h \
+    plot3d.h \
     qcustomplot.h \
     systemcontrol.h
 

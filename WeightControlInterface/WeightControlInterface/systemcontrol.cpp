@@ -8,6 +8,7 @@
 #include <QActionGroup>
 
 // tmp
+
 #include <iostream>
 
 SystemControl::SystemControl(QWidget *parent) :
@@ -40,6 +41,13 @@ SystemControl::SystemControl(QWidget *parent) :
 
     this->InitGraphs();
     this->InitDials();
+
+    this->plot3d = new Plot3D(ui->groupBox_plot3d);
+    this->plot3d->AddRealPoint(0, 0, 0);
+//    this->plot3d->AddTargetPoint(100, 100, 100);
+    this->plot3d->BuildTargetTrajectory(QVector3D(0, 0, 0), QVector3D(10, 1, 1));
+    this->plot3d->BuildTargetTrajectory(QVector3D(10, 1, 1), QVector3D(25, 16, 16));
+
 }
 
 void SystemControl::C_PingSilent(void){
@@ -636,3 +644,37 @@ void SystemControl::slSendPosFromDial(void){
         C_WriteSingleData(CNT_ID_DRIVE_4, CNT_REG_POS_SP, str.toFloat());
     }
 }
+
+//void SystemControl::Init3DPlot(void){
+//    // Init graph
+//    this->plot3d = new QtDataVisualization::Q3DScatter();
+//    QWidget * widget_plot3d = QWidget::createWindowContainer(this->plot3d);
+//    ui->groupBox_plot3d->layout()->addWidget(widget_plot3d);
+//    widget_plot3d->show();
+
+//    // Setup // ThemeArmyBlue
+//    this->plot3d->activeTheme()->setType(QtDataVisualization::Q3DTheme::ThemePrimaryColors);
+//    QFont font("Sans Serif", 30, QFont::Weight::Normal);
+//    this->plot3d->activeTheme()->setFont(font);
+//    this->plot3d->setShadowQuality(QtDataVisualization::QAbstract3DGraph::ShadowQualityNone);
+//    this->plot3d->setTitle("Object trajectory");
+
+//    QtDataVisualization::QScatterDataProxy * proxy = new QtDataVisualization::QScatterDataProxy;
+//    QtDataVisualization::QScatter3DSeries * series = new QtDataVisualization::QScatter3DSeries(proxy);
+//    series->setItemLabelFormat(QStringLiteral("@xTitle: @xLabel @yTitle: @yLabel @zTitle: @zLabel"));
+//    series->setMeshSmooth(false);
+//    this->plot3d->addSeries(series);
+
+//    this->plot3d->axisX()->setTitle("Axis X");
+//    this->plot3d->axisX()->setTitleVisible(true);
+//    this->plot3d->axisY()->setTitle("Axis Y");
+//    this->plot3d->axisY()->setTitleVisible(true);
+//    this->plot3d->axisZ()->setTitle("Axis Z");
+//    this->plot3d->axisZ()->setTitleVisible(true);
+
+//    QtDataVisualization::QScatterDataArray * data = new QtDataVisualization::QScatterDataArray;
+//    data->resize(5);
+//    this->plot3d->seriesList().at(0)->dataProxy()->addItem(QtDataVisualization::QScatterDataItem(QVector3D(1, 1, 1)));
+//    this->plot3d->seriesList().at(0)->dataProxy()->addItem(QtDataVisualization::QScatterDataItem(QVector3D(0, 0, 0)));
+//    this->plot3d->seriesList().at(0)->dataProxy()->addItem(QtDataVisualization::QScatterDataItem(QVector3D(0.5, 0.5, 0.5)));
+//}

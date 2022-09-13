@@ -3,6 +3,7 @@
 
 #include "global_config.h"
 #include "bootloader.h"
+#include "plot3d.h"
 #include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
 #include <QTimer>
@@ -16,6 +17,8 @@
 #include <QTime>
 #include <QFont>
 #include <QColor>
+#include <QtDataVisualization/q3dscatter.h>
+#include <QtDataVisualization/qabstract3dseries.h>
 
 #if QT_VERSION >= 0x050000
 #include <QtWidgets/QWidget>
@@ -390,6 +393,11 @@ private slots:
     void slProcessDial(int data);
     void slSendPosFromDial(void);
 
+// 3D Plot
+
+private:
+
+    Plot3D * plot3d;
 };
 
 #endif // SYSTEMCONTROL_H
