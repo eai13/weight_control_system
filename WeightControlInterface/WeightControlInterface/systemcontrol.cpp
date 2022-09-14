@@ -1,6 +1,7 @@
 #include "systemcontrol.h"
 #include "ui_systemcontrol.h"
 #include "qcustomplot.h"
+#include "plot3dconfigs.h"
 #include <QVector>
 #include <QMenu>
 #include <QCursor>
@@ -16,6 +17,9 @@ SystemControl::SystemControl(QWidget *parent) :
     ui(new Ui::SystemControl)
 {
     ui->setupUi(this);
+
+    Plot3DConfigs * plot3dconfigs = new Plot3DConfigs();
+    ui->groupBox_3dplot_settings->layout()->addWidget(plot3dconfigs);
 
     this->PenColorChoose.push_back(QColor(255, 0, 0));
     this->PenColorChoose.push_back(QColor(0, 255, 0));
@@ -525,156 +529,89 @@ void SystemControl::slPlotDataRequest(void){
 // POSITION CONTROL
 
 void SystemControl::InitDials(void){
-    DialParameters[0].SetDial(0, 0, ui->dial_motor1, ui->radioButton_m1turns, ui->radioButton_m1rads, ui->lineEdit_motor1pos);
-    DialParameters[1].SetDial(0, 0, ui->dial_motor2, ui->radioButton_m2turns, ui->radioButton_m2rads, ui->lineEdit_motor2pos);
-    DialParameters[2].SetDial(0, 0, ui->dial_motor3, ui->radioButton_m3turns, ui->radioButton_m3rads, ui->lineEdit_motor3pos);
-    DialParameters[3].SetDial(0, 0, ui->dial_motor4, ui->radioButton_m4turns, ui->radioButton_m4rads, ui->lineEdit_motor4pos);
+    this->DialParameters[0].SetDial(0, 0, ui->dial_motor1, ui->radioButton_m1turns, ui->radioButton_m1rads, ui->lineEdit_motor1pos);
+    this->DialParameters[1].SetDial(0, 0, ui->dial_motor2, ui->radioButton_m2turns, ui->radioButton_m2rads, ui->lineEdit_motor2pos);
+    this->DialParameters[2].SetDial(0, 0, ui->dial_motor3, ui->radioButton_m3turns, ui->radioButton_m3rads, ui->lineEdit_motor3pos);
+    this->DialParameters[3].SetDial(0, 0, ui->dial_motor4, ui->radioButton_m4turns, ui->radioButton_m4rads, ui->lineEdit_motor4pos);
 
     for (uint8_t iter = 0; iter < 4; iter++){
-        DialParameters[iter].dial_handle->setObjectName("Dial " + QString::fromStdString(std::to_string(iter + 1)));
-        connect(DialParameters[iter].dial_handle, &QDial::sliderMoved, this, &SystemControl::slProcessDial);
-        connect(DialParameters[iter].dial_handle, &QDial::sliderReleased, this, &SystemControl::slSendPosFromDial);
+        this->DialParameters[iter].edit_line_handle->setValidator(new QDoubleValidator(-1000, 1000, 3));
+        this->DialParameters[iter].dial_handle->setObjectName(QString::fromStdString(std::to_string(iter)));
+        this->DialParameters[iter].edit_line_handle->setObjectName(QString::fromStdString(std::to_string(iter)));
+        this->DialParameters[iter].set_rads->setObjectName(QString::fromStdString(std::to_string(iter)));
+        this->DialParameters[iter].set_turn->setObjectName(QString::fromStdString(std::to_string(iter)));
+        connect(this->DialParameters[iter].edit_line_handle, &QLineEdit::returnPressed, this, &SystemControl::slProcessDialLine);
+        connect(this->DialParameters[iter].set_turn, &QRadioButton::clicked, this, &SystemControl::slSetTurns);
+        connect(this->DialParameters[iter].set_rads, &QRadioButton::clicked, this, &SystemControl::slSetRads);
+        connect(this->DialParameters[iter].dial_handle, &QDial::sliderMoved, this, &SystemControl::slProcessDial);
+        connect(this->DialParameters[iter].dial_handle, &QDial::sliderReleased, this, &SystemControl::slSendPosFromDial);
     }
-    //    ui->dial_motor1->setObjectName("Dial 1");
-//    ui->dial_motor2->setObjectName("Dial 2");
-//    ui->dial_motor3->setObjectName("Dial 3");
-//    ui->dial_motor4->setObjectName("Dial 4");
-
-//    connect(ui->dial_motor1, &QDial::sliderMoved, this, &SystemControl::slProcessDial);
-//    connect(ui->dial_motor2, &QDial::sliderMoved, this, &SystemControl::slProcessDial);
-//    connect(ui->dial_motor3, &QDial::sliderMoved, this, &SystemControl::slProcessDial);
-//    connect(ui->dial_motor4, &QDial::sliderMoved, this, &SystemControl::slProcessDial);
-
-    ui->lineEdit_motor1pos->setObjectName("M1 pos");
-    ui->lineEdit_motor2pos->setObjectName("M2 pos");
-    ui->lineEdit_motor3pos->setObjectName("M3 pos");
-    ui->lineEdit_motor4pos->setObjectName("M4 pos");
 }
 
 void SystemControl::slProcessDial(int data){
-    if (sender()->objectName() == "Dial 1"){
-        if (std::abs(DialParameters[0].old_value - data) > ui->dial_motor1->maximum() / 2){
-            if (DialParameters[0].old_value - data > 0)
-                DialParameters[0].counter++;
-            else
-                DialParameters[0].counter--;
-        }
-        DialParameters[0].old_value = data;
-        if (ui->radioButton_m1turns->isChecked())
-            ui->lineEdit_motor1pos->setText(QString::fromStdString(std::to_string(
-                float(data + DialParameters[0].counter * (ui->dial_motor1->maximum() + 1)) / (ui->dial_motor1->maximum() + 1))));
+    int sender_id = sender()->objectName().toInt();
+
+    if (std::abs(this->DialParameters[sender_id].old_value - data) > this->DialParameters[sender_id].dial_handle->maximum() / 2){
+        if (this->DialParameters[sender_id].old_value - data > 0)
+            this->DialParameters[sender_id].counter++;
         else
-            ui->lineEdit_motor1pos->setText(QString::fromStdString(std::to_string(
-                float(data + DialParameters[0].counter * (ui->dial_motor1->maximum() + 1)) / (ui->dial_motor1->maximum() + 1) * 6.28)));
+            this->DialParameters[sender_id].counter--;
     }
-    else if (sender()->objectName() == "Dial 2"){
-        if (std::abs(DialParameters[1].old_value - data) > ui->dial_motor2->maximum() / 2){
-            if (DialParameters[1].old_value - data > 0)
-                DialParameters[1].counter++;
-            else
-                DialParameters[1].counter--;
-        }
-        DialParameters[1].old_value = data;
-        if (ui->radioButton_m2turns->isChecked())
-            ui->lineEdit_motor2pos->setText(QString::fromStdString(std::to_string(
-                double(data + DialParameters[1].counter * (ui->dial_motor2->maximum() + 1)) / (ui->dial_motor2->maximum() + 1))));
-        else
-            ui->lineEdit_motor2pos->setText(QString::fromStdString(std::to_string(
-                double(data + DialParameters[1].counter * (ui->dial_motor2->maximum() + 1)) / (ui->dial_motor2->maximum() + 1) * 6.28)));
+    this->DialParameters[sender_id].old_value = data;
+    if (this->DialParameters[sender_id].set_turn->isChecked())
+        this->DialParameters[sender_id].edit_line_handle->setText(QString::fromStdString(std::to_string(
+            float(data + this->DialParameters[sender_id].counter * (this->DialParameters[sender_id].dial_handle->maximum() + 1)) /
+            (this->DialParameters[sender_id].dial_handle->maximum() + 1))));
+    else
+        this->DialParameters[sender_id].edit_line_handle->setText(QString::fromStdString(std::to_string(
+            float(data + this->DialParameters[sender_id].counter * (this->DialParameters[sender_id].dial_handle->maximum() + 1)) /
+            (this->DialParameters[sender_id].dial_handle->maximum() + 1) * 6.28)));
+}
+
+void SystemControl::slProcessDialLine(void){
+    int sender_id = sender()->objectName().toInt();
+    QString val_str = this->DialParameters[sender_id].edit_line_handle->text();
+    for (auto iter = val_str.begin(); iter != val_str.end(); iter++)
+        if (*iter == ',') *iter = '.';
+    float val = val_str.toFloat();
+
+    if (this->DialParameters[sender_id].set_rads->isChecked()){
+        this->DialParameters[sender_id].counter = val / 6.28;
+        this->DialParameters[sender_id].dial_handle->setValue((int)(val / 6.28 * (this->DialParameters[sender_id].dial_handle->maximum() + 1)) % (this->DialParameters[sender_id].dial_handle->maximum() + 1));
+        this->DialParameters[sender_id].old_value = this->DialParameters[sender_id].dial_handle->value();
+        C_WriteSingleData(sender_id, CNT_REG_POS_SP, val);
     }
-    else if (sender()->objectName() == "Dial 3"){
-        if (std::abs(DialParameters[2].old_value - data) > ui->dial_motor3->maximum() / 2){
-            if (DialParameters[2].old_value - data > 0)
-                DialParameters[2].counter++;
-            else
-                DialParameters[2].counter--;
-        }
-        DialParameters[2].old_value = data;
-        if (ui->radioButton_m3turns->isChecked())
-            ui->lineEdit_motor3pos->setText(QString::fromStdString(std::to_string(
-                float(data + DialParameters[2].counter * (ui->dial_motor3->maximum() + 1)) / (ui->dial_motor3->maximum() + 1))));
-        else
-            ui->lineEdit_motor3pos->setText(QString::fromStdString(std::to_string(
-                float(data + DialParameters[2].counter * (ui->dial_motor3->maximum() + 1)) / (ui->dial_motor3->maximum() + 1) * 6.28)));
-    }
-    else if (sender()->objectName() == "Dial 4"){
-        if (std::abs(DialParameters[3].old_value - data) > ui->dial_motor4->maximum() / 2){
-            if (DialParameters[3].old_value - data > 0)
-                DialParameters[3].counter++;
-            else
-                DialParameters[3].counter--;
-        }
-        DialParameters[3].old_value = data;
-        if (ui->radioButton_m4turns->isChecked())
-            ui->lineEdit_motor4pos->setText(QString::fromStdString(std::to_string(
-                float(data + DialParameters[3].counter * (ui->dial_motor4->maximum() + 1)) / (ui->dial_motor4->maximum() + 1))));
-        else
-            ui->lineEdit_motor4pos->setText(QString::fromStdString(std::to_string(
-                float(data + DialParameters[3].counter * (ui->dial_motor4->maximum() + 1)) / (ui->dial_motor4->maximum() + 1) * 6.28)));
+    else{
+        this->DialParameters[sender_id].counter = val;
+        this->DialParameters[sender_id].dial_handle->setValue((int)(val * (this->DialParameters[sender_id].dial_handle->maximum() + 1)) % (this->DialParameters[sender_id].dial_handle->maximum() + 1));
+        this->DialParameters[sender_id].old_value = this->DialParameters[sender_id].dial_handle->value();
+        C_WriteSingleData(sender_id, CNT_REG_POS_SP, val * 6.28);
     }
 }
 
 void SystemControl::slSendPosFromDial(void){
-    if (sender()->objectName() == "Dial 1"){
-        QString str = DialParameters[0].edit_line_handle->text();
-        for (auto iter = str.begin(); iter != str.end(); iter++)
-            if (*iter == ',') *iter = '.';
-        qDebug() << str.toFloat();
-//        C_WriteSingleData(CNT_ID_DRIVE_1, CNT_REG_POS_SP, data);
-    }
-    else if (sender()->objectName() == "Dial 2"){
-        QString str = DialParameters[1].edit_line_handle->text();
-        for (auto iter = str.begin(); iter != str.end(); iter++)
-            if (*iter == ',') *iter = '.';
-        qDebug() << str.toFloat();
-//        C_WriteSingleData(CNT_ID_DRIVE_2, CNT_REG_POS_SP, data);
-    }
-    else if (sender()->objectName() == "Dial 3"){
-        QString str = DialParameters[2].edit_line_handle->text();
-        for (auto iter = str.begin(); iter != str.end(); iter++)
-            if (*iter == ',') *iter = '.';
-        qDebug() << str.toFloat();
-        C_WriteSingleData(CNT_ID_DRIVE_3, CNT_REG_POS_SP, str.toFloat());
-    }
-    else if (sender()->objectName() == "Dial 4"){
-        QString str = DialParameters[3].edit_line_handle->text();
-        for (auto iter = str.begin(); iter != str.end(); iter++)
-            if (*iter == ',') *iter = '.';
-        qDebug() << str.toFloat();
-        C_WriteSingleData(CNT_ID_DRIVE_4, CNT_REG_POS_SP, str.toFloat());
-    }
+    int sender_id = sender()->objectName().toInt();
+
+    QString str = this->DialParameters[sender_id].edit_line_handle->text();
+    for (auto iter = str.begin(); iter != str.end(); iter++)
+        if (*iter == ',') *iter = '.';
+    qDebug() << str.toFloat();
+    if (this->DialParameters[sender_id].set_rads->isChecked())
+        C_WriteSingleData(sender_id, CNT_REG_POS_SP, str.toFloat());
+    else
+        C_WriteSingleData(sender_id, CNT_REG_POS_SP, str.toFloat() * 6.28);
 }
 
-//void SystemControl::Init3DPlot(void){
-//    // Init graph
-//    this->plot3d = new QtDataVisualization::Q3DScatter();
-//    QWidget * widget_plot3d = QWidget::createWindowContainer(this->plot3d);
-//    ui->groupBox_plot3d->layout()->addWidget(widget_plot3d);
-//    widget_plot3d->show();
+void SystemControl::slSetTurns(void){
+    int sender_id = sender()->objectName().toInt();
+    float new_val = (float)(this->DialParameters[sender_id].counter * (this->DialParameters[sender_id].dial_handle->maximum() + 1) +
+                    this->DialParameters[sender_id].dial_handle->value()) / (float)(this->DialParameters[sender_id].dial_handle->maximum());
+    this->DialParameters[sender_id].edit_line_handle->setText(QString::fromStdString(std::to_string(new_val)));
+}
 
-//    // Setup // ThemeArmyBlue
-//    this->plot3d->activeTheme()->setType(QtDataVisualization::Q3DTheme::ThemePrimaryColors);
-//    QFont font("Sans Serif", 30, QFont::Weight::Normal);
-//    this->plot3d->activeTheme()->setFont(font);
-//    this->plot3d->setShadowQuality(QtDataVisualization::QAbstract3DGraph::ShadowQualityNone);
-//    this->plot3d->setTitle("Object trajectory");
-
-//    QtDataVisualization::QScatterDataProxy * proxy = new QtDataVisualization::QScatterDataProxy;
-//    QtDataVisualization::QScatter3DSeries * series = new QtDataVisualization::QScatter3DSeries(proxy);
-//    series->setItemLabelFormat(QStringLiteral("@xTitle: @xLabel @yTitle: @yLabel @zTitle: @zLabel"));
-//    series->setMeshSmooth(false);
-//    this->plot3d->addSeries(series);
-
-//    this->plot3d->axisX()->setTitle("Axis X");
-//    this->plot3d->axisX()->setTitleVisible(true);
-//    this->plot3d->axisY()->setTitle("Axis Y");
-//    this->plot3d->axisY()->setTitleVisible(true);
-//    this->plot3d->axisZ()->setTitle("Axis Z");
-//    this->plot3d->axisZ()->setTitleVisible(true);
-
-//    QtDataVisualization::QScatterDataArray * data = new QtDataVisualization::QScatterDataArray;
-//    data->resize(5);
-//    this->plot3d->seriesList().at(0)->dataProxy()->addItem(QtDataVisualization::QScatterDataItem(QVector3D(1, 1, 1)));
-//    this->plot3d->seriesList().at(0)->dataProxy()->addItem(QtDataVisualization::QScatterDataItem(QVector3D(0, 0, 0)));
-//    this->plot3d->seriesList().at(0)->dataProxy()->addItem(QtDataVisualization::QScatterDataItem(QVector3D(0.5, 0.5, 0.5)));
-//}
+void SystemControl::slSetRads(void){
+    int sender_id = sender()->objectName().toInt();
+    float new_val = (float)(this->DialParameters[sender_id].counter * (this->DialParameters[sender_id].dial_handle->maximum() + 1) +
+                    this->DialParameters[sender_id].dial_handle->value()) / (float)(this->DialParameters[sender_id].dial_handle->maximum()) * 6.28;
+    this->DialParameters[sender_id].edit_line_handle->setText(QString::fromStdString(std::to_string(new_val)));
+}

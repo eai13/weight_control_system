@@ -3,7 +3,7 @@
 
 #include "global_config.h"
 #include "bootloader.h"
-#include "plot3d.h"
+#include "plot3d_old.h"
 #include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
 #include <QTimer>
@@ -391,7 +391,10 @@ private:
 private slots:
 
     void slProcessDial(int data);
+    void slProcessDialLine(void);
     void slSendPosFromDial(void);
+    void slSetTurns(void);
+    void slSetRads(void);
 
 // 3D Plot
 

@@ -1,19 +1,17 @@
 #include "plot3d.h"
 #include <QtCore/qglobal.h>
-
+#include <iostream>
 #define POLYGON_Y_SIZE  100
 #define POLYGON_X_SIZE  100
 #define POLYGON_Z_SIZE  100
 
 #define CM_PER_DOT      2
 
-Plot3D::Plot3D(QGroupBox * parent){
+Plot3D::Plot3D(QGroupBox *parent) : QObject(parent){
     this->plot = new QtDataVisualization::Q3DScatter();
     QWidget * plot_widget = QWidget::createWindowContainer(this->plot);
     parent->layout()->addWidget(plot_widget);
     plot_widget->show();
-
-    QObject::connect(parent, &QGroupBox::clicked, this, &Plot3D::slClicked);
 
     this->plot->axisX()->setAutoAdjustRange(false);
     this->plot->axisX()->setRange(0, POLYGON_X_SIZE);
@@ -95,11 +93,6 @@ void Plot3D::BuildTargetTrajectory(QVector3D start, QVector3D end){
     }
 
     for ( ; iter > 0; start += step_vector, iter -= iter_step){
-//        qDebug() << start;
         this->AddTargetPoint(start);
     }
-}
-
-void Plot3D::slClicked(void){
-    qDebug() << "Clicked";
 }

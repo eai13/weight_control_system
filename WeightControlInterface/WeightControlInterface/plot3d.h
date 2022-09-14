@@ -1,20 +1,20 @@
 #ifndef PLOT3D_H
 #define PLOT3D_H
 
+#include <QtCore/QObject>
 #include <QtCore/qglobal.h>
 #include <QtDataVisualization/q3dscatter.h>
 #include <QGroupBox>
-#include <QWidget>
+#include <QtWidgets/QWidget>
 #include <QLayout>
 #include <QFont>
 #include <QVector3D>
-#include <QObject>
 
 class Plot3D : public QObject
 {
     Q_OBJECT
 public:
-    Plot3D(QGroupBox * parent);
+    explicit Plot3D(QGroupBox *parent = nullptr);
 
     void AddRealPoint(double x, double y, double z);
     void AddRealPoint(QVector3D pt);
@@ -24,12 +24,17 @@ public:
     void ClearTarget(void);
 
     void BuildTargetTrajectory(QVector3D start, QVector3D end);
+
 private:
+
     QtDataVisualization::Q3DScatter * plot;
+
+public slots:
 
 private slots:
 
-    void slClicked(void);
+signals:
+
 };
 
 #endif // PLOT3D_H

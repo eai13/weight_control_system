@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1774</width>
-    <height>887</height>
+    <height>804</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -313,38 +313,6 @@
        </layout>
       </widget>
      </item>
-     <item row="1" column="2">
-      <widget class="QGroupBox" name="groupBox">
-       <property name="maximumSize">
-        <size>
-         <width>400</width>
-         <height>400</height>
-        </size>
-       </property>
-       <property name="title">
-        <string>System Control Settings</string>
-       </property>
-       <layout class="QGridLayout" name="gridLayout_3">
-        <item row="1" column="0">
-         <widget class="QTabWidget" name="tabWidget">
-          <property name="tabPosition">
-           <enum>QTabWidget::North</enum>
-          </property>
-          <widget class="QWidget" name="tab_5">
-           <attribute name="title">
-            <string>Tab 1</string>
-           </attribute>
-          </widget>
-          <widget class="QWidget" name="tab_6">
-           <attribute name="title">
-            <string>Tab 2</string>
-           </attribute>
-          </widget>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
      <item row="0" column="1">
       <widget class="QGroupBox" name="groupBox_3">
        <property name="title">
@@ -434,7 +402,7 @@
       <widget class="QGroupBox" name="groupBox_plot3d">
        <property name="minimumSize">
         <size>
-         <width>500</width>
+         <width>511</width>
          <height>300</height>
         </size>
        </property>
@@ -448,6 +416,20 @@
         <string/>
        </property>
        <layout class="QGridLayout" name="gridLayout_7"/>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QGroupBox" name="groupBox_3dplot_settings">
+       <property name="minimumSize">
+        <size>
+         <width>511</width>
+         <height>300</height>
+        </size>
+       </property>
+       <property name="title">
+        <string/>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_2"/>
       </widget>
      </item>
     </layout>

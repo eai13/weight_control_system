@@ -20,6 +20,7 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     plot3d.cpp \
+    plot3dconfigs.cpp \
     qcustomplot.cpp \
     systemcontrol.cpp \
 
@@ -28,12 +29,14 @@ HEADERS += \
     global_config.h \
     mainwindow.h \
     plot3d.h \
+    plot3dconfigs.h \
     qcustomplot.h \
     systemcontrol.h
 
 FORMS += \
     bootloader.ui \
     mainwindow.ui \
+    plot3dconfigs.ui \
     systemcontrol.ui
 
 # Default rules for deployment.
