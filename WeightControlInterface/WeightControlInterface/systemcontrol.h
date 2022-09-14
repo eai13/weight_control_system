@@ -3,7 +3,7 @@
 
 #include "global_config.h"
 #include "bootloader.h"
-#include "plot3d_old.h"
+#include "plot3d.h"
 #include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
 #include <QTimer>
@@ -377,6 +377,14 @@ private:
             this->set_turn = th;
             this->set_rads = rh;
             this->edit_line_handle = lh;
+        }
+
+        void Reset(void){
+            this->old_value = 0;
+            this->counter = 0;
+            this->dial_handle->setValue(0);
+            this->edit_line_handle->setText("0,000");
+            this->set_rads->setChecked(true);
         }
         int32_t old_value               = 0;
         int16_t counter                 = 0;

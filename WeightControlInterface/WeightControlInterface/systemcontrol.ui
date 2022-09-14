@@ -97,6 +97,9 @@
               <height>25</height>
              </size>
             </property>
+            <property name="text">
+             <string>0,000</string>
+            </property>
            </widget>
           </item>
           <item row="1" column="0">
@@ -168,6 +171,9 @@
               <width>16777215</width>
               <height>25</height>
              </size>
+            </property>
+            <property name="text">
+             <string>0,000</string>
             </property>
            </widget>
           </item>
@@ -262,6 +268,9 @@
               <width>16777215</width>
               <height>25</height>
              </size>
+            </property>
+            <property name="text">
+             <string>0,000</string>
             </property>
             <property name="clearButtonEnabled">
              <bool>false</bool>
@@ -360,6 +369,9 @@
               <width>16777215</width>
               <height>25</height>
              </size>
+            </property>
+            <property name="text">
+             <string>0,000</string>
             </property>
            </widget>
           </item>

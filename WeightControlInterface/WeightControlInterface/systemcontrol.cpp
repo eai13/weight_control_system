@@ -249,6 +249,10 @@ void SystemControl::slActivate(void){
     this->DeviceCheckTimer->start(this->PERIODDeviceCheckTimer);
     this->PlotDataTimer->start(this->PERIODPlotDataTimer);
     this->TransmitHandlerTimer->start(this->PERIODTransmitHandlerTimer);
+    for (uint8_t iter = 0; iter < 4; iter++){
+        this->DialParameters[iter].Reset();
+        this->InitGraphs();
+    }
 }
 
 void SystemControl::ConsoleBasic(QString message){
@@ -292,6 +296,7 @@ void SystemControl::InitGraphs(void){
 //        this->plot_handles[iter]->setInteraction(QCP::iSelectItems, true);
     }
 
+    this->plot_context_menu.clear();
     QAction * p_act = nullptr;
     p_act = this->plot_context_menu.addAction("is Active");
     p_act->setObjectName("is Active");
@@ -359,7 +364,7 @@ void SystemControl::slShowContextMenu(const QPoint & pos){
 }
 
 void SystemControl::slRescalePlots(void){
-
+    this->plot_handles[0]->saveJpg("plot", 250, 250);
 }
 
 void SystemControl::slAutoRescalePlots(bool state){
