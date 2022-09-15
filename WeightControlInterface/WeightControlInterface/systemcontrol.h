@@ -4,6 +4,7 @@
 #include "global_config.h"
 #include "bootloader.h"
 #include "plot3d.h"
+#include "plot2d.h"
 #include <QtSerialPort/QSerialPort>
 #include <QtSerialPort/QSerialPortInfo>
 #include <QTimer>
@@ -38,6 +39,8 @@ public:
     explicit SystemControl(QWidget *parent = nullptr);
     ~SystemControl();
 
+    Plot2D * plots[4];
+
     Ui::Locker SerialLock;
 
 private:
@@ -51,6 +54,7 @@ private:
 
     // Serial Transmit Handler //
     QTimer * TransmitHandlerTimer = nullptr;
+    QTimer * PlottableDataTimer = nullptr;
     QTime * SystemTime = nullptr;
 
     struct Packet{
@@ -67,7 +71,6 @@ private:
     QQueue<Packet> serial_tx_queue;
 
     void SerialTxHandler(void){
-//        qDebug() << "Queue Size " << this->serial_tx_queue.size();
         if (!(this->serial_tx_queue.isEmpty())){
             if (this->SerialLock.Lock()){
                 Packet pack = this->serial_tx_queue.takeFirst();
@@ -105,7 +108,8 @@ private:
         CNT_WRITE_REG       = 0x01,
         CNT_READ_REG        = 0x02,
         CNT_BLOCK_DRIVE     = 0x03,
-        CNT_ENABLE_DRIVE    = 0x05
+        CNT_ENABLE_DRIVE    = 0x05,
+        CNT_READ_PLOTTABLE  = 0x06
     };
 
     enum CONTROL_IDs{
@@ -151,46 +155,46 @@ private:
         CNT_REG_LAST
     };
 
-    struct RegisterStatus{
-        QString     name;
-        bool        is_active;
-        QCPGraph *  graph_id[4];
-    };
+//    struct RegisterStatus{
+//        QString     name;
+//        bool        is_active;
+//        QCPGraph *  graph_id[4];
+//    };
 
-    QMap<uint8_t, RegisterStatus> RegisterNames = {
-        { CNT_REG_TORQUE,           { "Torque, Nm",                         false,  { nullptr, } } },
-        { CNT_REG_POS_SP,           { "Position Setpoint, rad",             false,  { nullptr, } } },
-        { CNT_REG_POS_FB,           { "Position, rad",                      false,  { nullptr, } } },
-        { CNT_REG_POS_ACC,          { "Position Loop Accumulator, rad",     false,  { nullptr, } } },
-        { CNT_REG_POS_ACC_THRES,    { "POS_ACC_THRES",                      false,  { nullptr, } } },
-        { CNT_REG_POS_PERR,         { "POS_PERR",                           false,  { nullptr, } } },
-        { CNT_REG_POS_Kp,           { "POS_Kp",                             false,  { nullptr, } } },
-        { CNT_REG_POS_Ki,           { "POS_Ki",                             false,  { nullptr, } } },
-        { CNT_REG_POS_Kd,           { "POS_Kd",                             false,  { nullptr, } } },
-        { CNT_REG_POS_ACTIVE,       { "POS_ACTIVE",                         false,  { nullptr, } } },
-        { CNT_REG_SPD_SP,           { "Velocity Setpoint, rad/s",           false,  { nullptr, } } },
-        { CNT_REG_SPD_FB,           { "Velocity, rad/s",                    false,  { nullptr, } } },
-        { CNT_REG_SPD_ACC,          { "Velocity Loop Accumulator, rad/s",   false,  { nullptr, } } },
-        { CNT_REG_SPD_ACC_THRES,    { "SPD_ACC_THRES",                      false,  { nullptr, } } },
-        { CNT_REG_SPD_PERR,         { "SPD_PERR",                           false,  { nullptr, } } },
-        { CNT_REG_SPD_Kp,           { "SPD_Kp",                             false,  { nullptr, } } },
-        { CNT_REG_SPD_Ki,           { "SPD_Ki",                             false,  { nullptr, } } },
-        { CNT_REG_SPD_Kd,           { "SPD_Kd",                             false,  { nullptr, } } },
-        { CNT_REG_SPD_ACTIVE,       { "SPD_ACTIVE",                         false,  { nullptr, } } },
-        { CNT_REG_CUR_SP,           { "Current Setpoint, A",                false,  { nullptr, } } },
-        { CNT_REG_CUR_FB,           { "Current, A",                         false,  { nullptr, } } },
-        { CNT_REG_CUR_ACC,          { "Current Loop Accumulator, A",        false,  { nullptr, } } },
-        { CNT_REG_CUR_ACC_THRES,    { "CUR_ACC_THRES",                      false,  { nullptr, } } },
-        { CNT_REG_CUR_PERR,         { "CUR_PERR",                           false,  { nullptr, } } },
-        { CNT_REG_CUR_Kp,           { "CUR_Kp",                             false,  { nullptr, } } },
-        { CNT_REG_CUR_Ki,           { "CUR_Ki",                             false,  { nullptr, } } },
-        { CNT_REG_CUR_Kd,           { "CUR_Kd",                             false,  { nullptr, } } },
-        { CNT_REG_CUR_ACTIVE,       { "CUR_ACTIVE",                         false,  { nullptr, } } },
-        { CNT_REG_OUTPUT,           { "Motor Output Voltage, V",            false,  { nullptr, } } },
-        { CNT_REG_OUTPUT_THRES,     { "OUTPUT_THRES",                       false,  { nullptr, } } }
-    };
+//    QMap<uint8_t, RegisterStatus> RegisterNames = {
+//        { CNT_REG_TORQUE,           { "Torque, Nm",                         false,  { nullptr, } } },
+//        { CNT_REG_POS_SP,           { "Position Setpoint, rad",             false,  { nullptr, } } },
+//        { CNT_REG_POS_FB,           { "Position, rad",                      false,  { nullptr, } } },
+//        { CNT_REG_POS_ACC,          { "Position Loop Accumulator, rad",     false,  { nullptr, } } },
+//        { CNT_REG_POS_ACC_THRES,    { "POS_ACC_THRES",                      false,  { nullptr, } } },
+//        { CNT_REG_POS_PERR,         { "POS_PERR",                           false,  { nullptr, } } },
+//        { CNT_REG_POS_Kp,           { "POS_Kp",                             false,  { nullptr, } } },
+//        { CNT_REG_POS_Ki,           { "POS_Ki",                             false,  { nullptr, } } },
+//        { CNT_REG_POS_Kd,           { "POS_Kd",                             false,  { nullptr, } } },
+//        { CNT_REG_POS_ACTIVE,       { "POS_ACTIVE",                         false,  { nullptr, } } },
+//        { CNT_REG_SPD_SP,           { "Velocity Setpoint, rad/s",           false,  { nullptr, } } },
+//        { CNT_REG_SPD_FB,           { "Velocity, rad/s",                    false,  { nullptr, } } },
+//        { CNT_REG_SPD_ACC,          { "Velocity Loop Accumulator, rad/s",   false,  { nullptr, } } },
+//        { CNT_REG_SPD_ACC_THRES,    { "SPD_ACC_THRES",                      false,  { nullptr, } } },
+//        { CNT_REG_SPD_PERR,         { "SPD_PERR",                           false,  { nullptr, } } },
+//        { CNT_REG_SPD_Kp,           { "SPD_Kp",                             false,  { nullptr, } } },
+//        { CNT_REG_SPD_Ki,           { "SPD_Ki",                             false,  { nullptr, } } },
+//        { CNT_REG_SPD_Kd,           { "SPD_Kd",                             false,  { nullptr, } } },
+//        { CNT_REG_SPD_ACTIVE,       { "SPD_ACTIVE",                         false,  { nullptr, } } },
+//        { CNT_REG_CUR_SP,           { "Current Setpoint, A",                false,  { nullptr, } } },
+//        { CNT_REG_CUR_FB,           { "Current, A",                         false,  { nullptr, } } },
+//        { CNT_REG_CUR_ACC,          { "Current Loop Accumulator, A",        false,  { nullptr, } } },
+//        { CNT_REG_CUR_ACC_THRES,    { "CUR_ACC_THRES",                      false,  { nullptr, } } },
+//        { CNT_REG_CUR_PERR,         { "CUR_PERR",                           false,  { nullptr, } } },
+//        { CNT_REG_CUR_Kp,           { "CUR_Kp",                             false,  { nullptr, } } },
+//        { CNT_REG_CUR_Ki,           { "CUR_Ki",                             false,  { nullptr, } } },
+//        { CNT_REG_CUR_Kd,           { "CUR_Kd",                             false,  { nullptr, } } },
+//        { CNT_REG_CUR_ACTIVE,       { "CUR_ACTIVE",                         false,  { nullptr, } } },
+//        { CNT_REG_OUTPUT,           { "Motor Output Voltage, V",            false,  { nullptr, } } },
+//        { CNT_REG_OUTPUT_THRES,     { "OUTPUT_THRES",                       false,  { nullptr, } } }
+//    };
 
-    void AttachRegisterToGraph(RegisterStatus * reg, bool state);
+//    void AttachRegisterToGraph(RegisterStatus * reg, bool state);
 
     enum DataAwaited{
         BP_PING_AWAIT_SIZE                  = 9,
@@ -199,7 +203,8 @@ private:
         BP_CNT_WRITE_MULTIPLE_AWAIT_SIZE    = 33,
         BP_CNT_READ_SINGLE_AWAIT_SIZE       = 21,
         BP_CNT_READ_MULTIPLE_AWAIT_SIZE     = 33,
-        BP_CNT_GLOBAL_CMD_AWAIT_SIZE        = 13
+        BP_CNT_GLOBAL_CMD_AWAIT_SIZE        = 13,
+        BP_CNT_READ_PLOTTABLE_AWAIT_SIZE    = 125
     };
 
     struct BP_Header{
@@ -302,15 +307,32 @@ private:
         }
     };
 
+    struct CNT_Plottable{
+        QVector<float>  data;
+
+        CNT_Plottable(void){};
+        CNT_Plottable(QVector<float> v){
+            for (uint32_t iter = 0; iter < v.size(); iter++){
+                this->data.append(v[iter]);
+            }
+        }
+        void SetHeaderFromCNTPayload(CNT_Header * header){
+            QVector<uint32_t> tmp = header->PassPayload();
+
+            this->data = *(reinterpret_cast<QVector<float> *>(&tmp));
+        }
+    };
+
 private slots:
     void PushDataFromStream(void);
 
     void Timeout(void){
         if (this->DeviceCheckTimer->isActive()) this->DeviceCheckTimer->stop();
+        qDebug() << "Data in stock " << this->Serial->bytesAvailable();
         this->Serial->readAll();
         this->SerialLock.Unlock();
         this->data_awaited = 0;
-        qDebug() << "Timeout";
+//        qDebug() << "Timeout";
     }
 
 public slots:
@@ -325,6 +347,7 @@ public slots:
     void C_ReadSingleData(uint16_t id, uint16_t reg);
     void C_WriteMultipleData(uint16_t reg, QVector<float> data);
     void C_WriteSingleData(uint16_t id, uint16_t reg, float data);
+    void C_ReadPlottableRegs(void);
     void C_SendCmd(uint16_t cmd);
 
     void slActivate(void);
@@ -337,72 +360,72 @@ signals:
 
 private:
 
-    QList<QColor> PenColorChoose;
+//    QList<QColor> PenColorChoose;
 
-    QColor GrabPenColor(void){
-        return this->PenColorChoose.takeFirst();
-    }
-    void ReturnPenColor(QColor col){
-        this->PenColorChoose.push_back(col);
-    }
+//    QColor GrabPenColor(void){
+//        return this->PenColorChoose.takeFirst();
+//    }
+//    void ReturnPenColor(QColor col){
+//        this->PenColorChoose.push_back(col);
+//    }
 
-    QTimer * PlotDataTimer = nullptr;
+//    QTimer * PlotDataTimer = nullptr;
 
-    QCustomPlot * plot_handles[4];
-    QMenu plot_context_menu;
+//    QCustomPlot * plot_handles[4];
+//    QMenu plot_context_menu;
 
-    void InitGraphs(void);
+//    void InitGraphs(void);
 
 private slots:
 
-    void slPlotDataRequest(void);
+//    void slPlotDataRequest(void);
 
-    void slShowContextMenu(const QPoint & pos);
-    void slPlotActive(bool state);
-    void slRescalePlots(void);
-    void slAutoRescalePlots(bool state);
-    void slParameterHandle(bool state);
+//    void slShowContextMenu(const QPoint & pos);
+//    void slPlotActive(bool state);
+//    void slRescalePlots(void);
+//    void slAutoRescalePlots(bool state);
+//    void slParameterHandle(bool state);
 
 // POSTITION CONTROL
 
 private:
-    void InitDials(void);
+//    void InitDials(void);
 
-    struct DialValues{
+//    struct DialValues{
 
-        void SetDial(int32_t ov, int16_t cnt, QDial * dh, QRadioButton * th, QRadioButton * rh, QLineEdit * lh){
-            this->old_value = ov;
-            this->counter = cnt;
-            this->dial_handle = dh;
-            this->set_turn = th;
-            this->set_rads = rh;
-            this->edit_line_handle = lh;
-        }
+//        void SetDial(int32_t ov, int16_t cnt, QDial * dh, QRadioButton * th, QRadioButton * rh, QLineEdit * lh){
+//            this->old_value = ov;
+//            this->counter = cnt;
+//            this->dial_handle = dh;
+//            this->set_turn = th;
+//            this->set_rads = rh;
+//            this->edit_line_handle = lh;
+//        }
 
-        void Reset(void){
-            this->old_value = 0;
-            this->counter = 0;
-            this->dial_handle->setValue(0);
-            this->edit_line_handle->setText("0,000");
-            this->set_rads->setChecked(true);
-        }
-        int32_t old_value               = 0;
-        int16_t counter                 = 0;
-        QDial * dial_handle             = nullptr;
-        QRadioButton * set_turn         = nullptr;
-        QRadioButton * set_rads         = nullptr;
-        QLineEdit * edit_line_handle    = nullptr;
-    };
+//        void Reset(void){
+//            this->old_value = 0;
+//            this->counter = 0;
+//            this->dial_handle->setValue(0);
+//            this->edit_line_handle->setText("0,000");
+//            this->set_rads->setChecked(true);
+//        }
+//        int32_t old_value               = 0;
+//        int16_t counter                 = 0;
+//        QDial * dial_handle             = nullptr;
+//        QRadioButton * set_turn         = nullptr;
+//        QRadioButton * set_rads         = nullptr;
+//        QLineEdit * edit_line_handle    = nullptr;
+//    };
 
-    DialValues DialParameters[4];
+//    DialValues DialParameters[4];
 
 private slots:
 
-    void slProcessDial(int data);
-    void slProcessDialLine(void);
-    void slSendPosFromDial(void);
-    void slSetTurns(void);
-    void slSetRads(void);
+//    void slProcessDial(int data);
+//    void slProcessDialLine(void);
+//    void slSendPosFromDial(void);
+//    void slSetTurns(void);
+//    void slSetRads(void);
 
 // 3D Plot
 

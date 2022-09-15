@@ -19,6 +19,7 @@ SOURCES += \
     bootloader.cpp \
     main.cpp \
     mainwindow.cpp \
+    plot2d.cpp \
     plot3d.cpp \
     plot3dconfigs.cpp \
     qcustomplot.cpp \
@@ -28,6 +29,7 @@ HEADERS += \
     bootloader.h \
     global_config.h \
     mainwindow.h \
+    plot2d.h \
     plot3d.h \
     plot3dconfigs.h \
     qcustomplot.h \
