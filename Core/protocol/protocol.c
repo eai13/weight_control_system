@@ -63,12 +63,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
     if (huart == &PROTOCOL_UART){
-        switch()
+        HAL_UART_Receive_IT(&PROTOCOL_UART, (uint8_t *)p_bp, sizeof(bp_header_t));
     }
 }
 
 void PROTOCOL_ProcessFrame(void){
-    switch(bp_header.cmd){
+    switch(p_bp->cmd){
         case(BP_CMD_PING):{
             MAKE_BP_HEADER(BP_CMD_PING, 1);
             tx_buffer[5] = 'A'; tx_buffer[6] = 'P'; tx_buffer[7] = 'P'; tx_buffer[8] = '1';
@@ -248,33 +248,38 @@ void PROTOCOL_ProcessFrame(void){
                             // HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&s_data, sizeof(single_reg_data_t), 10);
                             break;
                         case(CMD_READ_REG): ///////// HEHRHEHHERHERHERHERHERUERHREHUERUHERUHERUHERUHREHUREHUREHUREHUERUHREUHREUE
-                            memcpy((void *)&s_data, buffer + sizeof(control_header_t), sizeof(single_reg_data_t));
-                            if (s_data.reg >= REGISTER_LAST){
+                            p_s_data = tx_buffer + sizeof(bp_header_t) + sizeof(control_header_t);
+                            // memcpy((void *)&s_data, buffer + sizeof(control_header_t), sizeof(single_reg_data_t));
+                            if (p_s_data->reg >= REGISTER_LAST){
                                 MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
-                                MAKE_CONTROL_HEADER(cnt_header.id, CMD_ERROR);
-                                HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&bp_header, sizeof(bp_header_t), 10);
-                                HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&cnt_header, sizeof(control_header_t), 10);
+                                MAKE_CONTROL_HEADER(p_cnt->id, CMD_ERROR);
+                                HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
+                                // HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&bp_header, sizeof(bp_header_t), 10);
+                                // HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&cnt_header, sizeof(control_header_t), 10);
                                 break;
                             }
                             float tmp = 0;
-                            if (PID_ReadReg(cnt_header.id, s_data.reg, &tmp) == RW_ERROR){
+                            if (PID_ReadReg(p_cnt->id, p_s_data->reg, &tmp) == RW_ERROR){
                                 MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
-                                MAKE_CONTROL_HEADER(cnt_header.id, CMD_ERROR);
-                                HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&bp_header, sizeof(bp_header_t), 10);
-                                HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&cnt_header, sizeof(control_header_t), 10);
+                                MAKE_CONTROL_HEADER(p_cnt->id, CMD_ERROR);
+                                HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
+                                // HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&bp_header, sizeof(bp_header_t), 10);
+                                // HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&cnt_header, sizeof(control_header_t), 10);
                                 break;
                             }
-                            else s_data.data = tmp;
+                            else p_s_data->data = tmp;
                             MAKE_BP_HEADER(BP_CMD_CONTROL, 4);
-                            HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&bp_header, sizeof(bp_header_t), 10);
-                            HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&cnt_header, sizeof(control_header_t), 10);
-                            HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&s_data, sizeof(single_reg_data_t), 10);
+                            HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t) + sizeof(single_reg_data_t));
+                            // HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&bp_header, sizeof(bp_header_t), 10);
+                            // HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&cnt_header, sizeof(control_header_t), 10);
+                            // HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&s_data, sizeof(single_reg_data_t), 10);
                             break;
                         default:
                             MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
-                            MAKE_CONTROL_HEADER(cnt_header.id, CMD_ERROR);
-                            HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&bp_header, sizeof(bp_header_t), 10);
-                            HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&cnt_header, sizeof(control_header_t), 10);
+                            MAKE_CONTROL_HEADER(p_cnt->id, CMD_ERROR);
+                            HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
+                            // HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&bp_header, sizeof(bp_header_t), 10);
+                            // HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&cnt_header, sizeof(control_header_t), 10);
                             break;
                     }
                     break;
@@ -282,10 +287,11 @@ void PROTOCOL_ProcessFrame(void){
             break;
         default:
             MAKE_BP_HEADER(BP_ERROR_UNKNOWN_CMD, 0);
-            HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&bp_header, sizeof(bp_header_t), 10);
+            HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t));
+            // HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&bp_header, sizeof(bp_header_t), 10);
             break;
     }
-    HAL_UART_Receive_IT(&PROTOCOL_UART, (uint8_t *)&bp_header, sizeof(bp_header_t));
+    // HAL_UART_Receive_IT(&PROTOCOL_UART, (uint8_t *)&bp_header, sizeof(bp_header_t));
 
     // if (header.id >= ID_LAST){
     //     resp_header.id = header.id;
@@ -397,5 +403,5 @@ void PROTOCOL_ProcessFrame(void){
 }
 
 void PROTOCOL_Start(void){
-    HAL_UART_Receive_IT(&PROTOCOL_UART, (uint8_t *)&bp_header, sizeof(bp_header_t));
+    HAL_UART_Receive_IT(&PROTOCOL_UART, (uint8_t *)p_bp, sizeof(bp_header_t));
 }
