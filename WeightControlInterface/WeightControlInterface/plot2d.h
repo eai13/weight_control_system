@@ -15,6 +15,9 @@
 #include <QDoubleValidator>
 #include <QPoint>
 #include <QMap>
+#include <QFileDialog>
+#include <QFile>
+#include <QTextStream>
 
 class Plot2D : public QObject
 {
@@ -37,6 +40,8 @@ public:
 
 public slots:
 
+    void slSaveImage(void);
+    void slSaveData(void);
     void slSendPosFromDial(void);
     void slProcessDial(int data);
     void slProcessEditLine(void);

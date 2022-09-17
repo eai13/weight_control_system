@@ -48,7 +48,6 @@ Bootloader::~Bootloader()
     delete ui;
 }
 
-// Ping Button
 void Bootloader::C_Ping(void){
     if (!(this->SerialLock.Lock())){
         return;
@@ -62,7 +61,6 @@ void Bootloader::C_Ping(void){
 
 }
 
-// For Device Check Ping
 void Bootloader::C_PingSilent(void){
     if (!(this->SerialLock.Lock())){
         return;
@@ -76,7 +74,6 @@ void Bootloader::C_PingSilent(void){
     this->TimeoutTimer->start(50);
 }
 
-// Erase Button
 void Bootloader::C_Erase(void){
     if (!(this->SerialLock.Lock())){
         return;
@@ -90,7 +87,6 @@ void Bootloader::C_Erase(void){
     this->TimeoutTimer->start(2500);
 }
 
-// Jump Button
 void Bootloader::C_Jump(void){
     if (!(this->SerialLock.Lock())){
         return;
@@ -104,7 +100,6 @@ void Bootloader::C_Jump(void){
     this->TimeoutTimer->start(100);
 }
 
-// Read Button
 void Bootloader::C_Read(void){
     if (!(this->SerialLock.Lock())){
         return;
@@ -112,7 +107,6 @@ void Bootloader::C_Read(void){
     ConsoleBasic("Reading From");
 }
 
-// Verify Button
 void Bootloader::C_Verify(void){
     if (!(this->SerialLock.Lock())){
         return;
@@ -120,11 +114,7 @@ void Bootloader::C_Verify(void){
     ConsoleBasic("Firmware Verification Started");
 }
 
-// Write Button
 void Bootloader::C_Write(void){
-//    if (!(this->SerialLock.Lock()))
-//        return;
-
     ConsoleBasic("Write Firmware Started");
     this->file = new QFile(ui->lineEdit_filename->text());
 
@@ -283,11 +273,6 @@ void Bootloader::ProcessIncomingData(void){
     }
     }
 }
-
-//void Bootloader::ErrorCatch(uint32_t error_code){
-//    std::cout << "Error Code" << error_code << std::endl;
-//}
-
 
 void Bootloader::PushDataFromStream(void){
     if ((this->data_awaited) && (this->Serial->bytesAvailable() >= this->data_awaited))

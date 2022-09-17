@@ -28,7 +28,6 @@ public:
     }
     bool Lock(void){
         if (this->is_locked){
-//            qDebug() << "LOCKED";
             return false;
         }
         else{
@@ -70,8 +69,6 @@ public slots:
     }
 
     void slActivate(void);
-
-//    void ErrorCatch(uint32_t error_code);
 
 private slots:
     void Timeout(void){
@@ -179,7 +176,6 @@ private:
 
     void ProcessIncomingData(void);
 
-//    QByteArray  serial_stream;
     uint32_t    data_awaited = 0;
     uint8_t     flash_after = 0;
 
@@ -189,7 +185,6 @@ private:
     QList<QSerialPortInfo>  available_ports;
 
 signals:
-//    void ErrorSignal(uint32_t error_code);
     void siChooseTab(uint16_t tab);
     void siSendSerial(QSerialPort * p_serial);
 };

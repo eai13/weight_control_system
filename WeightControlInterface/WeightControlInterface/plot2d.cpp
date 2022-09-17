@@ -29,6 +29,9 @@ Plot2D::Plot2D(QCustomPlot * plot_h, QRadioButton * rb_turn_h, QRadioButton * rb
     p_act->setObjectName("Autorescale");
     p_act->setCheckable(true);
 
+    this->plot_menu.addAction("Save Plot", this, &Plot2D::slSaveImage);
+    this->plot_menu.addAction("Save Data", this, &Plot2D::slSaveData);
+
     this->plot_menu.addSeparator();
 
         QMenu * p_menu = this->plot_menu.addMenu("Active Registers");
@@ -207,5 +210,38 @@ void Plot2D::slPlotActive(bool state){
             this->plot->graph(iter)->data()->clear();
         }
         this->system_time->restart();
+    }
+}
+
+void Plot2D::slSaveImage(void){
+    QString filter;
+    QString fname = QFileDialog::getSaveFileName(nullptr, "Save file", QDir::currentPath(), "PNG (*.png);;BMP (*.bmp);;JPG (*.jpg)", &filter);
+    if (filter == "PNG (*.png)")
+        this->plot->savePng(fname, 1920, 1080);
+    else if (filter == "BMP (*.bmp)")
+        this->plot->saveBmp(fname, 1920, 1080);
+    else if (filter == "JPG (*.jpg)")
+        this->plot->saveJpg(fname, 1920, 1080);
+}
+
+void Plot2D::slSaveData(void){
+    QString filter;
+    QString fname = QFileDialog::getSaveFileName(nullptr, "Save File", QDir::currentPath(), "CSV (*.csv)", &filter);
+    QFile file(fname + ".csv");
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)){
+        qDebug() << "File opened";
+        QTextStream file_stream(&file);
+        for (auto iter = this->active_registers.begin(); iter != this->active_registers.end(); iter++)
+            file_stream << "Time;" << (*iter).plot_id->name() << ";";
+        file_stream << "\n";
+        QList<auto> begin_list;
+        QList<auto> end_list;
+        for (uint8_t iter = 0; iter < this->plot->graphCount(); iter++){
+            begin_list.push_back(this->plot->graph(iter)->data()->begin());
+            end_list.push_back(this->plot->graph(iter)->data()->end());
+        }
+        uint8_t end_flag = 0;
+
+        file.close();
     }
 }
