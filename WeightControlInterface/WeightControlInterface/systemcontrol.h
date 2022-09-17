@@ -45,6 +45,8 @@ public:
 
 private:
 
+    void Exit(uint8_t tab);
+
     enum TIMER_PERIODS{
         PERIODTransmitHandlerTimer  = 10,
         PERIODPlotDataTimer         = 100,
@@ -290,6 +292,13 @@ private slots:
         this->Serial->readAll();
         this->SerialLock.Unlock();
         this->data_awaited = 0;
+        disconnect(this->Serial, &QSerialPort::readyRead, this, &SystemControl::PushDataFromStream);
+        if (this->DeviceCheckTimer->isActive()) this->DeviceCheckTimer->stop();
+        if (this->TransmitHandlerTimer->isActive()) this->TransmitHandlerTimer->stop();
+        if (this->PlottableDataTimer->isActive()) this->PlottableDataTimer->stop();
+        for (uint8_t iter = 0; iter < 4; iter++)
+            this->plots[iter]->ResetPlot();
+        emit this->siChooseTab(BOOTLOADER_TAB);
     }
 
 public slots:

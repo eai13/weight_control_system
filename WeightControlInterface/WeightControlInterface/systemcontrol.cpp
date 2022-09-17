@@ -168,24 +168,16 @@ void SystemControl::ProcessIncomingData(void){
 
         if ((s_name != BOOTLOADER_ID) && (s_name != APP_1_ID) && (s_name != APP_2_ID)){
             ConsoleWarning(("Unknown Device " + s_name));
-
+            this->Exit(BOOTLOADER_TAB);
         }
 
         emit siSendSerial(this->Serial);
 
         if (s_name == BOOTLOADER_ID){
-            disconnect(this->Serial, &QSerialPort::readyRead, this, &SystemControl::PushDataFromStream);
-            if (this->DeviceCheckTimer->isActive()) this->DeviceCheckTimer->stop();
-            if (this->TransmitHandlerTimer->isActive()) this->TransmitHandlerTimer->stop();
-            if (this->PlottableDataTimer->isActive()) this->PlottableDataTimer->stop();
-            emit siChooseTab(BOOTLOADER_TAB);
+            this->Exit(BOOTLOADER_TAB);
         }
         else if (s_name == APP_2_ID){
-            disconnect(this->Serial, &QSerialPort::readyRead, this, &SystemControl::PushDataFromStream);
-            if (this->DeviceCheckTimer->isActive()) this->DeviceCheckTimer->stop();
-            if (this->TransmitHandlerTimer->isActive()) this->TransmitHandlerTimer->stop();
-            if (this->PlottableDataTimer->isActive()) this->PlottableDataTimer->stop();
-            emit siChooseTab(APP_2_TAB);
+            this->Exit(APP_2_TAB);
         }
 
         this->SerialLock.Unlock();
@@ -299,4 +291,14 @@ void SystemControl::ConsoleWarning(QString message){
 void SystemControl::slSendPos(float data){
     uint8_t sender_id = sender()->objectName().toInt();
     this->C_WriteSingleData(sender_id, this->CNT_REG_POS_SP, data);
+}
+
+void SystemControl::Exit(uint8_t tab){
+    disconnect(this->Serial, &QSerialPort::readyRead, this, &SystemControl::PushDataFromStream);
+    if (this->DeviceCheckTimer->isActive()) this->DeviceCheckTimer->stop();
+    if (this->TransmitHandlerTimer->isActive()) this->TransmitHandlerTimer->stop();
+    if (this->PlottableDataTimer->isActive()) this->PlottableDataTimer->stop();
+    for (uint8_t iter = 0; iter < 4; iter++)
+        this->plots[iter]->ResetPlot();
+    emit this->siChooseTab(tab);
 }

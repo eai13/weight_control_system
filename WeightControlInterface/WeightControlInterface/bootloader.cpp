@@ -18,8 +18,6 @@ Bootloader::Bootloader(QWidget *parent) :
 
     ui->setupUi(this);
 
-    this->UIUnlock(false);
-
     this->TimeoutTimer = new QTimer(this);
     this->TimeoutTimer->setSingleShot(true);
     connect(this->TimeoutTimer, &QTimer::timeout, this, &Bootloader::Timeout);
@@ -62,7 +60,6 @@ void Bootloader::C_Ping(void){
     this->Serial->write(header.SetRawFromHeader());
     this->TimeoutTimer->start(50);
 
-    this->UIUnlock(false);
 }
 
 // For Device Check Ping
@@ -77,8 +74,6 @@ void Bootloader::C_PingSilent(void){
     this->data_awaited = this->PING_AWAIT_SIZE;
     this->Serial->write(header.SetRawFromHeader());
     this->TimeoutTimer->start(50);
-
-    this->UIUnlock(false);
 }
 
 // Erase Button
@@ -93,8 +88,6 @@ void Bootloader::C_Erase(void){
     this->data_awaited = this->ERASE_AWAIT_SIZE;
     this->Serial->write(header.SetRawFromHeader());
     this->TimeoutTimer->start(2500);
-
-    this->UIUnlock(false);
 }
 
 // Jump Button
@@ -109,7 +102,6 @@ void Bootloader::C_Jump(void){
     this->data_awaited = this->JUMP_AWAIT_SIZE;
     this->Serial->write(header.SetRawFromHeader());
     this->TimeoutTimer->start(100);
-    this->UIUnlock(false);
 }
 
 // Read Button
@@ -184,7 +176,6 @@ void Bootloader::ProcessIncomingData(void){
         }
 
         qDebug() << "Ping receive";
-        this->UIUnlock(true);
         this->console_enabled = true;
 
         emit siSendSerial(this->Serial);
@@ -196,13 +187,11 @@ void Bootloader::ProcessIncomingData(void){
         if (s_name == APP_1_ID){
             disconnect(this->Serial, &QSerialPort::readyRead, this, &Bootloader::PushDataFromStream);
             if (this->DeviceCheckTimer->isActive()) this->DeviceCheckTimer->stop();
-            this->UIUnlock(false);
             emit siChooseTab(APP_1_TAB);
         }
         else if (s_name == APP_2_ID){
             disconnect(this->Serial, &QSerialPort::readyRead, this, &Bootloader::PushDataFromStream);
             if (this->DeviceCheckTimer->isActive()) this->DeviceCheckTimer->stop();
-            this->UIUnlock(false);
             emit siChooseTab(APP_2_TAB);
         }
         this->SerialLock.Unlock();
@@ -210,19 +199,16 @@ void Bootloader::ProcessIncomingData(void){
     }
     case(this->JUMP):{
         ConsoleBasic("Jump to " + ui->comboBox_partition->currentText() + " Completed Successfully");
-        this->UIUnlock(true);
         this->SerialLock.Unlock();
         break;
     }
     case(this->VERIFY):{
-        this->UIUnlock(true);
         this->SerialLock.Unlock();
         break;
     }
     case(this->ERASE):{
         ConsoleBasic("Erasing Partition " + ui->comboBox_partition->currentText() + " Completed");
         if (!(this->flash_after)){
-            this->UIUnlock(true);
             this->SerialLock.Unlock();
             break;
         }
@@ -249,7 +235,6 @@ void Bootloader::ProcessIncomingData(void){
             this->TimeoutTimer->start(1000);
         }
         else{
-            this->UIUnlock(true);
             this->SerialLock.Unlock();
             ConsoleBasic("Writing Ended! Jolly Good!");
             this->file->close();
@@ -258,49 +243,41 @@ void Bootloader::ProcessIncomingData(void){
         break;
     }
     case(this->READ):{
-        this->UIUnlock(true);
         this->SerialLock.Unlock();
         break;
     }
     case(this->INTERNAL_ERROR):{
         ConsoleError("Internal Error Occured");
-        this->UIUnlock(true);
         this->SerialLock.Unlock();
         break;
     }
     case(this->CRC_ERROR):{
         ConsoleError("CRC Error");
-        this->UIUnlock(true);
         this->SerialLock.Unlock();
         break;
     }
     case(this->CMD_ERROR):{
         ConsoleError("Wrong Command for Device");
-        this->UIUnlock(true);
         this->SerialLock.Unlock();
         break;
     }
     case(this->PARTITION_ERROR):{
         ConsoleError("Wrong Partition");
-        this->UIUnlock(true);
         this->SerialLock.Unlock();
         break;
     }
     case(this->LENGTH_ERROR):{
         ConsoleError("Length Error");
-        this->UIUnlock(true);
         this->SerialLock.Unlock();
         break;
     }
     case(this->DATA_ERROR):{
         ConsoleError("Wrong Data");
-        this->UIUnlock(true);
         this->SerialLock.Unlock();
         break;
     }
     default:{
         ConsoleError("Unknown Error");
-        this->UIUnlock(true);
         this->SerialLock.Unlock();
         break;
     }
@@ -311,16 +288,6 @@ void Bootloader::ProcessIncomingData(void){
 //    std::cout << "Error Code" << error_code << std::endl;
 //}
 
-void Bootloader::UIUnlock(bool lock){
-//    ui->pushButton_choosefile->setEnabled(lock);
-//    ui->pushButton_erase->setEnabled(lock);
-//    ui->pushButton_jump->setEnabled(lock);
-//    ui->pushButton_ping->setEnabled(lock);
-//    ui->pushButton_read->setEnabled(lock);
-//    ui->pushButton_verify->setEnabled(lock);
-//    ui->pushButton_write->setEnabled(lock);
-//    ui->comboBox_partition->setEnabled(lock);
-}
 
 void Bootloader::PushDataFromStream(void){
     if ((this->data_awaited) && (this->Serial->bytesAvailable() >= this->data_awaited))
@@ -356,6 +323,7 @@ void Bootloader::BrowseFile(void){
 }
 
 void Bootloader::DevicePing(void){
+    if (QSerialPortInfo::availablePorts().isEmpty()) return;
     if (this->available_ports.isEmpty()){
         this->available_ports = QSerialPortInfo::availablePorts();
     }
@@ -378,6 +346,7 @@ void Bootloader::DevicePing(void){
 }
 
 void Bootloader::slActivate(void){
+    this->console_enabled = false;
     connect(this->Serial, &QSerialPort::readyRead, this, &Bootloader::PushDataFromStream);
-    this->DeviceCheckTimer->start(1000);
+    this->DevicePingTimer->start(1000);
 }

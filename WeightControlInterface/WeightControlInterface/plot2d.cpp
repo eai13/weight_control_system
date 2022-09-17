@@ -32,6 +32,7 @@ Plot2D::Plot2D(QCustomPlot * plot_h, QRadioButton * rb_turn_h, QRadioButton * rb
     this->plot_menu.addSeparator();
 
         QMenu * p_menu = this->plot_menu.addMenu("Active Registers");
+        p_menu->setObjectName("registers");
         p_menu->addAction("Position Setpoint")->setObjectName("1");
         p_menu->addAction("Position")->setObjectName("2");
         p_menu->addAction("Speed Setpoint")->setObjectName("10");
@@ -100,12 +101,30 @@ void Plot2D::slSetActiveRegister(bool state){
     this->system_time->restart();
 }
 
-void Plot2D::ResetDial(void){
-    this->dial_old_value = 0;
-    this->dial_counter = 0;
-    this->dial->setValue(0);
+void Plot2D::ResetPlot(void){
     this->lineedit->setText("0,000");
     this->rb_rads->setChecked(true);
+    this->dial->setValue(0);
+    this->dial_counter = 0;
+    this->dial_old_value = 0;
+    this->plot->clearGraphs();
+    this->plot->replot();
+    this->plot_menu.findChild<QAction *>("isactive")->setChecked(true);
+    this->plot_menu.findChild<QAction *>("Autorescale")->setChecked(false);
+    QMenu * p_menu = this->plot_menu.findChild<QMenu *>("registers");
+    for (auto iter = p_menu->actions().begin(); iter != p_menu->actions().end(); iter++){
+        (*iter)->setChecked(false);
+    }
+    this->pencolor_buffer.clear();
+    this->pencolor_buffer.push_back(QColor(255, 0, 0));
+    this->pencolor_buffer.push_back(QColor(0, 255, 0));
+    this->pencolor_buffer.push_back(QColor(0, 0, 255));
+    this->pencolor_buffer.push_back(QColor(255, 0, 255));
+    this->pencolor_buffer.push_back(QColor(255, 255, 0));
+    this->pencolor_buffer.push_back(QColor(0, 255, 255));
+    this->pencolor_buffer.push_back(QColor(0, 0, 0));
+
+    this->active_registers.clear();
 }
 
 void Plot2D::slAddData(uint32_t reg, float value){

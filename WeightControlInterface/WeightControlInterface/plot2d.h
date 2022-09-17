@@ -33,6 +33,7 @@ public:
     QMenu           plot_menu;
 
     void ResetDial(void);
+    void ResetPlot(void);
 
 public slots:
 

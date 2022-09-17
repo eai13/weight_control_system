@@ -89,7 +89,6 @@ private slots:
 
         ConsoleError("Connection Timeout");
 
-        this->UIUnlock(false);
         disconnect(this->Serial, &QSerialPort::readyRead, this, &Bootloader::PushDataFromStream);
         this->console_enabled = false;
 
@@ -98,7 +97,6 @@ private slots:
         }
     }
     void DevicePing(void);
-    void UIUnlock(bool lock);
     void PushDataFromStream(void);
     void BrowseFile(void);
 
@@ -191,7 +189,7 @@ private:
     QList<QSerialPortInfo>  available_ports;
 
 signals:
-    void ErrorSignal(uint32_t error_code);
+//    void ErrorSignal(uint32_t error_code);
     void siChooseTab(uint16_t tab);
     void siSendSerial(QSerialPort * p_serial);
 };
