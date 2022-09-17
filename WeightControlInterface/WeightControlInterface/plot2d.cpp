@@ -21,6 +21,7 @@ Plot2D::Plot2D(QCustomPlot * plot_h, QRadioButton * rb_turn_h, QRadioButton * rb
     p_act->setObjectName("isactive");
     p_act->setCheckable(true);
     p_act->setChecked(true);
+    connect(p_act, &QAction::triggered, this, &Plot2D::slPlotActive);
 
     this->plot_menu.addSeparator();
 
@@ -58,7 +59,7 @@ Plot2D::Plot2D(QCustomPlot * plot_h, QRadioButton * rb_turn_h, QRadioButton * rb
 
     this->lineedit->setValidator(new QDoubleValidator(-1000, 1000, 3));
 
-//    connect(this->lineedit, &QLineEdit::returnPressed, this, )
+    connect(this->lineedit, &QLineEdit::returnPressed, this, &Plot2D::slProcessEditLine);
     connect(this->rb_turn, &QRadioButton::clicked, this, &Plot2D::slSetTurns);
     connect(this->rb_rads, &QRadioButton::clicked, this, &Plot2D::slSetRads);
     connect(this->dial, &QDial::sliderMoved, this, &Plot2D::slProcessDial);
@@ -75,6 +76,7 @@ void Plot2D::slSetActiveRegister(bool state){
         for (auto iter = this->active_registers.begin(); iter != this->active_registers.end(); iter++)
             if ((*iter).reg == sender_id) return;
         QCPGraph * tmp = this->plot->addGraph();
+        tmp->setName(this->register_names[sender_id]);
         tmp->setPen(QPen(this->GrabColor()));
         this->active_registers.push_back(Register(sender_id, tmp));
         this->system_time->restart();
@@ -90,6 +92,12 @@ void Plot2D::slSetActiveRegister(bool state){
             iter++;
         }
     }
+
+    for (uint8_t iter = 0; iter < this->plot->graphCount(); iter++)
+        this->plot->graph(iter)->data()->clear();
+
+    this->plot->replot();
+    this->system_time->restart();
 }
 
 void Plot2D::ResetDial(void){
@@ -106,8 +114,31 @@ void Plot2D::slAddData(uint32_t reg, float value){
         if ((*iter).reg == reg){
             (*iter).plot_id->addData((float)this->system_time->elapsed() / 1000.0, value);
             if (this->plot_menu.findChild<QAction *>("Autorescale")->isChecked()) this->plot->rescaleAxes();
+            this->plot->replot();
             return;
         }
+    }
+    return;
+}
+
+void Plot2D::slProcessEditLine(void){
+    QString val_str = this->lineedit->text();
+    for (auto iter = val_str.begin(); iter != val_str.end(); iter++)
+        if ((*iter) == '.') (*iter) = ',';
+    float val = val_str.toFloat();
+
+    if (this->rb_rads->isChecked()){
+        this->dial_counter = val / 6.28;
+        this->dial->setValue((int)(val / 6.28 * (this->dial->maximum() + 1)) % (this->dial->maximum() + 1));
+        this->dial_old_value = this->dial->value();
+        emit this->siSendPos(val);
+    }
+    else{
+        this->dial_counter = val;
+        qDebug() << "dial_counter " << this->dial_counter;
+        this->dial->setValue((int)(val * (this->dial->maximum() + 1)) % (this->dial->maximum() + 1));
+        this->dial_old_value = this->dial->value();
+        emit this->siSendPos(val * 6.28);
     }
 }
 
@@ -149,4 +180,13 @@ void Plot2D::slSetRads(void){
 
 void Plot2D::slShowContextMenu(const QPoint & pos){
     this->plot_menu.exec(QCursor::pos());
+}
+
+void Plot2D::slPlotActive(bool state){
+    if (state){
+        for (uint8_t iter = 0; iter < this->plot->graphCount(); iter++){
+            this->plot->graph(iter)->data()->clear();
+        }
+        this->system_time->restart();
+    }
 }

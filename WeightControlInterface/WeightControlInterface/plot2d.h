@@ -14,6 +14,7 @@
 #include <QTime>
 #include <QDoubleValidator>
 #include <QPoint>
+#include <QMap>
 
 class Plot2D : public QObject
 {
@@ -37,13 +38,25 @@ public slots:
 
     void slSendPosFromDial(void);
     void slProcessDial(int data);
+    void slProcessEditLine(void);
     void slSetRads(void);
     void slSetTurns(void);
     void slSetActiveRegister(bool state);
     void slAddData(uint32_t reg, float value);
     void slShowContextMenu(const QPoint & pos);
+    void slPlotActive(bool state);
 
 private:
+
+    QMap<uint16_t, QString> register_names = {
+        { 1,    "Position Setpoint, rad" },
+        { 2,    "Position, rad" },
+        { 10,   "Velocity Setpoint, rad/s" },
+        { 11,   "Velocity, rad/s" },
+        { 19,   "Current Setpoint, A" },
+        { 20,   "Current, A" },
+        { 28,   "Output, V" }
+    };
 
     QColor GrabColor(void){
         return this->pencolor_buffer.takeFirst();
