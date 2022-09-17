@@ -373,3 +373,16 @@ rw_status_t PID_ReadReg(uint8_t drive_num, uint8_t reg, float * data){
     }
     else return RW_ERROR;
 }
+
+wc_plottables_t PID_ReadPlottables(uint8_t drive_num){
+    wc_plottables_t tmp = { 0 };
+    if (drive_num >= 4) return tmp; 
+    tmp.pos_sp = drives[drive_num].position_l.sp.v;
+    tmp.pos_fb = drives[drive_num].position_l.fb.v;
+    tmp.spd_sp = drives[drive_num].speed_l.sp.v;
+    tmp.spd_fb = drives[drive_num].speed_l.fb.v;
+    tmp.cur_sp = drives[drive_num].current_l.sp.v;
+    tmp.cur_fb = drives[drive_num].current_l.fb.v;
+    tmp.output = drives[drive_num].output.v;
+    return tmp;
+}

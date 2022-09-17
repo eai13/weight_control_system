@@ -74,10 +74,23 @@ typedef struct{
     wc_drive_dir_e      direction;
 }device_t;
 
+#pragma pack(push, 1)
+typedef struct{
+    float pos_sp;
+    float pos_fb;
+    float spd_sp;
+    float spd_fb;
+    float cur_sp;
+    float cur_fb;
+    float output;
+}wc_plottables_t;
+#pragma pack(pop)
+
 void PID_DriveCompute(uint8_t drive_num);
 
 rw_status_t PID_WriteReg(uint8_t drive_num, uint8_t reg, float data);
 rw_status_t PID_ReadReg(uint8_t drive_num, uint8_t reg, float * data);
+wc_plottables_t PID_ReadPlottables(uint8_t drive_num);
 
 extern device_t drives[4];
 extern uint16_t current[4];

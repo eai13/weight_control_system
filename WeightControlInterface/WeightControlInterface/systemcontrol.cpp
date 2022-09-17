@@ -138,7 +138,7 @@ void SystemControl::C_ReadPlottableRegs(void){
     QByteArray b_data = bp_header.SetRawFromHeader();
     b_data.append(cnt_header.SetRawFromHeader());
 
-    Packet pack(b_data, this->BP_CNT_READ_PLOTTABLE_AWAIT_SIZE, 1000);
+    Packet pack(b_data, this->BP_CNT_READ_PLOTTABLE_AWAIT_SIZE, 100);
     this->serial_tx_queue.push_back(pack);
 }
 
@@ -168,7 +168,7 @@ void SystemControl::ProcessIncomingData(void){
         char * name = reinterpret_cast<char *>(&id);
         QString s_name = "";
         s_name += name[0]; s_name += name[1]; s_name += name[2]; s_name += name[3];
-//        qDebug() << "Ping process";
+        qDebug() << "Ping process";
         ConsoleBasic(QString("Ping OK, Device ID is ") + s_name);
 
         if ((s_name != BOOTLOADER_ID) && (s_name != APP_1_ID) && (s_name != APP_2_ID)){
@@ -198,7 +198,8 @@ void SystemControl::ProcessIncomingData(void){
     }
     case(this->BP_JUMP):{
         ConsoleBasic("Jump back to boot");
-//        this->PlotDataTimer->stop();
+        qDebug() << "Jump back";
+        this->PlottableDataTimer->stop();
         this->serial_tx_queue.clear();
         this->SerialLock.Unlock();
         break;

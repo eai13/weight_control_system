@@ -157,6 +157,8 @@ int main(void)
 
   PROTOCOL_Start();
 
+  HAL_UART_Transmit(&huart2, "APP1 Program Started\r\n", 22, 10);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */

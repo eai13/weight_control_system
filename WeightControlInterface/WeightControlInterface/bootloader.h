@@ -28,7 +28,7 @@ public:
     }
     bool Lock(void){
         if (this->is_locked){
-            qDebug() << "LOCKED";
+//            qDebug() << "LOCKED";
             return false;
         }
         else{
