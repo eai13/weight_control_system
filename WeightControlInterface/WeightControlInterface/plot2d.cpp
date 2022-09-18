@@ -234,14 +234,24 @@ void Plot2D::slSaveData(void){
         for (auto iter = this->active_registers.begin(); iter != this->active_registers.end(); iter++)
             file_stream << "Time;" << (*iter).plot_id->name() << ";";
         file_stream << "\n";
-        QList<auto> begin_list;
-        QList<auto> end_list;
-        for (uint8_t iter = 0; iter < this->plot->graphCount(); iter++){
-            begin_list.push_back(this->plot->graph(iter)->data()->begin());
-            end_list.push_back(this->plot->graph(iter)->data()->end());
-        }
-        uint8_t end_flag = 0;
 
+        QVector<uint64_t> vec_iter; vec_iter.resize(this->plot->graphCount());
+        QVector<uint64_t> vec_end; vec_end.resize(this->plot->graphCount());
+        for (uint8_t iter = 0; iter < this->plot->graphCount(); iter++){
+            vec_iter[iter] = 0;
+            vec_end[iter] = this->plot->graph(iter)->dataCount();
+        }
+        while(1){
+            for (uint8_t iter = 0; iter < vec_iter.size(); iter++)
+                if (vec_iter[iter] == vec_end[iter]){
+                    file.close();
+                    return;
+                }
+            for (uint8_t iter = 0; iter < vec_iter.size(); iter++){
+                file_stream << this->plot->graph(iter)->data()->at(vec_iter[iter])->key << ";" << this->plot->graph(iter)->data()->at(vec_iter[iter])->key << ";";
+            }
+            file_stream << "\n";
+        }
         file.close();
     }
 }
