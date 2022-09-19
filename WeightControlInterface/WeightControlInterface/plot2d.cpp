@@ -150,13 +150,13 @@ void Plot2D::slProcessEditLine(void){
     float val = val_str.toFloat();
 
     if (this->rb_rads->isChecked()){
-        this->dial_counter = val / 6.28;
+        this->dial_counter = floor(val / 6.28);
         this->dial->setValue((int)(val / 6.28 * (this->dial->maximum() + 1)) % (this->dial->maximum() + 1));
         this->dial_old_value = this->dial->value();
         emit this->siSendPos(val);
     }
     else{
-        this->dial_counter = val;
+        this->dial_counter = floor(val);
         qDebug() << "dial_counter " << this->dial_counter;
         this->dial->setValue((int)(val * (this->dial->maximum() + 1)) % (this->dial->maximum() + 1));
         this->dial_old_value = this->dial->value();
@@ -240,6 +240,7 @@ void Plot2D::slSaveData(void){
         for (uint8_t iter = 0; iter < this->plot->graphCount(); iter++){
             vec_iter[iter] = 0;
             vec_end[iter] = this->plot->graph(iter)->dataCount();
+            qDebug() << "Data per plot: " << this->plot->graph(iter)->dataCount();
         }
         while(1){
             for (uint8_t iter = 0; iter < vec_iter.size(); iter++)
@@ -248,10 +249,10 @@ void Plot2D::slSaveData(void){
                     return;
                 }
             for (uint8_t iter = 0; iter < vec_iter.size(); iter++){
-                file_stream << this->plot->graph(iter)->data()->at(vec_iter[iter])->key << ";" << this->plot->graph(iter)->data()->at(vec_iter[iter])->key << ";";
+                file_stream << this->plot->graph(iter)->data()->at(vec_iter[iter])->key << ";" << this->plot->graph(iter)->data()->at(vec_iter[iter])->value << ";";
+                vec_iter[iter]++;
             }
             file_stream << "\n";
         }
-        file.close();
     }
 }
