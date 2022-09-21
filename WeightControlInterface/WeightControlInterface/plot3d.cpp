@@ -4,17 +4,15 @@
 
 Plot3D::Plot3D(QGroupBox *parent) : QObject(parent){
     this->plot = new QtDataVisualization::Q3DScatter();
-    QWidget * plot_widget = QWidget::createWindowContainer(this->plot);
-    parent->layout()->addWidget(plot_widget);
-    plot_widget->show();
+    this->plot_widget = QWidget::createWindowContainer(this->plot);
+    this->group_box_parent = parent;
+    this->group_box_parent->layout()->addWidget(this->plot_widget);
+    this->plot_widget->show();
 
-    this->drive_vertex = new VertexCartesian(QVector3D(0, POLYGON_Y_SIZE, POLYGON_Z_SIZE),
-                                             QVector3D(POLYGON_X_SIZE, POLYGON_Y_SIZE, POLYGON_Z_SIZE),
-                                             QVector3D(0, 0, POLYGON_Z_SIZE),
-                                             QVector3D(POLYGON_X_SIZE, 0, POLYGON_Z_SIZE));
-    QVector<float> len;
-    len.push_back(80); len.push_back(80); len.push_back(80); len.push_back(80);
-    qDebug() << this->DirectTransform(*(this->drive_vertex), len);
+    this->drive_vertex = new VertexCartesian(QVector3D(0, 0, POLYGON_Z_SIZE),
+                                             QVector3D(POLYGON_X_SIZE, 0, POLYGON_Z_SIZE),
+                                             QVector3D(0, POLYGON_Y_SIZE, POLYGON_Z_SIZE),
+                                             QVector3D(POLYGON_X_SIZE, POLYGON_Y_SIZE, POLYGON_Z_SIZE));
 
     this->plot->axisX()->setAutoAdjustRange(false);
     this->plot->axisX()->setRange(0, POLYGON_X_SIZE);
@@ -65,6 +63,10 @@ void Plot3D::AddTargetPoint(double x, double y, double z){
 void Plot3D::AddTargetPoint(QVector3D pt){
     this->plot->seriesList().at(0)->dataProxy()->addItem(QtDataVisualization::QScatterDataItem(pt));
 }
+void Plot3D::RemoveLastTarget(void){
+    if (this->plot->seriesList().at(0)->dataProxy()->itemCount())
+        this->plot->seriesList().at(0)->dataProxy()->removeItems(this->plot->seriesList().at(0)->dataProxy()->itemCount() - 1, 1);
+}
 
 void Plot3D::ClearReal(void){
     this->plot->seriesList().at(1)->dataProxy()->removeItems(0, this->plot->seriesList().at(1)->dataProxy()->itemCount());
@@ -101,60 +103,12 @@ void Plot3D::BuildTargetTrajectory(QVector3D start, QVector3D end){
 }
 
 QVector3D Plot3D::DirectTransform(VertexCartesian Drives, QVector<float> length){
-    QVector<QVector<float>> M;
-    M.resize(3);
-    for (auto iter = M.begin(); iter != M.end(); iter++)
-            iter->resize(3);
-    QVector<float> V;
-    V.resize(3);
+    float resX = (std::pow(length[0], 2) - std::pow(length[1], 2) + std::pow(Drives.Vertex[1].x(), 2)) / (2 * Drives.Vertex[1].x());
+    float resY = (std::pow(length[0], 2) - std::pow(length[2], 2) + std::pow(Drives.Vertex[2].y(), 2)) / (2 * Drives.Vertex[2].y());
+    float resZ = Drives.Vertex[0].z() - std::sqrt(std::pow(length[0], 2) - std::pow(resX, 2) - std::pow(resY, 2));
 
-    M[0][0] = 2 * (Drives.Vertex[1].x() - Drives.Vertex[0].x());
-    M[0][1] = 2 * (Drives.Vertex[1].y() - Drives.Vertex[0].y());
-    M[0][2] = 2 * (Drives.Vertex[1].z() - Drives.Vertex[0].z());
-    M[1][0] = 2 * (Drives.Vertex[2].x() - Drives.Vertex[0].x());
-    M[1][1] = 2 * (Drives.Vertex[2].y() - Drives.Vertex[0].y());
-    M[1][2] = 2 * (Drives.Vertex[2].z() - Drives.Vertex[0].z());
-    M[2][0] = 2 * (Drives.Vertex[2].x() - Drives.Vertex[1].x());
-    M[2][1] = 2 * (Drives.Vertex[2].y() - Drives.Vertex[1].y());
-    M[2][2] = 2 * (Drives.Vertex[2].z() - Drives.Vertex[1].z());
-    qDebug() << M[0][0];
-    qDebug() << M;
-    QVector3D B;
-    V[0] =
-        std::pow(Drives.Vertex[0].x(), 2) - std::pow(Drives.Vertex[1].x(), 2) +
-        std::pow(Drives.Vertex[0].y(), 2) - std::pow(Drives.Vertex[1].y(), 2) +
-        std::pow(Drives.Vertex[0].z(), 2) - std::pow(Drives.Vertex[1].z(), 2) -
-        std::pow(length[0], 2) + std::pow(length[1], 2);
-
-    V[1] =
-        std::pow(Drives.Vertex[0].x(), 2) - std::pow(Drives.Vertex[2].x(), 2) +
-        std::pow(Drives.Vertex[0].y(), 2) - std::pow(Drives.Vertex[2].y(), 2) +
-        std::pow(Drives.Vertex[0].z(), 2) - std::pow(Drives.Vertex[2].z(), 2) -
-        std::pow(length[0], 2) + std::pow(length[2], 2);
-    V[2] =
-        std::pow(Drives.Vertex[1].x(), 2) - std::pow(Drives.Vertex[2].x(), 2) +
-        std::pow(Drives.Vertex[1].y(), 2) - std::pow(Drives.Vertex[2].y(), 2) +
-        std::pow(Drives.Vertex[1].z(), 2) - std::pow(Drives.Vertex[2].z(), 2) -
-        std::pow(length[1], 2) + std::pow(length[2], 2);
-    qDebug() << V;
-    float det =
-            M[0][0]*M[1][1]*M[2][2] + M[0][1]*M[1][2]*M[2][0] + M[0][2]*M[1][0]*M[2][1] -
-            M[0][2]*M[1][1]*M[2][0] - M[0][0]*M[1][2]*M[2][1] - M[0][1]*M[1][0]*M[2][2];
-    qDebug() << "DET: " << det;
-    float detX =
-            V[0]*M[1][1]*M[2][2] + M[0][1]*M[1][2]*V[2] + M[0][2]*V[1]*M[2][1] -
-            M[0][2]*M[1][1]*V[2] - M[0][1]*V[1]*M[2][2] - V[0]*M[1][2]*M[2][1];
-    qDebug() << "DET X: " << detX;
-    float detY =
-            M[0][0]*V[1]*M[2][2] + M[0][2]*M[1][0]*V[2] + V[0]*M[1][2]*M[2][0] -
-            M[0][2]*V[1]*M[2][0] - M[0][0]*M[1][2]*V[2] - V[0]*M[1][0]*M[2][2];
-    qDebug() << "DET Y: " << detY;
-    float detZ =
-            M[0][0]*M[1][1]*V[2] + M[0][1]*V[1]*M[2][0] + V[0]*M[1][0]*M[2][1] -
-            V[0]*M[1][1]*M[2][0] - M[0][0]*V[1]*M[2][1] - M[0][1]*M[1][0]*V[2];
-    qDebug() << "DET Z: " << detZ;
     QVector3D res;
-    res.setX(detX / det); res.setY(detY / det); res.setZ(detZ / det);
+    res.setX(resX); res.setY(resY); res.setZ(resZ);
     return res;
 }
 
@@ -165,4 +119,67 @@ QVector<float> Plot3D::InverseTransform(VertexCartesian Drives, QVector3D Object
     res.push_back(std::sqrt(std::pow(Object.x() - Drives.Vertex[2].x(), 2) + std::pow(Object.y() - Drives.Vertex[2].y(), 2) + std::pow(Object.z() - Drives.Vertex[2].z(), 2)));
     res.push_back(std::sqrt(std::pow(Object.x() - Drives.Vertex[3].x(), 2) + std::pow(Object.y() - Drives.Vertex[3].y(), 2) + std::pow(Object.z() - Drives.Vertex[3].z(), 2)));
     return res;
+}
+
+void Plot3D::slFullscreen(void){
+    qDebug() << "Fullscreen";
+//    this->fullscreen.setLayout(new QVBoxLayout());
+//    this->fullscreen.layout()->addWidget(this->plot_widget);
+    this->fullscreen = new QMainWindow;
+    this->fullscreen->setAttribute(Qt::WA_DeleteOnClose);
+    this->fullscreen->setWindowFlags(this->fullscreen->windowFlags() | Qt::WindowStaysOnTopHint);
+    QGridLayout * lay = new QGridLayout;
+    this->fullscreen->setLayout(lay);
+    lay->addWidget(this->plot_widget, 0, 0);
+    connect(this->fullscreen, &QMainWindow::destroyed, this, &Plot3D::slFullscreenClosed);
+    this->fullscreen->show();
+}
+void Plot3D::slFullscreenClosed(void){
+    qDebug() << "Fullscreen Closed";
+    this->group_box_parent->layout()->addWidget(this->plot_widget);
+    this->plot_widget->show();
+}
+
+void Plot3D::slTargetAdd(QVector3D data){
+    qDebug() << "Plot3D Target Add";
+    QVector3D start;
+    if (this->plot->seriesList().at(0)->dataProxy()->itemCount()){
+        start.setX(this->plot->seriesList().at(0)->dataProxy()->itemAt(this->plot->seriesList().at(0)->dataProxy()->itemCount() - 1)->x());
+        start.setY(this->plot->seriesList().at(0)->dataProxy()->itemAt(this->plot->seriesList().at(0)->dataProxy()->itemCount() - 1)->y());
+        start.setZ(this->plot->seriesList().at(0)->dataProxy()->itemAt(this->plot->seriesList().at(0)->dataProxy()->itemCount() - 1)->z());
+    }
+    else{
+        start.setX(this->plot->seriesList().at(1)->dataProxy()->itemAt(this->plot->seriesList().at(1)->dataProxy()->itemCount() - 1)->x());
+        start.setY(this->plot->seriesList().at(1)->dataProxy()->itemAt(this->plot->seriesList().at(1)->dataProxy()->itemCount() - 1)->y());
+        start.setZ(this->plot->seriesList().at(1)->dataProxy()->itemAt(this->plot->seriesList().at(1)->dataProxy()->itemCount() - 1)->z());
+    }
+    this->BuildTargetTrajectory(start, data);
+}
+void Plot3D::slTargetClear(void){
+    qDebug() << "Plot3D Target Clear";
+    this->ClearTarget();
+}
+void Plot3D::slTargetRemove(void){
+    qDebug() << "Plot3D Target Remove";
+    this->RemoveLastTarget();
+}
+
+void Plot3D::slStartTrajectory(void){
+    qDebug() << "Plot3D Start Trajectory";
+}
+void Plot3D::slStopTrajectory(void){
+    qDebug() << "Plot3D Stop Trajectory";
+}
+void Plot3D::slPauseTrajectory(void){
+    qDebug() << "Plot3D Pause Trajectory";
+}
+
+void Plot3D::slSaveReal(void){
+    qDebug() << "Plot3D Save Real";
+}
+void Plot3D::slSaveTarget(void){
+    qDebug() << "Plot3D Save Target";
+}
+void Plot3D::slUploadTarget(uint8_t format){
+    qDebug() << "Plot3D Upload Target " << format;
 }

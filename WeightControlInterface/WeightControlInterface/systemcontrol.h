@@ -319,6 +319,10 @@ public slots:
     void slSendPos(float data);
     void slActivate(void);
 
+    void slStartTrajectory(void);
+    void slStopTrajectory(void);
+    void slPauseTrajectory(void);
+
 signals:
     void siSendSerial(QSerialPort * p_serial);
     void siChooseTab(uint16_t tab);

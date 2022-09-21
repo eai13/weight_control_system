@@ -1,11 +1,34 @@
 #include "plot3dconfigs.h"
 #include "ui_plot3dconfigs.h"
 
+#include <iostream>
+
 Plot3DConfigs::Plot3DConfigs(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Plot3DConfigs)
 {
     ui->setupUi(this);
+
+    ui->lineEdit_targetX->setValidator(new QDoubleValidator(-1000, 1000, 3));
+    ui->lineEdit_targetY->setValidator(new QDoubleValidator(-1000, 1000, 3));
+    ui->lineEdit_targetZ->setValidator(new QDoubleValidator(-1000, 1000, 3));
+
+    ui->lineEdit_targetX->setText("0,000");
+    ui->lineEdit_targetY->setText("0,000");
+    ui->lineEdit_targetZ->setText("0,000");
+
+    ui->progressBar->setValue(0);
+
+    connect(ui->pushButton_3dfull, &QPushButton::released, this, &Plot3DConfigs::slFullScreen);
+    connect(ui->pushButton_3dpause, &QPushButton::released, this, &Plot3DConfigs::slPauseTrajectory);
+    connect(ui->pushButton_3dstart, &QPushButton::released, this, &Plot3DConfigs::slStartTrajectory);
+    connect(ui->pushButton_3dstop, &QPushButton::released, this, &Plot3DConfigs::slStopTrajectory);
+    connect(ui->pushButton_target_add, &QPushButton::released, this, &Plot3DConfigs::slTargetAdd);
+    connect(ui->pushButton_target_clear, &QPushButton::released, this, &Plot3DConfigs::slTargetClear);
+    connect(ui->pushButton_target_remove, &QPushButton::released, this, &Plot3DConfigs::slTargetRemove);
+    connect(ui->pushButton_savetarget, &QPushButton::released, this, &Plot3DConfigs::slSaveTarget);
+    connect(ui->pushButton_savereal, &QPushButton::released, this, &Plot3DConfigs::slSaveReal);
+    connect(ui->pushButton_loadtarget, &QPushButton::released, this, &Plot3DConfigs::slUploadTarget);
 }
 
 Plot3DConfigs::~Plot3DConfigs()
@@ -16,4 +39,27 @@ Plot3DConfigs::~Plot3DConfigs()
 
 void Plot3DConfigs::slUpdateBar(int perc){
 
+}
+
+void Plot3DConfigs::Reset(void){
+    ui->lineEdit_targetX->setText("");
+    ui->lineEdit_targetY->setText("");
+    ui->lineEdit_targetZ->setText("");
+
+    ui->progressBar->setValue(0);
+}
+
+void Plot3DConfigs::slUploadTarget(void){
+    emit siUploadTarget(ui->comboBox_targetfiletype->currentIndex());
+}
+
+void Plot3DConfigs::slTargetAdd(void){
+    QString x_str = ui->lineEdit_targetX->text();
+    for (auto iter = x_str.begin(); iter != x_str.end(); iter++) if (*iter == ',') *iter = '.';
+    QString y_str = ui->lineEdit_targetY->text();
+    for (auto iter = y_str.begin(); iter != y_str.end(); iter++) if (*iter == ',') *iter = '.';
+    QString z_str = ui->lineEdit_targetZ->text();
+    for (auto iter = z_str.begin(); iter != z_str.end(); iter++) if (*iter == ',') *iter = '.';
+    QVector3D res(x_str.toFloat(), y_str.toFloat(), z_str.toFloat());
+    emit siTargetAdd(res);
 }

@@ -10,6 +10,7 @@
 #include <QFont>
 #include <QVector3D>
 #include <math.h>
+#include <QMainWindow>
 
 #define POLYGON_Y_SIZE  100
 #define POLYGON_X_SIZE  100
@@ -28,6 +29,7 @@ public:
     void AddRealPoint(QVector3D pt);
     void AddTargetPoint(double x, double y, double z);
     void AddTargetPoint(QVector3D pt);
+    void RemoveLastTarget(void);
     void ClearReal(void);
     void ClearTarget(void);
 
@@ -47,9 +49,26 @@ public:
 
 private:
 
+    QGroupBox *     group_box_parent;
+    QWidget *       plot_widget;
+    QMainWindow *   fullscreen;
     QtDataVisualization::Q3DScatter * plot;
 
 public slots:
+
+    void slFullscreen(void);
+    void slFullscreenClosed(void);
+    void slTargetAdd(QVector3D data);
+    void slTargetClear(void);
+    void slTargetRemove(void);
+
+    void slStartTrajectory(void);
+    void slStopTrajectory(void);
+    void slPauseTrajectory(void);
+
+    void slSaveReal(void);
+    void slSaveTarget(void);
+    void slUploadTarget(uint8_t format);
 
 private slots:
 

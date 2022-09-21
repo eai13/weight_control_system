@@ -18,9 +18,26 @@ SystemControl::SystemControl(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    this->plot3d = new Plot3D(ui->groupBox_plot3d);
+    this->plot3d->AddRealPoint(50, 50, 50);
+    this->plot3d->BuildTargetTrajectory(QVector3D(0, 0, 0), QVector3D(10, 1, 1));
+    this->plot3d->BuildTargetTrajectory(QVector3D(10, 1, 1), QVector3D(25, 16, 16));
+
     Plot3DConfigs * plot3dconfigs = new Plot3DConfigs();
     ui->groupBox_3dplot_settings->layout()->addWidget(plot3dconfigs);
-
+    connect(plot3dconfigs, &Plot3DConfigs::siFullscreen, this->plot3d, &Plot3D::slFullscreen);
+    connect(plot3dconfigs, &Plot3DConfigs::siTargetAdd, this->plot3d, &Plot3D::slTargetAdd);
+    connect(plot3dconfigs, &Plot3DConfigs::siTargetClear, this->plot3d, &Plot3D::slTargetClear);
+    connect(plot3dconfigs, &Plot3DConfigs::siTargetRemove, this->plot3d, &Plot3D::slTargetRemove);
+    connect(plot3dconfigs, &Plot3DConfigs::siStartTrajectory, this, &SystemControl::slStartTrajectory);
+    connect(plot3dconfigs, &Plot3DConfigs::siStartTrajectory, this->plot3d, &Plot3D::slStartTrajectory);
+    connect(plot3dconfigs, &Plot3DConfigs::siStopTrajectory, this, &SystemControl::slStopTrajectory);
+    connect(plot3dconfigs, &Plot3DConfigs::siStopTrajectory, this->plot3d, &Plot3D::slStopTrajectory);
+    connect(plot3dconfigs, &Plot3DConfigs::siPauseTrajectory, this, &SystemControl::slPauseTrajectory);
+    connect(plot3dconfigs, &Plot3DConfigs::siPauseTrajectory, this->plot3d, &Plot3D::slPauseTrajectory);
+    connect(plot3dconfigs, &Plot3DConfigs::siSaveTarget, this->plot3d, &Plot3D::slSaveTarget);
+    connect(plot3dconfigs, &Plot3DConfigs::siSaveReal, this->plot3d, &Plot3D::slSaveReal);
+    connect(plot3dconfigs, &Plot3DConfigs::siUploadTarget, this->plot3d, &Plot3D::slUploadTarget);
     this->SystemTime = new QTime();
     this->SystemTime->start();
 
@@ -48,11 +65,6 @@ SystemControl::SystemControl(QWidget *parent) :
     connect(this->DeviceCheckTimer, &QTimer::timeout, this, &SystemControl::C_PingSilent);
 
     connect(ui->pushButton_quitapp, &QPushButton::released, this, &SystemControl::C_Quit);
-
-    this->plot3d = new Plot3D(ui->groupBox_plot3d);
-    this->plot3d->AddRealPoint(0, 0, 0);
-    this->plot3d->BuildTargetTrajectory(QVector3D(0, 0, 0), QVector3D(10, 1, 1));
-    this->plot3d->BuildTargetTrajectory(QVector3D(10, 1, 1), QVector3D(25, 16, 16));
 
 }
 
@@ -301,4 +313,14 @@ void SystemControl::Exit(uint8_t tab){
     for (uint8_t iter = 0; iter < 4; iter++)
         this->plots[iter]->ResetPlot();
     emit this->siChooseTab(tab);
+}
+
+void SystemControl::slStartTrajectory(void){
+    qDebug() << "SystemControl Start Trajectory";
+}
+void SystemControl::slStopTrajectory(void){
+    qDebug() << "SystemControl Stop Trajectory";
+}
+void SystemControl::slPauseTrajectory(void){
+    qDebug() << "SystemControl Pause Trajectory";
 }
