@@ -26,6 +26,7 @@ public:
     explicit Plot2D(QCustomPlot * plot_h, QRadioButton * rb_turn_h, QRadioButton * rb_rads_h, QDial * dial_h, QLineEdit * lineedit_h);
 
     QList<QColor>   pencolor_buffer;
+    QWidget *       plot_parent;
     QCustomPlot *   plot;
 
     QRadioButton *  rb_turn;
@@ -52,7 +53,12 @@ public slots:
     void slShowContextMenu(const QPoint & pos);
     void slPlotActive(bool state);
 
+    void slFullscreen(bool state);
+    void slFullscreenQuit(void);
+
 private:
+
+    QMainWindow * fullscreen;
 
     QMap<uint16_t, QString> register_names = {
         { 1,    "Position Setpoint, rad" },

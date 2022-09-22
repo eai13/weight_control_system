@@ -1,6 +1,7 @@
 #include "plot2d.h"
 
 Plot2D::Plot2D(QCustomPlot * plot_h, QRadioButton * rb_turn_h, QRadioButton * rb_rads_h, QDial * dial_h, QLineEdit * lineedit_h){
+    this->plot_parent = plot_h->parentWidget();
     this->plot = plot_h;
     this->rb_turn = rb_turn_h;
     this->rb_rads = rb_rads_h;
@@ -51,6 +52,13 @@ Plot2D::Plot2D(QCustomPlot * plot_h, QRadioButton * rb_turn_h, QRadioButton * rb
 
         this->plot->setContextMenuPolicy(Qt::CustomContextMenu);
         connect(this->plot, &QCustomPlot::customContextMenuRequested, this, &Plot2D::slShowContextMenu);
+
+    this->plot_menu.addSeparator();
+    p_act = this->plot_menu.addAction("Fullscreen");
+    p_act->setObjectName("fullscreen");
+    p_act->setCheckable(true);
+    p_act->setChecked(false);
+    connect(p_act, &QAction::triggered, this, &Plot2D::slFullscreen);
 
     this->pencolor_buffer.clear();
     this->pencolor_buffer.push_back(QColor(255, 0, 0));
@@ -146,7 +154,7 @@ void Plot2D::slAddData(uint32_t reg, float value){
 void Plot2D::slProcessEditLine(void){
     QString val_str = this->lineedit->text();
     for (auto iter = val_str.begin(); iter != val_str.end(); iter++)
-        if ((*iter) == '.') (*iter) = ',';
+        if ((*iter) == ',') (*iter) = '.';
     float val = val_str.toFloat();
 
     if (this->rb_rads->isChecked()){
@@ -255,4 +263,25 @@ void Plot2D::slSaveData(void){
             file_stream << "\n";
         }
     }
+}
+
+void Plot2D::slFullscreen(bool state){
+    if (state){
+        this->fullscreen = new QMainWindow;
+        this->fullscreen->setWindowTitle("2D Plot");
+        this->fullscreen->setAttribute(Qt::WA_DeleteOnClose);
+        this->fullscreen->setWindowFlags(this->fullscreen->windowFlags() | Qt::WindowStaysOnTopHint);
+        this->fullscreen->setCentralWidget(this->plot);
+        connect(this->fullscreen, &QMainWindow::destroyed, this, &Plot2D::slFullscreenQuit);
+        this->fullscreen->show();
+    }
+    else{
+        delete this->fullscreen;
+    }
+}
+
+void Plot2D::slFullscreenQuit(void){
+    this->plot_parent->layout()->addWidget(this->plot);
+    QAction * p_act = this->plot_menu.findChild<QAction *>("fullscreen");
+    p_act->setChecked(false);
 }

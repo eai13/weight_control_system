@@ -122,17 +122,18 @@ QVector<float> Plot3D::InverseTransform(VertexCartesian Drives, QVector3D Object
 }
 
 void Plot3D::slFullscreen(void){
-    qDebug() << "Fullscreen";
-//    this->fullscreen.setLayout(new QVBoxLayout());
-//    this->fullscreen.layout()->addWidget(this->plot_widget);
+    QPoint position = this->plot_widget->mapToGlobal(this->plot_widget->pos());
+    QSize size = this->plot_widget->size();
+
     this->fullscreen = new QMainWindow;
+    this->fullscreen->setWindowTitle("3D Plot");
     this->fullscreen->setAttribute(Qt::WA_DeleteOnClose);
     this->fullscreen->setWindowFlags(this->fullscreen->windowFlags() | Qt::WindowStaysOnTopHint);
-    QGridLayout * lay = new QGridLayout;
-    this->fullscreen->setLayout(lay);
-    lay->addWidget(this->plot_widget, 0, 0);
+    this->fullscreen->setCentralWidget(this->plot_widget);
+    this->fullscreen->setGeometry(position.x(), position.y(), size.width(), size.height());
     connect(this->fullscreen, &QMainWindow::destroyed, this, &Plot3D::slFullscreenClosed);
     this->fullscreen->show();
+    this->plot_widget->show();
 }
 void Plot3D::slFullscreenClosed(void){
     qDebug() << "Fullscreen Closed";

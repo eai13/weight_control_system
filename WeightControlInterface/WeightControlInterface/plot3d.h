@@ -11,6 +11,7 @@
 #include <QVector3D>
 #include <math.h>
 #include <QMainWindow>
+#include <QPushButton>
 
 #define POLYGON_Y_SIZE  100
 #define POLYGON_X_SIZE  100
@@ -49,6 +50,7 @@ public:
 
 private:
 
+    QGridLayout *   fullscr_layout;
     QGroupBox *     group_box_parent;
     QWidget *       plot_widget;
     QMainWindow *   fullscreen;
