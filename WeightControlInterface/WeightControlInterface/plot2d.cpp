@@ -1,6 +1,6 @@
 #include "plot2d.h"
 
-Plot2D::Plot2D(QCustomPlot * plot_h, QRadioButton * rb_turn_h, QRadioButton * rb_rads_h, QDial * dial_h, QLineEdit * lineedit_h){
+Plot2D::Plot2D(QString title, QCustomPlot * plot_h, QRadioButton * rb_turn_h, QRadioButton * rb_rads_h, QDial * dial_h, QLineEdit * lineedit_h){
     this->plot_parent = plot_h->parentWidget();
     this->plot = plot_h;
     this->rb_turn = rb_turn_h;
@@ -9,6 +9,8 @@ Plot2D::Plot2D(QCustomPlot * plot_h, QRadioButton * rb_turn_h, QRadioButton * rb
     this->dial = dial_h;
 
     this->plot->clearItems();
+    this->plot->plotLayout()->insertRow(0);
+    this->plot->plotLayout()->addElement(0, 0, new QCPTextElement(this->plot, title, QFont("sans", 12, QFont::Bold)));
     this->plot->xAxis->setLabel("Time, s");
     this->plot->yAxis->setLabel("Parameter");
     this->plot->xAxis->setRange(0, 10);
@@ -165,7 +167,6 @@ void Plot2D::slProcessEditLine(void){
     }
     else{
         this->dial_counter = floor(val);
-        qDebug() << "dial_counter " << this->dial_counter;
         this->dial->setValue((int)(val * (this->dial->maximum() + 1)) % (this->dial->maximum() + 1));
         this->dial_old_value = this->dial->value();
         emit this->siSendPos(val * 6.28);
@@ -237,7 +238,6 @@ void Plot2D::slSaveData(void){
     QString fname = QFileDialog::getSaveFileName(nullptr, "Save File", QDir::currentPath(), "CSV (*.csv)", &filter);
     QFile file(fname + ".csv");
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)){
-        qDebug() << "File opened";
         QTextStream file_stream(&file);
         for (auto iter = this->active_registers.begin(); iter != this->active_registers.end(); iter++)
             file_stream << "Time;" << (*iter).plot_id->name() << ";";
@@ -248,7 +248,6 @@ void Plot2D::slSaveData(void){
         for (uint8_t iter = 0; iter < this->plot->graphCount(); iter++){
             vec_iter[iter] = 0;
             vec_end[iter] = this->plot->graph(iter)->dataCount();
-            qDebug() << "Data per plot: " << this->plot->graph(iter)->dataCount();
         }
         while(1){
             for (uint8_t iter = 0; iter < vec_iter.size(); iter++)

@@ -23,7 +23,7 @@ class Plot2D : public QObject
 {
     Q_OBJECT
 public:
-    explicit Plot2D(QCustomPlot * plot_h, QRadioButton * rb_turn_h, QRadioButton * rb_rads_h, QDial * dial_h, QLineEdit * lineedit_h);
+    explicit Plot2D(QString title, QCustomPlot * plot_h, QRadioButton * rb_turn_h, QRadioButton * rb_rads_h, QDial * dial_h, QLineEdit * lineedit_h);
 
     QList<QColor>   pencolor_buffer;
     QWidget *       plot_parent;
