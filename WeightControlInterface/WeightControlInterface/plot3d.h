@@ -12,12 +12,7 @@
 #include <math.h>
 #include <QMainWindow>
 #include <QPushButton>
-
-#define POLYGON_Y_SIZE  100
-#define POLYGON_X_SIZE  100
-#define POLYGON_Z_SIZE  100
-
-#define CM_PER_DOT      2
+#include "global_config.h"
 
 class Plot3D : public QObject
 {
@@ -47,6 +42,9 @@ public:
 
     static QVector3D DirectTransform(VertexCartesian Drives, QVector<float> length);
     static QVector<float> InverseTransform(VertexCartesian Drives, QVector3D Object);
+
+    static float AngleFromLength(float length);
+    static float LengthFromAngle(float angle);
 
 private:
 

@@ -266,11 +266,15 @@ void Plot2D::slSaveData(void){
 
 void Plot2D::slFullscreen(bool state){
     if (state){
+        QPoint position = this->plot->mapToGlobal(this->plot->pos());
+        QSize size = this->plot->size();
+
         this->fullscreen = new QMainWindow;
         this->fullscreen->setWindowTitle("2D Plot");
         this->fullscreen->setAttribute(Qt::WA_DeleteOnClose);
         this->fullscreen->setWindowFlags(this->fullscreen->windowFlags() | Qt::WindowStaysOnTopHint);
         this->fullscreen->setCentralWidget(this->plot);
+        this->fullscreen->setGeometry(position.x(), position.y(), size.width(), size.height());
         connect(this->fullscreen, &QMainWindow::destroyed, this, &Plot2D::slFullscreenQuit);
         this->fullscreen->show();
     }

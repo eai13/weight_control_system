@@ -3,6 +3,8 @@
 #include <iostream>
 
 Plot3D::Plot3D(QGroupBox *parent) : QObject(parent){
+    this->AngleFromLength(5);
+
     this->plot = new QtDataVisualization::Q3DScatter();
     this->plot_widget = QWidget::createWindowContainer(this->plot);
     this->group_box_parent = parent;
@@ -121,6 +123,22 @@ QVector<float> Plot3D::InverseTransform(VertexCartesian Drives, QVector3D Object
     return res;
 }
 
+float Plot3D::AngleFromLength(float length){
+    float a = 1;
+    float b = (2 * std::pow(DEFAULT_DIAL_RADIUS, 3) * std::pow(PI, 3) - 6 * PI * length * std::pow(ROPE_THICK, 2)) / std::pow(ROPE_THICK, 3);
+    float c = std::pow(DEFAULT_DIAL_RADIUS, 6) * std::pow(PI, 6) / std::pow(ROPE_THICK, 6);
+
+    float D = std::pow(b, 2) - 4 * a * c;
+    std::cout << D;
+    return 0;
+}
+
+float Plot3D::LengthFromAngle(float angle){
+    float length = std::pow(angle, 2) * DEFAULT_DIAL_RADIUS / 2;
+    length += std::pow(angle, 3) * ROPE_THICK / PI / 6;
+    return length;
+}
+
 void Plot3D::slFullscreen(void){
     QPoint position = this->plot_widget->mapToGlobal(this->plot_widget->pos());
     QSize size = this->plot_widget->size();
@@ -133,7 +151,7 @@ void Plot3D::slFullscreen(void){
     this->fullscreen->setGeometry(position.x(), position.y(), size.width(), size.height());
     connect(this->fullscreen, &QMainWindow::destroyed, this, &Plot3D::slFullscreenClosed);
     this->fullscreen->show();
-    this->plot_widget->show();
+//    this->plot_widget->show();
 }
 void Plot3D::slFullscreenClosed(void){
     qDebug() << "Fullscreen Closed";
