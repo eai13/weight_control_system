@@ -2,9 +2,11 @@
 #include "ui_mainwindow.h"
 #include "bootloader.h"
 #include "systemcontrol.h"
+#include "app2.h"
 
 Bootloader *    bootloader_ui;
 SystemControl * systemcontrol_ui;
+APP2 *          app2;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -16,6 +18,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->tabWidget_main->addTab(bootloader_ui, "Bootloader");
     systemcontrol_ui = new SystemControl();
     ui->tabWidget_main->addTab(systemcontrol_ui, "Control System");
+    app2 = new APP2();
+    ui->tabWidget_main->addTab(app2, "APP2");
 
     connect(this, &MainWindow::siActivateBOOT, bootloader_ui, &Bootloader::slActivate);
     connect(this, &MainWindow::siActivateAPP1, systemcontrol_ui, &SystemControl::slActivate);

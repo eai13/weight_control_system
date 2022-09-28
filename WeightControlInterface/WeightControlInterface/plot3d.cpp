@@ -3,8 +3,6 @@
 #include <iostream>
 
 Plot3D::Plot3D(QGroupBox *parent) : QObject(parent){
-    this->AngleFromLength(5);
-
     this->plot = new QtDataVisualization::Q3DScatter();
     this->plot_widget = QWidget::createWindowContainer(this->plot);
     this->group_box_parent = parent;

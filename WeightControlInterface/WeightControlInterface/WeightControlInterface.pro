@@ -16,6 +16,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    app2.cpp \
+    app2_constblock.cpp \
     bootloader.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -26,6 +28,8 @@ SOURCES += \
     systemcontrol.cpp \
 
 HEADERS += \
+    app2.h \
+    app2_constblock.h \
     bootloader.h \
     global_config.h \
     mainwindow.h \
@@ -36,6 +40,8 @@ HEADERS += \
     systemcontrol.h
 
 FORMS += \
+    app2.ui \
+    app2_constblock.ui \
     bootloader.ui \
     mainwindow.ui \
     plot3dconfigs.ui \
