@@ -3,8 +3,12 @@
 
 #include <QPoint>
 #include <QDebug>
-
-#include "app2_constblock.h"
+#include <QGraphicsItem>
+#include <QGraphicsScene>
+#include "app2_customblock.h"
+#include "app2_constantblock.h"
+#include <QList>
+#include <QMenu>
 
 //#if QT_VERSION >= 0x050000
 #include <QtWidgets/QWidget>
@@ -27,8 +31,13 @@ public:
 private:
     Ui::APP2 *ui;
 
+    QMenu canvas_menu;
+
+    QList<APP2_customblock *> block_list;
+
 public slots:
-    void slContextMenuRequested(const QPoint & pos);
+
+    void slAddItem(const QModelIndex & index);
 };
 
 #endif // APP2_H

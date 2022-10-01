@@ -13,19 +13,21 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QGroupBox" name="groupBox">
-   <property name="geometry">
-    <rect>
-     <x>340</x>
-     <y>150</y>
-     <width>571</width>
-     <height>341</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string>Canvas</string>
-   </property>
-  </widget>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="1">
+    <widget class="QGraphicsView" name="graphicsView_canvas"/>
+   </item>
+   <item row="0" column="0">
+    <widget class="QListWidget" name="listWidget_items">
+     <property name="maximumSize">
+      <size>
+       <width>150</width>
+       <height>16777215</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>

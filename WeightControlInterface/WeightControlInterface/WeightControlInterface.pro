@@ -17,7 +17,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     app2.cpp \
-    app2_constblock.cpp \
+    app2_constantblock.cpp \
+    app2_customblock.cpp \
+    app2_resizenode.cpp \
     bootloader.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -29,7 +31,9 @@ SOURCES += \
 
 HEADERS += \
     app2.h \
-    app2_constblock.h \
+    app2_constantblock.h \
+    app2_customblock.h \
+    app2_resizenode.h \
     bootloader.h \
     global_config.h \
     mainwindow.h \
@@ -41,7 +45,6 @@ HEADERS += \
 
 FORMS += \
     app2.ui \
-    app2_constblock.ui \
     bootloader.ui \
     mainwindow.ui \
     plot3dconfigs.ui \
