@@ -13,21 +13,6 @@ APP2::APP2(QWidget *parent) :
     ui->listWidget_items->addItem("Subtract");
     connect(ui->listWidget_items, &QListWidget::doubleClicked, this, &APP2::slAddItem);
 
-//    this->canvas_menu.clear();
-//    ui->graphicsView_canvas->setContextMenuPolicy(Qt::CustomContextMenu);
-//    this->canvas_menu.addAction("Save Model");
-//    this->canvas_menu.addAction("Upload Model");
-
-//    this->canvas_menu.addSeparator();
-
-//        QMenu * block_menu = this->canvas_menu.addMenu("Add Block");
-//        block_menu->addAction("Constant", this, &APP2::slAddConstantBlock);
-//        block_menu->addAction("Sum", this, &APP2::slAddSumBlock);
-//        block_menu->addAction("Product", this, &APP2::slAddMultiplyBlock);
-//        block_menu->addAction("Division", this, &APP2::slAddDivBlock);
-
-//    connect(ui->graphicsView_canvas, &QGraphicsView::customContextMenuRequested, this, &APP2::slContextMenuRequested);
-
     QGraphicsScene * scene = new QGraphicsScene;
     ui->graphicsView_canvas->setScene(scene);
 }

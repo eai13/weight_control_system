@@ -11,6 +11,10 @@
 #include <QGraphicsSceneEvent>
 #include "app2_resizenode.h"
 
+/* @brief
+ * basic block class
+ */
+
 class APP2_simpleblock : public QObject, public QGraphicsItem {
     Q_OBJECT
 
@@ -52,7 +56,7 @@ protected:
     }
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event){
         if (this->flClicked){
-            emit this->siMoved(this->pos());
+            emit this->siMoved(QRectF(this->pos(), QPointF(this->size.width() + this->pos().x(), this->size.height() + this->pos().y())));
             QGraphicsItem::mouseMoveEvent(event);
         }
         else{
@@ -71,7 +75,7 @@ public slots:
 
 signals:
 
-    void siMoved(QPointF new_pos);
+    void siMoved(QRectF new_pos);
 };
 
 
@@ -85,6 +89,10 @@ class APP2_resizenode : public QObject, public QGraphicsItem {
 
 private:
     QRectF size;
+    QPointF main_block_top_corner;
+    QPointF main_block_bottom_corner;
+    qreal min_size = 50;
+    qreal max_size = 150;
 
 public:
     APP2_resizenode(void){
@@ -116,6 +124,13 @@ protected:
     }
     void mouseMoveEvent(QGraphicsSceneMouseEvent * event){
         if (this->flClicked){
+            if (((this->main_block_bottom_corner.x() - (event->pos() + this->pos()).x()) > this->max_size) ||
+                ((this->main_block_bottom_corner.y() - (event->pos() + this->pos()).y()) > this->max_size) ||
+                ((this->main_block_bottom_corner.x() - (event->pos() + this->pos()).x()) < this->min_size) ||
+                ((this->main_block_bottom_corner.y() - (event->pos() + this->pos()).y()) < this->min_size)){
+                    event->ignore();
+                    return;
+            }
             emit this->siMoved(this->pos());
             QGraphicsItem::mouseMoveEvent(event);
         }
@@ -125,12 +140,72 @@ protected:
     }
 
 public slots:
-    void slMoveTo(QPointF new_pos){
-        this->setPos(new_pos);
+    void slMoveTo(QRectF new_pos){
+        this->setPos(new_pos.topLeft());
+        this->main_block_top_corner = new_pos.topLeft();
+        this->main_block_bottom_corner = new_pos.bottomRight();
     }
 
 signals:
     void siMoved(QPointF new_position);
+};
+
+/* @brief
+ * Signal node for the object
+ */
+
+class APP2_signalnode : public QObject, public QGraphicsItem {
+    Q_OBJECT
+
+};
+
+/* @brief
+ * Slot node for the object
+ */
+
+class APP2_slotnode : public QObject, public QGraphicsItem {
+    Q_OBJECT
+
+private:
+    QRectF size;
+
+public:
+    APP2_slotnode(void){
+        this->setCursor(QCursor(Qt::CrossCursor));
+        this->size.setX(0);
+        this->size.setY(0);
+        this->size.setHeight(10);
+        this->size.setWidth(10);
+    }
+    QRectF boundingRect() const override{
+        return QRectF(this->size);
+    }
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override{
+        painter->setBrush(Qt::SolidPattern);
+        QPointF pts[3] = { QPointF(0, 0), QPointF(10, 5), QPointF(0, 10) };
+        painter->drawPolygon(pts, 3);
+    }
+
+    bool flClicked = false;
+
+protected:
+    void mousePressEvent(QGraphicsSceneMouseEvent * event){
+
+    }
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent * event){
+
+    }
+    void mouseMoveEvent(QGraphicsSceneMouseEvent * event){
+
+    }
+
+public slots:
+    void slMoveTo(QPointF deviation){
+        this->setPos(this->pos() + deviation);
+    }
+
+signals:
+
 };
 
 class APP2_customblock : public QObject {
@@ -139,6 +214,7 @@ class APP2_customblock : public QObject {
 public:
     APP2_simpleblock *  simpleblock;
     APP2_resizenode *   resizenode;
+    APP2_slotnode *     slotnode;
 
 public:
     APP2_customblock(QGraphicsScene * parent);
