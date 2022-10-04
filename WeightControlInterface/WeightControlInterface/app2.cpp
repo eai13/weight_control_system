@@ -25,7 +25,7 @@ APP2::~APP2()
 void APP2::slAddItem(const QModelIndex & index){
     switch(index.row()){
     case(0):{
-        this->block_list.push_back(new APP2_customblock(ui->graphicsView_canvas->scene()));
+        this->block_list.push_back(new APP2_constantblock(ui->graphicsView_canvas->scene(), 1));
         break;
     }
     case(1):{
