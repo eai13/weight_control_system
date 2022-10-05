@@ -10,7 +10,9 @@ APP2::APP2(QWidget *parent) :
     ui->listWidget_items->addItem("Constant");
     ui->listWidget_items->addItem("Product");
     ui->listWidget_items->addItem("Sum");
-    ui->listWidget_items->addItem("Subtract");
+    ui->listWidget_items->addItem("Subtraction");
+    ui->listWidget_items->addItem("Division");
+    ui->listWidget_items->addItem("To Power");
     connect(ui->listWidget_items, &QListWidget::doubleClicked, this, &APP2::slAddItem);
 
     QGraphicsScene * scene = new QGraphicsScene;
@@ -29,15 +31,23 @@ void APP2::slAddItem(const QModelIndex & index){
         break;
     }
     case(1):{
-        qDebug() << "Product Item Added";
+        this->block_list.push_back(new APP2_mathoperationblock(ui->graphicsView_canvas->scene(), APP2_mathoperationblock::MATH_BLOCK_PRODUCT));
         break;
     }
     case(2):{
-        qDebug() << "Sum Item Added";
+        this->block_list.push_back(new APP2_mathoperationblock(ui->graphicsView_canvas->scene(), APP2_mathoperationblock::MATH_BLOCK_SUM));
         break;
     }
     case(3):{
-        qDebug() << "Subtract Item Added";
+        this->block_list.push_back(new APP2_mathoperationblock(ui->graphicsView_canvas->scene(), APP2_mathoperationblock::MATH_BLOCK_DIF));
+        break;
+    }
+    case(4):{
+        this->block_list.push_back(new APP2_mathoperationblock(ui->graphicsView_canvas->scene(), APP2_mathoperationblock::MATH_BLOCK_DIV));
+        break;
+    }
+    case(5):{
+        this->block_list.push_back(new APP2_mathoperationblock(ui->graphicsView_canvas->scene(), APP2_mathoperationblock::MATH_BLOCK_POW));
         break;
     }
     }

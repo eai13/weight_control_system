@@ -3,23 +3,36 @@
 
 #include <QtCore/qglobal.h>
 #include "app2_customblock.h"
-#include "app2_resizenode.h"
+#include <QMainWindow>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QGridLayout>
+#include <QWidget>
+#include <QDoubleValidator>
 
-//class APP2_constantblock : public APP2_customblock{
+class APP2_constantblock : public APP2_customblock{
+private:
+    QLineEdit * tmp_value_line;
 
-//public:
-//    APP2_constantblock(QString objectname);
+public:
+    APP2_signalnode *   output = nullptr;
+    float               value = 0;
 
-//    QRectF boundingRect() const override{
-//        return QRectF(10, 10, 100, 100);
-//    }
-//    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override{
-//        painter->drawRect(10, 10, 100, 100);
-//    }
+    APP2_constantblock(QGraphicsScene * parent, float value);
 
-//protected:
+public slots:
+    void slSettingsMenuShow(void);
 
+private slots:
+    void slSetValue(void){
+        QString txt = this->tmp_value_line->text();
+        for (auto iter = txt.begin(); iter != txt.end(); iter++)
+            if ((*iter) == ',') (*iter) = '.';
+        this->value = txt.toDouble();
+    }
+protected:
 
-//};
+};
 
 #endif // APP2_CONSTANTBLOCK_H

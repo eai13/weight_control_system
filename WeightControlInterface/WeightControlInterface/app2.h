@@ -7,6 +7,7 @@
 #include <QGraphicsScene>
 #include "app2_customblock.h"
 #include "app2_constantblock.h"
+#include "app2_mathoperationblock.h"
 #include <QList>
 #include <QMenu>
 

@@ -19,6 +19,7 @@ SOURCES += \
     app2.cpp \
     app2_constantblock.cpp \
     app2_customblock.cpp \
+    app2_mathoperationblock.cpp \
     app2_resizenode.cpp \
     bootloader.cpp \
     main.cpp \
@@ -33,6 +34,7 @@ HEADERS += \
     app2.h \
     app2_constantblock.h \
     app2_customblock.h \
+    app2_mathoperationblock.h \
     app2_resizenode.h \
     bootloader.h \
     global_config.h \

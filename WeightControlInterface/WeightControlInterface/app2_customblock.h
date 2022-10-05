@@ -11,10 +11,6 @@
 #include <QGraphicsSceneEvent>
 #include "app2_resizenode.h"
 
-/* @brief
- * basic block class
- */
-
 class APP2_simpleblock;
 class APP2_constantblock;
 class APP2_resizenode;
@@ -22,7 +18,7 @@ class APP2_signalnode;
 class APP2_slotnode;
 
 /* @brief
- * Signal node for the object
+ * Slot node for the object
  */
 
 class APP2_slotnode : public QObject, public QGraphicsItem {
@@ -76,7 +72,7 @@ signals:
 };
 
 /* @brief
- * Slot node for the object
+ * Signal node for the object
  */
 
 class APP2_signalnode : public QObject, public QGraphicsItem {
@@ -128,6 +124,10 @@ signals:
 
 };
 
+/* @brief
+ * basic block class
+ */
+
 class APP2_simpleblock : public QObject, public QGraphicsItem {
     Q_OBJECT
 
@@ -135,7 +135,11 @@ private:
     QRectF size;
     QList<APP2_signalnode *>    signalnodes;
     QList<APP2_slotnode *>      slotnodes;
+    QGraphicsTextItem *         type;
+    QGraphicsTextItem *         name;
+
     void SigSlotRefresh(void){
+        this->type->setPos(this->pos() + QPointF(0, -20));
         uint16_t it = 0;
         for (auto iter = this->signalnodes.begin(); iter != this->signalnodes.end(); iter++){
             (*iter)->slMoveTo(this->pos() + QPointF(this->size.width() - 3, this->size.height() / (this->signalnodes.count() + 1) * (it++ + 1)));
@@ -146,9 +150,12 @@ private:
         }
     }
 
-
 public:
-    APP2_simpleblock(QRectF size, QList<APP2_signalnode *> sigs, QList<APP2_slotnode *> slts){
+    APP2_simpleblock(QRectF size, QList<APP2_signalnode *> sigs, QList<APP2_slotnode *> slts, QGraphicsTextItem * type){
+        this->setZValue(-1);
+
+        this->type = type;
+
         this->size = size;
         this->signalnodes = sigs;
         this->slotnodes = slts;
@@ -162,6 +169,10 @@ public:
         return QRectF(this->size);
     }
     void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget) override{
+        QBrush br_tmp = painter->brush();
+        br_tmp.setColor(Qt::white);
+        br_tmp.setStyle(Qt::SolidPattern);
+        painter->setBrush(br_tmp);
         painter->drawRect(this->size);
     }
 
@@ -178,6 +189,8 @@ protected:
         if (event->button() == Qt::LeftButton){
             this->flClicked = false;
             QGraphicsItem::mouseReleaseEvent(event);
+            emit this->siMoved(QRectF(this->pos(), QPointF(this->size.width() + this->pos().x(), this->size.height() + this->pos().y())));
+            this->SigSlotRefresh();
         }
         else{
             QMenu menu;
@@ -187,13 +200,17 @@ protected:
     }
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event){
         if (this->flClicked){
-            this->SigSlotRefresh();
             emit this->siMoved(QRectF(this->pos(), QPointF(this->size.width() + this->pos().x(), this->size.height() + this->pos().y())));
             QGraphicsItem::mouseMoveEvent(event);
+            this->SigSlotRefresh();
         }
         else{
             event->ignore();
         }
+    }
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent * event){
+        emit this->siSettingsMenuShow();
+        QGraphicsItem::mouseDoubleClickEvent(event);
     }
 
 public slots:
@@ -203,12 +220,11 @@ public slots:
         this->setPos(new_size);
         this->size.setWidth(this->size.width() + deviation.x());
         this->size.setHeight(this->size.height() + deviation.y());
-
         this->SigSlotRefresh();
     }
 
 signals:
-
+    void siSettingsMenuShow(void);
     void siMoved(QRectF new_pos);
 };
 
@@ -307,21 +323,6 @@ public:
 protected:
 
 signals:
-
-};
-
-/* @brief
- * Constant Block
- */
-
-class APP2_constantblock : public APP2_customblock{
-public:
-    APP2_signalnode *   output = nullptr;
-    float               value = 0;
-
-    APP2_constantblock(QGraphicsScene * parent, float value);
-
-protected:
 
 };
 
