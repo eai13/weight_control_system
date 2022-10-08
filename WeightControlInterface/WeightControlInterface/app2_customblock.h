@@ -27,37 +27,84 @@ static APP2_connectline * connect_line_buf = nullptr;
  * Connection Line object
  */
 
-class APP2_connectline : public QObject, public QGraphicsLineItem {
+class APP2_connectline : public QObject, public QGraphicsItem {
     Q_OBJECT
 
 public:
+    QPen pen;
+    QLineF line;
+    void SetPen(QPen new_pen){
+        this->pen = new_pen;
+    }
 
     void SetStart(QPointF new_dot){
         this->setPos(new_dot + QPointF(10, 5));
-        this->setLine(QLineF(new_dot, this->line().p2()));
+        this->line.setP1(new_dot);
+//        this->line = QLineF(new_dot, this->line.p2());
+//        this->setLine(QLineF(new_dot, this->line().p2()));
     }
     void SetEnd(QPointF new_dot){
-        this->setLine(QLineF(this->line().p1(), new_dot));
+        this->line.setP2(new_dot);
+//        this->line = QLineF(this->line.p1(), new_dot);
+//        this->setLine(QLineF(this->line().p1(), new_dot));
     }
 
     APP2_connectline(QPointF start, QPointF end){
+        qDebug() << this->acceptedMouseButtons();
+        this->setCursor(QCursor(Qt::CrossCursor));
+        this->pen.setWidth(2);
+        this->pen.setColor(Qt::black);
         this->setPos(start.x() + 10, start.y() + 5);
-        this->setLine(QLineF(start, end));
+        this->line = QLineF(start, end + QPointF(10, 10));
     }
 
     QRectF boundingRect() const override {
-        return QRectF(0, 0, this->line().dx(), this->line().dy());
+        return QRectF(0, 0, this->line.dx() + 6, this->line.dy() + 6);
+    }
+    QPainterPath shape() const override{
+//        this->scene()->addRect(0, 0, this->line.dx(), this->line.dy());
+        QPainterPath path;
+        QVector<QPointF> tmp;
+        if (this->line.dy()){
+//            tmp.push_back(QPointF(-3, -3));
+//            path.addPolygon();
+            path.addRect(QRectF(QPointF(-3, -3), QPointF(this->line.dx() / 2 + 3, 6)));
+            path.addRect(QRectF(QPointF(this->line.dx() / 2 - 3, -3), QPointF(this->line.dx() / 2 + 3, this->line.dy() + 3)));
+            path.addRect(QRectF(QPointF(this->line.dx() / 2 - 3, this->line.dy() - 3), QPointF(this->line.dx() + 3, this->line.dy() + 3)));
+        }
+        else{
+            tmp.push_back(QPointF(-3, 3)); tmp.push_back(QPointF(-3, -3)); tmp.push_back(QPointF(this->line.dx() / 2 - 3, -3));
+            tmp.push_back(QPointF(this->line.dx() / 2 - 3, this->line.dy() - 3)); tmp.push_back(QPointF(this->line.dx() + 3, this->line.dy() - 3));
+            tmp.push_back(QPointF(this->line.dx() + 3, this->line.dy() + 3)); tmp.push_back(QPointF(this->line.dx() / 2 + 3, this->line.dy() + 3));
+            tmp.push_back(QPointF(this->line.dx() / 2 + 3, 3)); tmp.push_back(QPointF(-3, 3));
+            path.addPolygon(QPolygonF(tmp));
+        }
+        return path;
     }
     void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget) override{
-        painter->setPen(QPen(Qt::black, 2));
-        painter->drawLine(0, 0, this->line().dx() / 2, 0);
-        painter->drawLine(this->line().dx() / 2, 0, this->line().dx() / 2, this->line().dy());
-        painter->drawLine(this->line().dx() / 2, this->line().dy(), this->line().dx(), this->line().dy());
+        painter->setPen(this->pen);
+        painter->drawLine(0, 0, this->line.dx() / 2, 0);
+        painter->drawLine(this->line.dx() / 2, 0, this->line.dx() / 2, this->line.dy());
+        painter->drawLine(this->line.dx() / 2, this->line.dy(), this->line.dx(), this->line.dy());
         this->scene()->update();
     }
 
     APP2_signalnode *   sig = nullptr;
     APP2_slotnode *     slot = nullptr;
+
+    void ClearFromSignal(void);
+    void ClearFromSlot(void);
+
+    ~APP2_connectline(void){}
+
+protected:
+    void mousePressEvent(QGraphicsSceneMouseEvent * event){
+        qDebug() << "Mouse Press Event For Line";
+    }
+    void mouseMoveEvent(QGraphicsSceneMouseEvent * event){
+        qDebug() << "Mouse Move For Line";
+    }
+
 };
 
 /* @brief
@@ -74,9 +121,20 @@ public:
 
     APP2_connectline * connect_line = nullptr;
 
+    void SetTip(QString tip){
+        this->setToolTip("Slot::" + tip);
+    }
+
+    APP2_slotnode(QString tip){
+        this->setToolTip("Slot::" + tip);
+        this->setCursor(QCursor(Qt::CrossCursor));
+        this->size.setX(0);
+        this->size.setY(0);
+        this->size.setHeight(30);
+        this->size.setWidth(30);
+    }
     APP2_slotnode(void){
-        std::cout << this << std::endl;
-        this->setToolTip("Slot");
+        this->setToolTip("Slot::");
         this->setCursor(QCursor(Qt::CrossCursor));
         this->size.setX(0);
         this->size.setY(0);
@@ -98,6 +156,8 @@ public:
 
     bool flClicked = false;
 
+    ~APP2_slotnode(void){}
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent * event){
         if (event->button() == Qt::LeftButton){
@@ -114,21 +174,22 @@ protected:
 
         }
         else{
-//            if (connect_line_buf != nullptr){
-//                connect_line_buf->slot = this;
-//                connect_line_buf->SetEnd(QPointF(this->pos().x() + 5, this->pos().y() + 5));
-//                qDebug() << "Slot mouse move event";
-//            }
+
         }
     }
 
 public slots:
     void slMoveTo(QPointF new_pos){
         this->setPos(new_pos);
-//        qDebug() << "Move line " << (this->connect_line == nullptr);
         if (this->connect_line != nullptr){
-            this->connect_line->SetEnd(new_pos);
+            this->connect_line->SetEnd(new_pos + QPointF(5, 10));
         }
+    }
+    void slMainBlockDeleted(void){
+        if (this->connect_line != nullptr)
+            this->connect_line->ClearFromSlot();
+        this->scene()->removeItem(this);
+        this->~APP2_slotnode();
     }
 
 signals:
@@ -147,10 +208,22 @@ private:
     QRectF size;
 
 public:
-    APP2_connectline * signal_line = nullptr;
+    QList<APP2_connectline *> signal_lines;
 
+    void SetTip(QString tip){
+        this->setToolTip("Signal::" + tip);
+    }
+
+    APP2_signalnode(QString tip){
+        this->setToolTip("Signal::" + tip);
+        this->setCursor(QCursor(Qt::CrossCursor));
+        this->size.setX(0);
+        this->size.setY(0);
+        this->size.setHeight(30);
+        this->size.setWidth(30);
+    }
     APP2_signalnode(void){
-        this->setToolTip("Signal");
+        this->setToolTip("Signal::");
         this->setCursor(QCursor(Qt::CrossCursor));
         this->size.setX(0);
         this->size.setY(0);
@@ -172,24 +245,29 @@ public:
 
     bool flClicked = false;
 
+    ~APP2_signalnode(void){}
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent * event){
         if (event->button() == Qt::LeftButton){
             this->flClicked = true;
-            this->signal_line = new APP2_connectline(this->pos() + QPointF(10, 10), this->pos());
-            this->signal_line->sig = this;
-            this->scene()->addItem(this->signal_line);
+            APP2_connectline * tmp = new APP2_connectline(this->pos() + QPointF(10, 10), this->pos());
+            tmp->SetPen(QPen(Qt::green, 2));
+            this->signal_lines.push_back(tmp);
+            this->signal_lines.back()->sig = this;
+            this->scene()->addItem(this->signal_lines.back());
         }
     }
     void mouseReleaseEvent(QGraphicsSceneMouseEvent * event){
         if (event->button() == Qt::LeftButton){
             this->flClicked = false;
-            if (this->signal_line->slot == nullptr){
-                this->scene()->removeItem(this->signal_line);
-                this->signal_line = nullptr;
+            if (this->signal_lines.back()->slot == nullptr){
+                this->scene()->removeItem(this->signal_lines.back());
+                this->signal_lines.pop_back();
             }
             else{
-                this->signal_line->slot->connect_line = this->signal_line;
+                this->signal_lines.back()->slot->connect_line = this->signal_lines.back();
+                this->signal_lines.back()->SetPen(QPen(Qt::black, 2));
             }
         }
     }
@@ -197,22 +275,27 @@ protected:
         if (this->flClicked){
             QGraphicsItem * item;
             if ((item = this->scene()->itemAt(event->scenePos(), QTransform())) != nullptr){
-                if (item->toolTip() == "Slot"){
-                    this->signal_line->SetEnd(item->pos() + QPointF(5, 10));
+                if (item->toolTip().startsWith("Slot::")){
+                    // Some shitty stuff, nevermind
                     int * tmp = reinterpret_cast<int *>(item);
                     tmp -= 4;
-                    this->signal_line->slot = reinterpret_cast<APP2_slotnode *>(tmp);
-                    std::cout << "Reinterpret Item: " << this->signal_line->slot << std::endl;
-                    std::cout << "Basic Item: " << item << std::endl;
+                    // Some shitty stuff, nevermind
+                    for (auto iter = this->signal_lines.begin(); iter != this->signal_lines.end(); iter++){
+                        if ((reinterpret_cast<APP2_slotnode *>(tmp)->connect_line != nullptr) || (*iter)->slot == reinterpret_cast<APP2_slotnode *>(tmp)){
+                            return;
+                        }
+                    }
+                    this->signal_lines.back()->SetEnd(item->pos() + QPointF(5, 10));
+                    this->signal_lines.back()->slot = reinterpret_cast<APP2_slotnode *>(tmp);
                 }
                 else{
-                    this->signal_line->SetEnd(event->scenePos());
-                    this->signal_line->slot = nullptr;
+                    this->signal_lines.back()->SetEnd(event->scenePos());
+                    this->signal_lines.back()->slot = nullptr;
                 }
             }
             else{
-                this->signal_line->SetEnd(event->scenePos());
-                this->signal_line->slot = nullptr;
+                this->signal_lines.back()->SetEnd(event->scenePos());
+                this->signal_lines.back()->slot = nullptr;
             }
         }
     }
@@ -220,11 +303,17 @@ protected:
 public slots:
     void slMoveTo(QPointF new_pos){
         this->setPos(new_pos);
-        if (this->signal_line != nullptr){
-            this->signal_line->SetStart(new_pos + QPointF(10, 10));
+        for (auto iter = this->signal_lines.begin(); iter != this->signal_lines.end(); iter++){
+            (*iter)->SetStart(new_pos + QPointF(10, 10));
         }
     }
-
+    void slMainBlockDeleted(void){
+        for (auto iter = this->signal_lines.begin(); iter != this->signal_lines.end(); iter++){
+            (*iter)->ClearFromSignal();
+        }
+        this->scene()->removeItem(this);
+        this->~APP2_signalnode();
+    }
 signals:
 
 };
@@ -240,8 +329,8 @@ private:
     QRectF size;
     QList<APP2_signalnode *>    signalnodes;
     QList<APP2_slotnode *>      slotnodes;
-    QGraphicsTextItem *         type;
-    QGraphicsTextItem *         name;
+    QGraphicsTextItem *         type = nullptr;
+    QGraphicsTextItem *         name = nullptr;
 
     void SigSlotRefresh(void){
         this->type->setPos(this->pos() + QPointF(0, -20));
@@ -256,14 +345,25 @@ private:
     }
 
 public:
+    void SetTip(QString tip){
+        this->setToolTip("Block::" + tip);
+    }
+
     APP2_simpleblock(QRectF size, QList<APP2_signalnode *> sigs, QList<APP2_slotnode *> slts, QGraphicsTextItem * type){
+        this->setToolTip("Block::");
         this->setZValue(-1);
 
         this->type = type;
 
         this->size = size;
         this->signalnodes = sigs;
+        for (auto iter = this->signalnodes.begin(); iter != this->signalnodes.end(); iter++){
+            connect(this, &APP2_simpleblock::siMainBlockDeleted, (*iter), &APP2_signalnode::slMainBlockDeleted);
+        }
         this->slotnodes = slts;
+        for (auto iter = this->slotnodes.begin(); iter != this->slotnodes.end(); iter++){
+            connect(this, &APP2_simpleblock::siMainBlockDeleted, (*iter), &APP2_slotnode::slMainBlockDeleted);
+        }
 
         this->SigSlotRefresh();
 
@@ -283,6 +383,12 @@ public:
 
     bool flClicked = false;
 
+    ~APP2_simpleblock(void){
+        if (this->type != nullptr) this->scene()->removeItem(this->type);
+        if (this->name != nullptr) this->scene()->removeItem(this->name);
+        this->scene()->removeItem(this);
+    }
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent * event){
         if (event->button() == Qt::LeftButton){
@@ -299,7 +405,7 @@ protected:
         }
         else{
             QMenu menu;
-            menu.addAction("Delete");
+            menu.addAction("Delete", this, &APP2_simpleblock::slDeleteThis);
             menu.exec(QCursor::pos());
         }
     }
@@ -327,8 +433,14 @@ public slots:
         this->size.setHeight(this->size.height() + deviation.y());
         this->SigSlotRefresh();
     }
+    void slDeleteThis(void){
+        emit this->siMainBlockDeleted();
+        this->deleteLater();
+        this->~APP2_simpleblock();
+    }
 
 signals:
+    void siMainBlockDeleted(void);
     void siSettingsMenuShow(void);
     void siMoved(QRectF new_pos);
 };
@@ -368,6 +480,11 @@ public:
 
     bool flClicked = false;
 
+    ~APP2_resizenode(void){
+        qDebug() << "Resize Node Removed";
+        this->scene()->removeItem(this);
+    }
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent * event){
         this->flClicked = true;
@@ -400,6 +517,10 @@ public slots:
         this->main_block_top_corner = new_pos.topLeft();
         this->main_block_bottom_corner = new_pos.bottomRight();
     }
+    void slMainBlockDeleted(void){
+        qDebug() << "signal received by sig node";
+        this->~APP2_resizenode();
+    }
 
 signals:
     void siMoved(QPointF new_position);
@@ -424,7 +545,10 @@ public:
 public:
     APP2_customblock(void){}
     APP2_customblock(QGraphicsScene * parent, QList<APP2_signalnode *> signal, QList<APP2_slotnode *> slot);
-
+    ~APP2_customblock(void){
+        delete this->simpleblock;
+        delete this->resizenode;
+    }
 protected:
 
 signals:

@@ -1,7 +1,7 @@
 #include "app2_constantblock.h"
 
 APP2_constantblock::APP2_constantblock(QGraphicsScene * parent, float value){
-    this->output = new APP2_signalnode();
+    this->output = new APP2_signalnode("Value");
     this->signalnodes.push_back(this->output);
 
     this->mommy_canvas = parent;
@@ -16,6 +16,7 @@ APP2_constantblock::APP2_constantblock(QGraphicsScene * parent, float value){
     this->mommy_canvas->addItem(this->resizenode = new APP2_resizenode);
 
     connect(this->simpleblock, &APP2_simpleblock::siSettingsMenuShow, this, &APP2_constantblock::slSettingsMenuShow);
+    connect(this->simpleblock, &APP2_simpleblock::siMainBlockDeleted, this->resizenode, &APP2_resizenode::slMainBlockDeleted);
     connect(this->simpleblock, &APP2_simpleblock::siMoved, this->resizenode, &APP2_resizenode::slMoveTo);
     connect(this->resizenode, &APP2_resizenode::siMoved, this->simpleblock, &APP2_simpleblock::slResize);
     this->value = value;
