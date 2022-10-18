@@ -39,14 +39,14 @@ public:
 
     void SetStart(QPointF new_dot){
         this->setPos(new_dot + QPointF(10, 5));
+        this->prepareGeometryChange();
         this->line.setP1(new_dot);
-//        this->line = QLineF(new_dot, this->line.p2());
-//        this->setLine(QLineF(new_dot, this->line().p2()));
+        this->scene()->update();
     }
     void SetEnd(QPointF new_dot){
+        this->prepareGeometryChange();
         this->line.setP2(new_dot);
-//        this->line = QLineF(this->line.p1(), new_dot);
-//        this->setLine(QLineF(this->line().p1(), new_dot));
+        this->scene()->update();
     }
 
     APP2_connectline(QPointF start, QPointF end){
@@ -55,32 +55,34 @@ public:
         this->pen.setWidth(2);
         this->pen.setColor(Qt::black);
         this->setPos(start.x() + 10, start.y() + 5);
-        this->line = QLineF(start, end + QPointF(10, 10));
+        this->line = QLineF(start, end/* + QPointF(10, 10)*/);
     }
 
     QRectF boundingRect() const override {
-        return QRectF(0, 0, this->line.dx() + 6, this->line.dy() + 6);
-    }
-    QPainterPath shape() const override{
 //        this->scene()->addRect(0, 0, this->line.dx(), this->line.dy());
-        QPainterPath path;
-        QVector<QPointF> tmp;
-        if (this->line.dy()){
-//            tmp.push_back(QPointF(-3, -3));
-//            path.addPolygon();
-            path.addRect(QRectF(QPointF(-3, -3), QPointF(this->line.dx() / 2 + 3, 6)));
-            path.addRect(QRectF(QPointF(this->line.dx() / 2 - 3, -3), QPointF(this->line.dx() / 2 + 3, this->line.dy() + 3)));
-            path.addRect(QRectF(QPointF(this->line.dx() / 2 - 3, this->line.dy() - 3), QPointF(this->line.dx() + 3, this->line.dy() + 3)));
-        }
-        else{
-            tmp.push_back(QPointF(-3, 3)); tmp.push_back(QPointF(-3, -3)); tmp.push_back(QPointF(this->line.dx() / 2 - 3, -3));
-            tmp.push_back(QPointF(this->line.dx() / 2 - 3, this->line.dy() - 3)); tmp.push_back(QPointF(this->line.dx() + 3, this->line.dy() - 3));
-            tmp.push_back(QPointF(this->line.dx() + 3, this->line.dy() + 3)); tmp.push_back(QPointF(this->line.dx() / 2 + 3, this->line.dy() + 3));
-            tmp.push_back(QPointF(this->line.dx() / 2 + 3, 3)); tmp.push_back(QPointF(-3, 3));
-            path.addPolygon(QPolygonF(tmp));
-        }
-        return path;
+//        qDebug() << "boundingRect dx : " << this->line.dx() << " , dy : " << this->line.dy();
+        return QRectF(0, 0, this->line.dx(), this->line.dy());
     }
+//    QPainterPath shape() const override{
+////        this->scene()->update();
+//        qDebug() << "shape dx : " << this->line.dx() << " , dy : " << this->line.dy();
+
+//        QPainterPath path;
+//        QVector<QPointF> tmp;
+//        if (this->line.dy() > 0){
+//            path.addRect(QRectF(QPointF(-3, -3), QPointF(this->line.dx() / 2 + 3, 6)));
+//            path.addRect(QRectF(QPointF(this->line.dx() / 2 - 3, -3), QPointF(this->line.dx() / 2 + 3, this->line.dy() + 3)));
+//            path.addRect(QRectF(QPointF(this->line.dx() / 2 - 3, this->line.dy() - 3), QPointF(this->line.dx() + 3, this->line.dy() + 3)));
+//        }
+//        else{
+//            tmp.push_back(QPointF(0, 0)); tmp.push_back(QPointF(0, -6)); tmp.push_back(QPointF(this->line.dx() / 2 - 6, -6));
+//            tmp.push_back(QPointF(this->line.dx() / 2 - 6, this->line.dy())); tmp.push_back(QPointF(this->line.dx(), this->line.dy()));
+//            tmp.push_back(QPointF(this->line.dx(), this->line.dy() + 6)); tmp.push_back(QPointF(this->line.dx() / 2 + 6, this->line.dy() + 6));
+//            tmp.push_back(QPointF(this->line.dx() / 2 + 6, 0)); tmp.push_back(QPointF(0, 0));
+//            path.addPolygon(QPolygonF(tmp));
+//        }
+//        return path;
+//    }
     void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget) override{
         painter->setPen(this->pen);
         painter->drawLine(0, 0, this->line.dx() / 2, 0);
@@ -97,12 +99,17 @@ public:
 
     ~APP2_connectline(void){}
 
+public slots:
+    void slDeleteThis(void);
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent * event){
-        qDebug() << "Mouse Press Event For Line";
-    }
-    void mouseMoveEvent(QGraphicsSceneMouseEvent * event){
-        qDebug() << "Mouse Move For Line";
+        if (event->button() == Qt::RightButton){
+            QMenu menu;
+            menu.addAction("Delete", this, &APP2_connectline::slDeleteThis);
+            menu.exec(QCursor::pos());
+            QGraphicsItem::mousePressEvent(event);
+        }
     }
 
 };

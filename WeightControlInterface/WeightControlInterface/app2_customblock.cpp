@@ -37,3 +37,17 @@ void APP2_connectline::ClearFromSlot(void){
         }
     }
 }
+
+void APP2_connectline::slDeleteThis(void){
+    for (auto iter = this->sig->signal_lines.begin(); iter != this->sig->signal_lines.end(); iter++){
+        if ((*iter) == this){
+            this->sig->signal_lines.removeOne((*iter));
+            this->sig = nullptr;
+            break;
+        }
+    }
+    this->slot->connect_line = nullptr;
+    this->slot = nullptr;
+    this->scene()->removeItem(this);
+    this->~APP2_connectline();
+}
