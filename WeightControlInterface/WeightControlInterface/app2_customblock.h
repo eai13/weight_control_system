@@ -32,57 +32,52 @@ class APP2_connectline : public QObject, public QGraphicsItem {
 
 public:
     QPen pen;
+    QRectF size;
     QLineF line;
     void SetPen(QPen new_pen){
         this->pen = new_pen;
     }
 
     void SetStart(QPointF new_dot){
-        this->setPos(new_dot + QPointF(10, 5));
         this->prepareGeometryChange();
+        this->setPos(new_dot + QPointF(10, 5));
         this->line.setP1(new_dot);
-        this->scene()->update();
     }
     void SetEnd(QPointF new_dot){
         this->prepareGeometryChange();
         this->line.setP2(new_dot);
-        this->scene()->update();
     }
 
     APP2_connectline(QPointF start, QPointF end){
         qDebug() << this->acceptedMouseButtons();
         this->setCursor(QCursor(Qt::CrossCursor));
+        this->setZValue(-5);
         this->pen.setWidth(2);
         this->pen.setColor(Qt::black);
         this->setPos(start.x() + 10, start.y() + 5);
-        this->line = QLineF(start, end/* + QPointF(10, 10)*/);
+        this->line = QLineF(start, end);
     }
 
     QRectF boundingRect() const override {
-//        this->scene()->addRect(0, 0, this->line.dx(), this->line.dy());
-//        qDebug() << "boundingRect dx : " << this->line.dx() << " , dy : " << this->line.dy();
         return QRectF(0, 0, this->line.dx(), this->line.dy());
     }
-//    QPainterPath shape() const override{
-////        this->scene()->update();
-//        qDebug() << "shape dx : " << this->line.dx() << " , dy : " << this->line.dy();
-
-//        QPainterPath path;
-//        QVector<QPointF> tmp;
-//        if (this->line.dy() > 0){
-//            path.addRect(QRectF(QPointF(-3, -3), QPointF(this->line.dx() / 2 + 3, 6)));
-//            path.addRect(QRectF(QPointF(this->line.dx() / 2 - 3, -3), QPointF(this->line.dx() / 2 + 3, this->line.dy() + 3)));
-//            path.addRect(QRectF(QPointF(this->line.dx() / 2 - 3, this->line.dy() - 3), QPointF(this->line.dx() + 3, this->line.dy() + 3)));
-//        }
-//        else{
-//            tmp.push_back(QPointF(0, 0)); tmp.push_back(QPointF(0, -6)); tmp.push_back(QPointF(this->line.dx() / 2 - 6, -6));
-//            tmp.push_back(QPointF(this->line.dx() / 2 - 6, this->line.dy())); tmp.push_back(QPointF(this->line.dx(), this->line.dy()));
-//            tmp.push_back(QPointF(this->line.dx(), this->line.dy() + 6)); tmp.push_back(QPointF(this->line.dx() / 2 + 6, this->line.dy() + 6));
-//            tmp.push_back(QPointF(this->line.dx() / 2 + 6, 0)); tmp.push_back(QPointF(0, 0));
-//            path.addPolygon(QPolygonF(tmp));
-//        }
-//        return path;
-//    }
+    QPainterPath shape() const override{
+        QPainterPath path;
+        QVector<QPointF> tmp;
+        if (this->line.dy() > 0){
+            path.addRect(QRectF(QPointF(-3, -3), QPointF(this->line.dx() / 2 + 3, 6)));
+            path.addRect(QRectF(QPointF(this->line.dx() / 2 - 3, -3), QPointF(this->line.dx() / 2 + 3, this->line.dy() + 3)));
+            path.addRect(QRectF(QPointF(this->line.dx() / 2 - 3, this->line.dy() - 3), QPointF(this->line.dx() + 3, this->line.dy() + 3)));
+        }
+        else{
+            tmp.push_back(QPointF(0, 0)); tmp.push_back(QPointF(0, -6)); tmp.push_back(QPointF(this->line.dx() / 2 - 6, -6));
+            tmp.push_back(QPointF(this->line.dx() / 2 - 6, this->line.dy())); tmp.push_back(QPointF(this->line.dx(), this->line.dy()));
+            tmp.push_back(QPointF(this->line.dx(), this->line.dy() + 6)); tmp.push_back(QPointF(this->line.dx() / 2 + 6, this->line.dy() + 6));
+            tmp.push_back(QPointF(this->line.dx() / 2 + 6, 0)); tmp.push_back(QPointF(0, 0));
+            path.addPolygon(QPolygonF(tmp));
+        }
+        return path;
+    }
     void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget) override{
         painter->setPen(this->pen);
         painter->drawLine(0, 0, this->line.dx() / 2, 0);
