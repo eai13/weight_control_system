@@ -3,6 +3,7 @@
 
 #include <QtCore/qglobal.h>
 #include "app2_customblock.h"
+#include <math.h>
 
 class APP2_mathoperationblock : public APP2_customblock{
 public:
@@ -23,6 +24,8 @@ public:
     float output_value = 0;
 
     APP2_mathoperationblock(QGraphicsScene * parent, BlockType bt);
+
+    void ProcessBlockData(void) override;
 
 private:
     BlockType block_type = MATH_BLOCK_SUM;

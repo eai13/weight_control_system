@@ -11,8 +11,14 @@ APP2_constantblock::APP2_constantblock(QGraphicsScene * parent, float value){
     for (auto iter = this->slotnodes.begin(); iter != this->slotnodes.end(); iter++){
         this->mommy_canvas->addItem(*iter);
     }
+    this->valuelabel = new APP2_valuelabel("", value);
+    QList<APP2_valuelabel *> vllist;
+    vllist.push_back(this->valuelabel);
+    for (auto iter = vllist.begin(); iter != vllist.end(); iter++){
+        this->mommy_canvas->addItem(*iter);
+    }
 
-    this->mommy_canvas->addItem(this->simpleblock = new APP2_simpleblock(QRectF(0, 0, 100, 100), this->signalnodes, this->slotnodes, this->mommy_canvas->addText("Constant")));
+    this->mommy_canvas->addItem(this->simpleblock = new APP2_simpleblock(this, QRectF(0, 0, 100, 100), this->signalnodes, this->slotnodes, this->mommy_canvas->addText("Constant"), vllist));
     this->mommy_canvas->addItem(this->resizenode = new APP2_resizenode);
 
     connect(this->simpleblock, &APP2_simpleblock::siSettingsMenuShow, this, &APP2_constantblock::slSettingsMenuShow);
@@ -27,7 +33,7 @@ void APP2_constantblock::slSettingsMenuShow(void){
     dialog_window->setWindowTitle("Constant");
     QGridLayout * grid_layout = new QGridLayout;
     grid_layout->addWidget(new QLabel("Value:"), 0, 0, 1, 2);
-    this->tmp_value_line = new QLineEdit(QString::fromStdString(std::to_string(this->value)));
+    this->tmp_value_line = new QLineEdit(QString::asprintf("%.2f", this->value));
     this->tmp_value_line->setValidator(new QDoubleValidator(-1000, 1000, 3));
     QPushButton * button_ok = new QPushButton("Accept");
     QPushButton * button_cancel = new QPushButton("Cancel");
@@ -41,4 +47,15 @@ void APP2_constantblock::slSettingsMenuShow(void){
     connect(button_cancel, &QPushButton::clicked, dialog_window, &QWidget::deleteLater);
 
     dialog_window->show();
+}
+
+void APP2_constantblock::ProcessBlockData(void){
+//    if (this->simpleblock->is_processed) return;
+//    this->output->signal_value = this->value;
+//    this->simpleblock->is_processed = true;
+//    this->output->previous_value = this->output->current_value;
+//    this->output->current_value = this->value;
+    this->output->current_value = this->value;
+    qDebug() << "CONSTANT SIGNAL VALUE " << this->output->current_value;
+//    this->output->SendSignal();
 }

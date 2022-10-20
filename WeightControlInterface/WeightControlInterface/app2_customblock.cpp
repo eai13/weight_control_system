@@ -10,11 +10,19 @@ APP2_customblock::APP2_customblock(QGraphicsScene * parent, QList<APP2_signalnod
     for (auto iter = this->signalnodes.begin(); iter != this->signalnodes.end(); iter++){
         this->mommy_canvas->addItem(*iter);
     }
-    parent->addItem(this->simpleblock = new APP2_simpleblock(QRectF(0, 0, 100, 100), this->signalnodes, this->slotnodes, this->mommy_canvas->addText("Custom Block")));
+    QList<APP2_valuelabel *> vllist;
+    parent->addItem(this->simpleblock = new APP2_simpleblock(this, QRectF(0, 0, 100, 100), this->signalnodes, this->slotnodes, this->mommy_canvas->addText("Custom Block"), vllist));
     parent->addItem(this->resizenode = new APP2_resizenode);
     connect(this->simpleblock, &APP2_simpleblock::siMainBlockDeleted, this->resizenode, &APP2_resizenode::slMainBlockDeleted);
     connect(this->simpleblock, &APP2_simpleblock::siMoved, this->resizenode, &APP2_resizenode::slMoveTo);
     connect(this->resizenode, &APP2_resizenode::siMoved, this->simpleblock, &APP2_simpleblock::slResize);
+}
+
+void APP2_simpleblock::slDeleteThis(void){
+    emit this->base_block->siBlockRemoved(this->base_block);
+    emit this->siMainBlockDeleted();
+    this->deleteLater();
+    this->~APP2_simpleblock();
 }
 
 void APP2_connectline::ClearFromSignal(void){
@@ -50,4 +58,11 @@ void APP2_connectline::slDeleteThis(void){
     this->slot = nullptr;
     this->scene()->removeItem(this);
     this->~APP2_connectline();
+}
+
+void APP2_slotnode::GetSignal(float val){
+//    this->previous_value = this->current_value;
+//    this->current_value = val;
+//    this->is_processed = true;
+//    this->base_block->base_block->ProcessBlockData();
 }

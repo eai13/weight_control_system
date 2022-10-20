@@ -17,9 +17,12 @@ private:
 
 public:
     APP2_signalnode *   output = nullptr;
+    APP2_valuelabel *   valuelabel = nullptr;
     float               value = 0;
 
     APP2_constantblock(QGraphicsScene * parent, float value);
+
+    void ProcessBlockData(void) override;
 
 public slots:
     void slSettingsMenuShow(void);
@@ -30,6 +33,7 @@ private slots:
         for (auto iter = txt.begin(); iter != txt.end(); iter++)
             if ((*iter) == ',') (*iter) = '.';
         this->value = txt.toDouble();
+        this->valuelabel->setValue(this->value);
     }
 protected:
 

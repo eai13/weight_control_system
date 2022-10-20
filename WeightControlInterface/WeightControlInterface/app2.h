@@ -39,6 +39,11 @@ private:
 public slots:
 
     void slAddItem(const QModelIndex & index);
+    void slBlockRemoved(APP2_customblock * block);
+    void delslCompute(void);
+
+signals:
+    void siPrepareForProcessing(void);
 };
 
 #endif // APP2_H

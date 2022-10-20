@@ -14,6 +14,7 @@
 
 #include <iostream>
 
+class APP2_customblock;
 class APP2_simpleblock;
 class APP2_constantblock;
 class APP2_resizenode;
@@ -51,7 +52,7 @@ public:
     APP2_connectline(QPointF start, QPointF end){
         qDebug() << this->acceptedMouseButtons();
         this->setCursor(QCursor(Qt::CrossCursor));
-        this->setZValue(-5);
+        this->setZValue(10);
         this->pen.setWidth(2);
         this->pen.setColor(Qt::black);
         this->setPos(start.x() + 10, start.y() + 5);
@@ -59,7 +60,12 @@ public:
     }
 
     QRectF boundingRect() const override {
-        return QRectF(0, 0, this->line.dx(), this->line.dy());
+        if (this->line.dy() > 0){
+            return QRectF(0, 0, this->line.dx(), this->line.dy());
+        }
+        else{
+            return QRectF(0, this->line.dy(), this->line.dx(), -1 * this->line.dy());
+        }
     }
     QPainterPath shape() const override{
         QPainterPath path;
@@ -122,6 +128,12 @@ private:
 public:
 
     APP2_connectline * connect_line = nullptr;
+    APP2_simpleblock * base_block = nullptr;
+    float current_value = 0;
+    float previous_value = 0;
+    bool is_set = false;
+
+    void GetSignal(float val);
 
     void SetTip(QString tip){
         this->setToolTip("Slot::" + tip);
@@ -210,7 +222,17 @@ private:
     QRectF size;
 
 public:
-    QList<APP2_connectline *> signal_lines;
+    QList<APP2_connectline *>   signal_lines;
+    APP2_simpleblock *          base_block = nullptr;
+    float current_value         = 0;
+    float previous_value        = 0;
+    bool is_set                 = false;
+
+    void SendSignal(void){
+//        for (auto iter = this->signal_lines.begin(); iter != this->signal_lines.end(); iter++){
+//            (*iter)->slot->GetSignal(this->signal_value);
+//        }
+    }
 
     void SetTip(QString tip){
         this->setToolTip("Signal::" + tip);
@@ -321,6 +343,52 @@ signals:
 };
 
 /* @brief
+ * value label class
+ */
+
+class APP2_valuelabel : public QGraphicsTextItem {
+
+private:
+    QString name;
+    float value;
+
+public:
+    APP2_valuelabel(QString n, float v){
+        this->name = n;
+        this->value = v;
+        if (this->name == "")
+            this->setPlainText(QString::asprintf("%.2f", this->value));
+        else
+            this->setPlainText(this->name + " " + QString::asprintf("%.2f", this->value));
+    }
+    APP2_valuelabel(QString n){
+        this->name = n;
+        if (this->name == "")
+            this->setPlainText("0");
+        else
+            this->setPlainText(this->name + " 0");
+    }
+
+    void setName(QString n){
+        this->name = n;
+        if (this->name == "")
+            this->setPlainText(QString::asprintf("%.2f", this->value));
+        else
+            this->setPlainText(this->name + " " + QString::asprintf("%.2f", this->value));
+    }
+    void setValue(float v){
+        this->value = v;
+        if (this->name == "")
+            this->setPlainText(QString::asprintf("%.2f", this->value));
+        else
+            this->setPlainText(this->name + " " + QString::asprintf("%.2f", this->value));
+    }
+    float Width(void){
+        return this->boundingRect().width();
+    }
+};
+
+/* @brief
  * basic block class
  */
 
@@ -332,7 +400,7 @@ private:
     QList<APP2_signalnode *>    signalnodes;
     QList<APP2_slotnode *>      slotnodes;
     QGraphicsTextItem *         type = nullptr;
-    QGraphicsTextItem *         name = nullptr;
+    QList<APP2_valuelabel *>    valuelabels;
 
     void SigSlotRefresh(void){
         this->type->setPos(this->pos() + QPointF(0, -20));
@@ -344,26 +412,40 @@ private:
         for (auto iter = this->slotnodes.begin(); iter != this->slotnodes.end(); iter++){
             (*iter)->slMoveTo(this->pos() + QPointF(-17, this->size.height() / (this->slotnodes.count() + 1) * (it++ + 1) - 10));
         }
+        it = 0;
+        for (auto iter = this->valuelabels.begin(); iter != this->valuelabels.end(); iter++){
+            float text_width = (*iter)->Width();
+            (*iter)->setPos(this->pos() + QPointF(this->size.width() / 2 - text_width / 2, this->size.height() / (this->valuelabels.count() + 1) * (it++ + 1) - 10));
+        }
     }
 
 public:
+    APP2_customblock *          base_block;
+    bool is_processed = false;
+
     void SetTip(QString tip){
         this->setToolTip("Block::" + tip);
     }
 
-    APP2_simpleblock(QRectF size, QList<APP2_signalnode *> sigs, QList<APP2_slotnode *> slts, QGraphicsTextItem * type){
+    APP2_simpleblock(APP2_customblock * base, QRectF size, QList<APP2_signalnode *> sigs, QList<APP2_slotnode *> slts, QGraphicsTextItem * type, QList<APP2_valuelabel *> values){
+        this->base_block = base;
+
+        this->setPos(250, 250);
         this->setToolTip("Block::");
         this->setZValue(-1);
 
+        this->valuelabels = values;
         this->type = type;
 
         this->size = size;
         this->signalnodes = sigs;
         for (auto iter = this->signalnodes.begin(); iter != this->signalnodes.end(); iter++){
+            (*iter)->base_block = this;
             connect(this, &APP2_simpleblock::siMainBlockDeleted, (*iter), &APP2_signalnode::slMainBlockDeleted);
         }
         this->slotnodes = slts;
         for (auto iter = this->slotnodes.begin(); iter != this->slotnodes.end(); iter++){
+            (*iter)->base_block = this;
             connect(this, &APP2_simpleblock::siMainBlockDeleted, (*iter), &APP2_slotnode::slMainBlockDeleted);
         }
 
@@ -387,7 +469,10 @@ public:
 
     ~APP2_simpleblock(void){
         if (this->type != nullptr) this->scene()->removeItem(this->type);
-        if (this->name != nullptr) this->scene()->removeItem(this->name);
+        for (auto iter = this->valuelabels.begin(); iter != this->valuelabels.end(); iter++){
+            this->scene()->removeItem(*iter);
+            delete (*iter);
+        }
         this->scene()->removeItem(this);
     }
 
@@ -435,11 +520,7 @@ public slots:
         this->size.setHeight(this->size.height() + deviation.y());
         this->SigSlotRefresh();
     }
-    void slDeleteThis(void){
-        emit this->siMainBlockDeleted();
-        this->deleteLater();
-        this->~APP2_simpleblock();
-    }
+    void slDeleteThis(void);
 
 signals:
     void siMainBlockDeleted(void);
@@ -465,6 +546,7 @@ private:
 
 public:
     APP2_resizenode(void){
+        this->setPos(250, 250);
         this->setCursor(QCursor(Qt::SizeFDiagCursor));
         this->size.setX(0);
         this->size.setY(0);
@@ -551,10 +633,26 @@ public:
         delete this->simpleblock;
         delete this->resizenode;
     }
+
+    virtual void ProcessBlockData(void){
+        return;
+    }
 protected:
 
 signals:
+    void siBlockRemoved(APP2_customblock * block);
 
+public slots:
+    void slPrepareForProcessing(void){
+        this->simpleblock->is_processed = false;
+        for (auto iter = slotnodes.begin(); iter != this->slotnodes.end(); iter++){
+//            (*iter)->is_set = false;
+        }
+        for (auto iter = signalnodes.begin(); iter != this->signalnodes.end(); iter++){
+            (*iter)->previous_value = (*iter)->current_value;
+            (*iter)->current_value = 0;
+        }
+    }
 };
 
 #endif // APP2_CONSTBLOCK_H
