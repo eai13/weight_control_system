@@ -476,6 +476,20 @@ public:
         this->scene()->removeItem(this);
     }
 
+    void AddSlot(APP2_slotnode * new_slot){
+        this->slotnodes.push_back(new_slot);
+        new_slot->base_block = this;
+        connect(this, &APP2_simpleblock::siMainBlockDeleted, new_slot, &APP2_slotnode::slMainBlockDeleted);
+        this->SigSlotRefresh();
+    }
+    void RemoveSlot(void){
+        if (this->slotnodes.count()){
+            this->slotnodes.back()->slMainBlockDeleted();
+            this->slotnodes.pop_back();
+            this->SigSlotRefresh();
+        }
+    }
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent * event){
         if (event->button() == Qt::LeftButton){
