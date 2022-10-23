@@ -19,8 +19,14 @@ SOURCES += \
     app2.cpp \
     app2_constantblock.cpp \
     app2_customblock.cpp \
+    app2_deadzoneblock.cpp \
+    app2_lowerthresblock.cpp \
     app2_mathoperationblock.cpp \
+    app2_plotblock.cpp \
     app2_resizenode.cpp \
+    app2_thresholdblock.cpp \
+    app2_timeblock.cpp \
+    app2_upperthresblock.cpp \
     bootloader.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -34,8 +40,14 @@ HEADERS += \
     app2.h \
     app2_constantblock.h \
     app2_customblock.h \
+    app2_deadzoneblock.h \
+    app2_lowerthresblock.h \
     app2_mathoperationblock.h \
+    app2_plotblock.h \
     app2_resizenode.h \
+    app2_thresholdblock.h \
+    app2_timeblock.h \
+    app2_upperthresblock.h \
     bootloader.h \
     global_config.h \
     mainwindow.h \

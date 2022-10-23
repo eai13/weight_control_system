@@ -8,6 +8,12 @@
 #include "app2_customblock.h"
 #include "app2_constantblock.h"
 #include "app2_mathoperationblock.h"
+#include "app2_timeblock.h"
+#include "app2_thresholdblock.h"
+#include "app2_upperthresblock.h"
+#include "app2_lowerthresblock.h"
+#include "app2_deadzoneblock.h"
+#include "app2_plotblock.h"
 #include <QList>
 #include <QMenu>
 

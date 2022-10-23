@@ -50,12 +50,6 @@ void APP2_constantblock::slSettingsMenuShow(void){
 }
 
 void APP2_constantblock::ProcessBlockData(void){
-//    if (this->simpleblock->is_processed) return;
-//    this->output->signal_value = this->value;
-//    this->simpleblock->is_processed = true;
-//    this->output->previous_value = this->output->current_value;
-//    this->output->current_value = this->value;
     this->output->current_value = this->value;
     qDebug() << "CONSTANT SIGNAL VALUE " << this->output->current_value;
-//    this->output->SendSignal();
 }

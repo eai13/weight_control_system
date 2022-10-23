@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
     systemcontrol_ui = new SystemControl();
     ui->tabWidget_main->addTab(systemcontrol_ui, "Control System");
     app2 = new APP2();
-    ui->tabWidget_main->addTab(app2, "APP2");
+    ui->tabWidget_main->addTab(app2, "EBALA");
 
     connect(this, &MainWindow::siActivateBOOT, bootloader_ui, &Bootloader::slActivate);
     connect(this, &MainWindow::siActivateAPP1, systemcontrol_ui, &SystemControl::slActivate);
