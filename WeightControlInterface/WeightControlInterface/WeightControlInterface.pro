@@ -22,6 +22,7 @@ SOURCES += \
     app2_deadzoneblock.cpp \
     app2_lowerthresblock.cpp \
     app2_mathoperationblock.cpp \
+    app2_pidblock.cpp \
     app2_plotblock.cpp \
     app2_resizenode.cpp \
     app2_thresholdblock.cpp \
@@ -43,6 +44,7 @@ HEADERS += \
     app2_deadzoneblock.h \
     app2_lowerthresblock.h \
     app2_mathoperationblock.h \
+    app2_pidblock.h \
     app2_plotblock.h \
     app2_resizenode.h \
     app2_thresholdblock.h \

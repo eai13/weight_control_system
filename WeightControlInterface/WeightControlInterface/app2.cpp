@@ -19,6 +19,7 @@ APP2::APP2(QWidget *parent) :
     ui->listWidget_items->addItem("Lower Threshold");
     ui->listWidget_items->addItem("Deadzone");
     ui->listWidget_items->addItem("Plot");
+    ui->listWidget_items->addItem("PID Controller");
 
     connect(ui->listWidget_items, &QListWidget::doubleClicked, this, &APP2::slAddItem);
 
@@ -116,6 +117,13 @@ void APP2::slAddItem(const QModelIndex & index){
         APP2_plotblock * new_block = new APP2_plotblock(ui->graphicsView_canvas->scene());
         connect(this, &APP2::siPrepareForProcessing, new_block, &APP2_plotblock::slPrepareForProcessing);
         connect(new_block, &APP2_plotblock::siBlockRemoved, this, &APP2::slBlockRemoved);
+        this->block_list.push_back(new_block);
+        break;
+    }
+    case(12):{
+        APP2_PIDblock * new_block = new APP2_PIDblock(ui->graphicsView_canvas->scene());
+        connect(this, &APP2::siPrepareForProcessing, new_block, &APP2_PIDblock::slPrepareForProcessing);
+        connect(new_block, &APP2_PIDblock::siBlockRemoved, this, &APP2::slBlockRemoved);
         this->block_list.push_back(new_block);
         break;
     }

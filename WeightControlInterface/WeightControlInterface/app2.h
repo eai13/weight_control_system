@@ -14,6 +14,7 @@
 #include "app2_lowerthresblock.h"
 #include "app2_deadzoneblock.h"
 #include "app2_plotblock.h"
+#include "app2_pidblock.h"
 #include <QList>
 #include <QMenu>
 
