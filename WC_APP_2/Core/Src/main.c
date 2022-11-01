@@ -34,6 +34,7 @@
 #include <stdint.h>
 #include "global_config.h"
 #include "debug.h"
+#include "24C02C.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
