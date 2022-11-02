@@ -21,6 +21,13 @@ uint16_t current[4] = { 0, 0, 0, 0 };
 float    set_position[4] = { 0, 0, 0, 0 };
 int32_t lptim_corrector = 0;
 
+void PID_SetNewCorrector(int32_t corrector){
+    lptim_corrector = corrector;
+}
+int32_t PID_GetCorrector(void){
+    return lptim_corrector;
+}
+
 void HAL_LPTIM_AutoReloadMatchCallback(LPTIM_HandleTypeDef *hlptim){
   if (hlptim == &ENCODER_4_TIMER){
     if (ENCODER_4_COUNT < 0x7FFF)
@@ -224,6 +231,13 @@ device_t drives[4] = {
         .direction      = DIR_STOP
     }
 };
+
+void PID_SetPositionSetpoints(float sp1, float sp2, float sp3, float sp4){
+    drives[0].position_l.sp.v = sp1;
+    drives[1].position_l.sp.v = sp2;
+    drives[2].position_l.sp.v = sp3;
+    drives[3].position_l.sp.v = sp4;
+}
 
 static inline float GetRealCurrent(uint16_t raw){
     return (((float)(abs((int16_t)(raw)) - ADC_CURRENT_0)) / ADC_RESOLUTION * ADC_REFERENCE / ADC_VPA);

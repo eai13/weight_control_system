@@ -74,7 +74,7 @@ Core/Src/system_stm32g0xx.c \
 Core/debug/debug.c \
 Core/PID/pid.c \
 Core/protocol/protocol.c \
-Core/24c02c_eeprom/24C02C.c \
+Core/24c02c_eeprom/memory.c \
 Core/Src/i2c.c \
 Drivers/STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_i2c.c \
 Drivers/STM32G0xx_HAL_Driver/Src/stm32g0xx_hal_i2c_ex.c

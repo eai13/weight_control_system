@@ -36,6 +36,9 @@
 #include "protocol.h"
 #include "pid.h"
 #include "global_config.h"
+#include "memory.h"
+// #include "24C02C.h"
+#include "stm32g0xx_hal.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -101,7 +104,6 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -123,6 +125,47 @@ int main(void)
   MX_USART2_UART_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
+
+  // uint8_t write_data[4] = { 0x11, 0x22, 0x33, 0x44 };
+  // uint8_t data[4] = { 0x00, 0x00, 0x00, 0x00 };
+  // print_in("Write state 0x%X\r\n", HAL_I2C_Mem_Write(&hi2c1, 0b10101010, 0x00, I2C_MEMADD_SIZE_8BIT, write_data, 4, 100));
+  // while(HAL_I2C_IsDeviceReady(&hi2c1, 0b10101010,  1, HAL_MAX_DELAY) != HAL_OK){}
+  // print_in("Read state 0x%X\r\n", HAL_I2C_Mem_Read(&hi2c1, 0b10101010, 0x00, I2C_MEMADD_SIZE_8BIT, data, 4, 100));
+  // print_in("Data read 0x%X 0x%X 0x%X 0x%X\r\n", data[0], data[1], data[2], data[3]);
+
+  uint32_t position[4] = { 0x7FFFFFFF, 0x7FFF, 0x7FFF, 0x0000 };
+  HAL_StatusTypeDef state;
+  state = MEMORY_CheckMemoryName(10);
+  if (state != HAL_OK){
+    print_wr("EEPROM Partition name is not good STATE: 0x%X\r\n", state);
+    state = MEMORY_PreparePartition(10);
+    if (state != HAL_OK){
+      print_er("EEPROM Partition name setting failed STATE: 0x%X\r\n", state);
+    }
+    else{
+      print_in("EEPROM Partition name set\r\n");
+      state = MEMORY_SetActualPosition(position[0], position[1], position[2], position[3], 10);
+      if (state != HAL_OK){
+        print_er("EEPROM Failed to set initial positions STATE: 0x%X\r\n", state);
+      }
+      else{
+        print_in("EEPROM Succeeded to set initial positions\r\n");
+      }
+    }
+  }
+  else{
+    print_in("EEPROM Partition name is ok\r\n");
+    state = MEMORY_GetActualPosition(position, 10);
+    if (state != HAL_OK){
+      print_er("EEPROM Failed to receive actual position STATE: 0x%X\r\n", state);
+    }
+    else{
+      print_in("EEPROM Succeeded to receive actual positions\r\n");
+      print_in("EEPROM Positions: 0x%X 0x%X 0x%X 0x%X\r\n", position[0], position[1], position[2], position[3], 10);
+    }
+  }
+
+  HAL_NVIC_SystemReset();
 
   HAL_GPIO_WritePin(DRV1_DIR_0_GPIO_Port, DRV1_DIR_0_Pin, 0);
   HAL_GPIO_WritePin(DRV1_DIR_1_GPIO_Port, DRV1_DIR_1_Pin, 0);
@@ -159,12 +202,16 @@ int main(void)
 
   PROTOCOL_Start();
 
-  HAL_UART_Transmit(&huart2, "APP1 Program Started\r\n", 22, 10);
+  print_in("APP1 Program Started\r\n");
+  // HAL_UART_Transmit(&huart2, "APP1 Program Started\r\n", 22, 10);
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  uint32_t position_data[4];
+  uint32_t old_position_data[4];
+
   while (1)
   {
     if (PID_ComputeFlag){
@@ -177,6 +224,7 @@ int main(void)
       PROTOCOL_ProcessFrame();
       PROTOCOL_ResetPendingFlag();
     }
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
