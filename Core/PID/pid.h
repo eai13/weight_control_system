@@ -92,6 +92,10 @@ rw_status_t PID_WriteReg(uint8_t drive_num, uint8_t reg, float data);
 rw_status_t PID_ReadReg(uint8_t drive_num, uint8_t reg, float * data);
 wc_plottables_t PID_ReadPlottables(uint8_t drive_num);
 
+void PID_SetNewCorrector(int32_t corrector);
+uint32_t PID_GetCorrector(void);
+void PID_SetSetpoints(uint32_t pos_1, uint32_t pos_2, uint32_t pos_3, uint32_t pos_4);
+
 extern device_t drives[4];
 extern uint16_t current[4];
 

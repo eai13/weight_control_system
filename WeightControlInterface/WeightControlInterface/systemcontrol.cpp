@@ -224,9 +224,24 @@ void SystemControl::ProcessIncomingData(void){
             CNT_Register cnt_register;
             cnt_register.SetHeaderFromCNTPayload(&cnt_header);
             switch(cnt_header.id){
-            case(CNT_ID_GLOBAL):
+            case(CNT_ID_GLOBAL):{
                 this->SerialLock.Unlock();
+                switch(cnt_register.reg){
+                case(CNT_REG_POS_SP):{
+                    for (uint8_t iter = 0; iter < 4; iter++){
+                        if (this->plots[iter]->rb_rads->isChecked()){
+                            this->plots[iter]->lineedit->setText(QString::asprintf("%.2f", cnt_register.data[iter]));
+                        }
+                        else{
+                            this->plots[iter]->lineedit->setText(QString::asprintf("%.2f", cnt_register.data[iter] / (2*PI)));
+                        }
+                        this->plots[iter]->slProcessEditLine();
+                    }
+                    break;
+                }
+                }
                 break;
+            }
             default:
                 break;
             }
@@ -278,6 +293,8 @@ void SystemControl::slActivate(void){
     this->DeviceCheckTimer->start(this->PERIODDeviceCheckTimer);
     this->PlottableDataTimer->start(this->PERIODPlotDataTimer);
     this->TransmitHandlerTimer->start(this->PERIODTransmitHandlerTimer);
+
+    this->C_ReadMultipleData(this->CNT_REG_POS_SP);
 }
 
 void SystemControl::ConsoleBasic(QString message){

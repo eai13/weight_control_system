@@ -126,14 +126,7 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
-  // uint8_t write_data[4] = { 0x11, 0x22, 0x33, 0x44 };
-  // uint8_t data[4] = { 0x00, 0x00, 0x00, 0x00 };
-  // print_in("Write state 0x%X\r\n", HAL_I2C_Mem_Write(&hi2c1, 0b10101010, 0x00, I2C_MEMADD_SIZE_8BIT, write_data, 4, 100));
-  // while(HAL_I2C_IsDeviceReady(&hi2c1, 0b10101010,  1, HAL_MAX_DELAY) != HAL_OK){}
-  // print_in("Read state 0x%X\r\n", HAL_I2C_Mem_Read(&hi2c1, 0b10101010, 0x00, I2C_MEMADD_SIZE_8BIT, data, 4, 100));
-  // print_in("Data read 0x%X 0x%X 0x%X 0x%X\r\n", data[0], data[1], data[2], data[3]);
-
-  uint32_t position[4] = { 0x7FFFFFFF, 0x7FFF, 0x7FFF, 0x0000 };
+  uint32_t position[4] = { 0x7FFFFFFF, 0x7FFF, 0x7FFF, 0x7FFFFFFF };
   HAL_StatusTypeDef state;
   state = MEMORY_CheckMemoryName(10);
   if (state != HAL_OK){
@@ -165,7 +158,7 @@ int main(void)
     }
   }
 
-  HAL_NVIC_SystemReset();
+  // HAL_NVIC_SystemReset();
 
   HAL_GPIO_WritePin(DRV1_DIR_0_GPIO_Port, DRV1_DIR_0_Pin, 0);
   HAL_GPIO_WritePin(DRV1_DIR_1_GPIO_Port, DRV1_DIR_1_Pin, 0);
@@ -181,13 +174,16 @@ int main(void)
   HAL_TIM_Base_Start(&htim6);
 
   HAL_TIM_Encoder_Start(&ENCODER_1_TIMER, TIM_CHANNEL_ALL);
-  ENCODER_1_COUNT = 0x7FFFFFFF;
+  ENCODER_1_COUNT = position[0];
   HAL_TIM_Encoder_Start(&ENCODER_2_TIMER, TIM_CHANNEL_ALL);
-  ENCODER_2_COUNT = 0x7FFF;
+  ENCODER_2_COUNT = position[1];
   HAL_TIM_Encoder_Start(&ENCODER_3_TIMER, TIM_CHANNEL_ALL);
-  ENCODER_3_COUNT = 0x7FFF;
+  ENCODER_3_COUNT = position[2];
+  PID_SetNewCorrector(position[3]);
   HAL_LPTIM_Encoder_Start(&ENCODER_4_TIMER, 65535);
   HAL_LPTIM_Counter_Start_IT(&ENCODER_4_TIMER, LPTIM1->ARR);
+
+  PID_SetSetpoints(position[0], position[1], position[2], position[3]);
 
   HAL_TIM_PWM_Start(&PWM_1_TIMER, PWM_1_CHANNEL);
   PWM_1_DUTY = 0;
@@ -211,7 +207,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   uint32_t position_data[4];
   uint32_t old_position_data[4];
-
+  uint32_t ticks_to_position_save = HAL_GetTick();
   while (1)
   {
     if (PID_ComputeFlag){
@@ -225,6 +221,10 @@ int main(void)
       PROTOCOL_ResetPendingFlag();
     }
 
+    if ((HAL_GetTick() - ticks_to_position_save) > 3000){
+      MEMORY_SetActualPosition(ENCODER_1_COUNT, ENCODER_2_COUNT, ENCODER_3_COUNT, PID_GetCorrector() + ENCODER_4_COUNT, 10);
+      ticks_to_position_save = HAL_GetTick();
+    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

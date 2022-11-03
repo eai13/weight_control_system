@@ -24,7 +24,7 @@ int32_t lptim_corrector = 0;
 void PID_SetNewCorrector(int32_t corrector){
     lptim_corrector = corrector;
 }
-int32_t PID_GetCorrector(void){
+uint32_t PID_GetCorrector(void){
     return lptim_corrector;
 }
 
@@ -232,13 +232,6 @@ device_t drives[4] = {
     }
 };
 
-void PID_SetPositionSetpoints(float sp1, float sp2, float sp3, float sp4){
-    drives[0].position_l.sp.v = sp1;
-    drives[1].position_l.sp.v = sp2;
-    drives[2].position_l.sp.v = sp3;
-    drives[3].position_l.sp.v = sp4;
-}
-
 static inline float GetRealCurrent(uint16_t raw){
     return (((float)(abs((int16_t)(raw)) - ADC_CURRENT_0)) / ADC_RESOLUTION * ADC_REFERENCE / ADC_VPA);
 }
@@ -275,7 +268,7 @@ void PID_DriveCompute(uint8_t drive_num){
     // // GETTING RADIAL POSITION
     float tmp_position = 0;
     if (drive_num == 3){
-        tmp_position = GetRealRadial(((int32_t)(*(DRIVE.encoder_s.v))) + lptim_corrector);
+        tmp_position = GetRealRadial(((int32_t)(*(DRIVE.encoder_s.v))) + lptim_corrector - 0x7FFFFFFF);
     }
     else if (drive_num == 0){
         tmp_position = GetRealRadial(((int32_t)(*(DRIVE.encoder_s.v))) - 0x7FFFFFFF);
@@ -399,4 +392,11 @@ wc_plottables_t PID_ReadPlottables(uint8_t drive_num){
     tmp.cur_fb = drives[drive_num].current_l.fb.v;
     tmp.output = drives[drive_num].output.v;
     return tmp;
+}
+
+void PID_SetSetpoints(uint32_t pos_1, uint32_t pos_2, uint32_t pos_3, uint32_t pos_4){
+    drives[0].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[0].encoder_s.v))) - 0x7FFFFFFF);
+    drives[1].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[1].encoder_s.v))) - 0x7FFF);
+    drives[2].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[2].encoder_s.v))) - 0x7FFF);
+    drives[3].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[3].encoder_s.v))) + lptim_corrector - 0x7FFFFFFF);
 }
