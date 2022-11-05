@@ -111,7 +111,8 @@ private:
         CNT_READ_REG        = 0x02,
         CNT_BLOCK_DRIVE     = 0x03,
         CNT_ENABLE_DRIVE    = 0x05,
-        CNT_READ_PLOTTABLE  = 0x06
+        CNT_READ_PLOTTABLE  = 0x06,
+        CNT_CALIBRATE_ZERO  = 0x0A
     };
 
     enum CONTROL_IDs{
@@ -164,6 +165,7 @@ private:
         BP_CNT_WRITE_MULTIPLE_AWAIT_SIZE    = 33,
         BP_CNT_READ_SINGLE_AWAIT_SIZE       = 21,
         BP_CNT_READ_MULTIPLE_AWAIT_SIZE     = 33,
+        BP_CNT_SIGNLE_DRIVE_CMD_AWAIT_SIZE  = 13,
         BP_CNT_GLOBAL_CMD_AWAIT_SIZE        = 13,
         BP_CNT_READ_PLOTTABLE_AWAIT_SIZE    = 125
     };
@@ -314,9 +316,11 @@ public slots:
     void C_WriteMultipleData(uint16_t reg, QVector<float> data);
     void C_WriteSingleData(uint16_t id, uint16_t reg, float data);
     void C_ReadPlottableRegs(void);
-    void C_SendCmd(uint16_t cmd);
+    void C_SendSingleDriveCmd(uint16_t cmd, uint16_t id);
+    void C_SendGlobalCmd(uint16_t cmd);
 
     void slSendPos(float data);
+    void slSendZeroCalibration(void);
     void slActivate(void);
 
     void slStartTrajectory(void);

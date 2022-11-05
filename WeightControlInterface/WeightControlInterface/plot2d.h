@@ -23,7 +23,7 @@ class Plot2D : public QObject
 {
     Q_OBJECT
 public:
-    explicit Plot2D(QString title, QCustomPlot * plot_h, QRadioButton * rb_turn_h, QRadioButton * rb_rads_h, QDial * dial_h, QLineEdit * lineedit_h);
+    explicit Plot2D(QString title, QCustomPlot * plot_h, QRadioButton * rb_turn_h, QRadioButton * rb_rads_h, QDial * dial_h, QLineEdit * lineedit_h, QPushButton * zerocalib, QPushButton * movezero);
 
     QList<QColor>   pencolor_buffer;
     QWidget *       plot_parent;
@@ -33,6 +33,8 @@ public:
     QRadioButton *  rb_rads;
     QLineEdit *     lineedit;
     QDial *         dial;
+    QPushButton *   pb_calibzero;
+    QPushButton *   pb_movezero;
 
     QMenu           plot_menu;
 
@@ -91,8 +93,18 @@ private:
     QTime * system_time = nullptr;
 
 signals:
-
+    void siCalibrateZero(void);
     void siSendPos(float pos);
+
+private slots:
+    void slCalibrateZero(void){
+        emit this->siCalibrateZero();
+    }
+    void slSetZero(void){
+        this->lineedit->setText("0.00");
+        this->slProcessEditLine();
+    }
+
 };
 
 #endif // PLOT2D_H

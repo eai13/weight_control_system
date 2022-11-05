@@ -183,7 +183,7 @@ int main(void)
   HAL_LPTIM_Encoder_Start(&ENCODER_4_TIMER, 65535);
   HAL_LPTIM_Counter_Start_IT(&ENCODER_4_TIMER, LPTIM1->ARR);
 
-  PID_SetSetpoints(position[0], position[1], position[2], position[3]);
+  PID_MoveSetpoints();
 
   HAL_TIM_PWM_Start(&PWM_1_TIMER, PWM_1_CHANNEL);
   PWM_1_DUTY = 0;

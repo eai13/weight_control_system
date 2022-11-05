@@ -41,14 +41,15 @@ SystemControl::SystemControl(QWidget *parent) :
     this->SystemTime = new QTime();
     this->SystemTime->start();
 
-    this->plots[0] = new Plot2D("Motor 1", ui->widget_plot1, ui->radioButton_m1turns, ui->radioButton_m1rads, ui->dial_motor1, ui->lineEdit_motor1pos);
-    this->plots[1] = new Plot2D("Motor 2", ui->widget_plot2, ui->radioButton_m2turns, ui->radioButton_m2rads, ui->dial_motor2, ui->lineEdit_motor2pos);
-    this->plots[2] = new Plot2D("Motor 3", ui->widget_plot3, ui->radioButton_m3turns, ui->radioButton_m3rads, ui->dial_motor3, ui->lineEdit_motor3pos);
-    this->plots[3] = new Plot2D("Motor 4", ui->widget_plot4, ui->radioButton_m4turns, ui->radioButton_m4rads, ui->dial_motor4, ui->lineEdit_motor4pos);
+    this->plots[0] = new Plot2D("Motor 1", ui->widget_plot1, ui->radioButton_m1turns, ui->radioButton_m1rads, ui->dial_motor1, ui->lineEdit_motor1pos, ui->pushButton_motor1zerocalib, ui->pushButton_motor1movezero);
+    this->plots[1] = new Plot2D("Motor 2", ui->widget_plot2, ui->radioButton_m2turns, ui->radioButton_m2rads, ui->dial_motor2, ui->lineEdit_motor2pos, ui->pushButton_motor2zerocalib, ui->pushButton_motor2movezero);
+    this->plots[2] = new Plot2D("Motor 3", ui->widget_plot3, ui->radioButton_m3turns, ui->radioButton_m3rads, ui->dial_motor3, ui->lineEdit_motor3pos, ui->pushButton_motor3zerocalib, ui->pushButton_motor3movezero);
+    this->plots[3] = new Plot2D("Motor 4", ui->widget_plot4, ui->radioButton_m4turns, ui->radioButton_m4rads, ui->dial_motor4, ui->lineEdit_motor4pos, ui->pushButton_motor4zerocalib, ui->pushButton_motor4movezero);
 
     for (uint8_t iter = 0; iter < 4; iter++){
         this->plots[iter]->setObjectName(QString::fromStdString(std::to_string(iter)));
         connect(this->plots[iter], &Plot2D::siSendPos, this, &SystemControl::slSendPos);
+        connect(this->plots[iter], &Plot2D::siCalibrateZero, this, &SystemControl::slSendZeroCalibration);
     }
 
     this->PlottableDataTimer = new QTimer(this);
@@ -149,8 +150,26 @@ void SystemControl::C_ReadPlottableRegs(void){
     this->serial_tx_queue.push_back(pack);
 }
 
-void SystemControl::C_SendCmd(uint16_t cmd){
-    return;
+void SystemControl::C_SendSingleDriveCmd(uint16_t cmd, uint16_t id){
+    BP_Header       bp_header(this->BP_CONTROL, 2);
+    CNT_Header      cnt_header(id, cmd);
+
+    QByteArray b_data = bp_header.SetRawFromHeader();
+    b_data.append(cnt_header.SetRawFromHeader());
+
+    Packet pack(b_data, this->BP_CNT_SIGNLE_DRIVE_CMD_AWAIT_SIZE, 100);
+    this->serial_tx_queue.push_back(pack);
+}
+
+void SystemControl::C_SendGlobalCmd(uint16_t cmd){
+    BP_Header       bp_header(this->BP_CONTROL ,2);
+    CNT_Header      cnt_header(CNT_ID_GLOBAL, cmd);
+
+    QByteArray b_data = bp_header.SetRawFromHeader();
+    b_data.append(cnt_header.SetRawFromHeader());
+
+    Packet pack(b_data, this->BP_CNT_GLOBAL_CMD_AWAIT_SIZE, 100);
+    this->serial_tx_queue.push_back(pack);
 }
 
 SystemControl::~SystemControl()
@@ -265,6 +284,27 @@ void SystemControl::ProcessIncomingData(void){
                 this->plots[iter]->slAddData(CNT_REG_CUR_FB, cnt_plottable.data[5 + iter * 7]);
                 this->plots[iter]->slAddData(CNT_REG_OUTPUT, cnt_plottable.data[6 + iter * 7]);
             }
+            break;
+        }
+        case(CNT_CALIBRATE_ZERO):{
+            switch(cnt_header.id){
+            case(CNT_ID_GLOBAL):{
+                qDebug() << "All Motors Zero-Calibrated";
+                for (uint8_t iter = 0; iter < 4; iter++){
+                    this->plots[iter]->lineedit->setText("0.00");
+                    this->plots[iter]->slProcessEditLine();
+                }
+                break;
+            }
+            default:{
+                qDebug() << "Signel Motor Zero-Calibrated " << cnt_header.id;
+                this->plots[cnt_header.id]->lineedit->setText("0.00");
+                this->plots[cnt_header.id]->slProcessEditLine();
+            }
+            }
+
+            qDebug() << "Motor Calibrated to Zero";
+            break;
         }
         }
 
@@ -320,6 +360,11 @@ void SystemControl::ConsoleWarning(QString message){
 void SystemControl::slSendPos(float data){
     uint8_t sender_id = sender()->objectName().toInt();
     this->C_WriteSingleData(sender_id, this->CNT_REG_POS_SP, data);
+}
+
+void SystemControl::slSendZeroCalibration(void){
+    uint8_t sender_id = sender()->objectName().toInt();
+    this->C_SendSingleDriveCmd(CNT_CALIBRATE_ZERO, sender_id);
 }
 
 void SystemControl::Exit(uint8_t tab){

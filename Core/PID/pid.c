@@ -19,9 +19,9 @@
 
 uint16_t current[4] = { 0, 0, 0, 0 };
 float    set_position[4] = { 0, 0, 0, 0 };
-int32_t lptim_corrector = 0;
+uint32_t lptim_corrector = 0;
 
-void PID_SetNewCorrector(int32_t corrector){
+void PID_SetNewCorrector(uint32_t corrector){
     lptim_corrector = corrector;
 }
 uint32_t PID_GetCorrector(void){
@@ -384,19 +384,47 @@ rw_status_t PID_ReadReg(uint8_t drive_num, uint8_t reg, float * data){
 wc_plottables_t PID_ReadPlottables(uint8_t drive_num){
     wc_plottables_t tmp = { 0 };
     if (drive_num >= 4) return tmp; 
-    tmp.pos_sp = drives[drive_num].position_l.sp.v;
-    tmp.pos_fb = drives[drive_num].position_l.fb.v;
-    tmp.spd_sp = drives[drive_num].speed_l.sp.v;
-    tmp.spd_fb = drives[drive_num].speed_l.fb.v;
-    tmp.cur_sp = drives[drive_num].current_l.sp.v;
-    tmp.cur_fb = drives[drive_num].current_l.fb.v;
-    tmp.output = drives[drive_num].output.v;
+    tmp.pos_sp = DRIVE.position_l.sp.v;
+    tmp.pos_fb = DRIVE.position_l.fb.v;
+    tmp.spd_sp = DRIVE.speed_l.sp.v;
+    tmp.spd_fb = DRIVE.speed_l.fb.v;
+    tmp.cur_sp = DRIVE.current_l.sp.v;
+    tmp.cur_fb = DRIVE.current_l.fb.v;
+    tmp.output = DRIVE.output.v;
     return tmp;
 }
 
-void PID_SetSetpoints(uint32_t pos_1, uint32_t pos_2, uint32_t pos_3, uint32_t pos_4){
+void PID_MoveSetpoints(void){
     drives[0].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[0].encoder_s.v))) - 0x7FFFFFFF);
     drives[1].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[1].encoder_s.v))) - 0x7FFF);
     drives[2].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[2].encoder_s.v))) - 0x7FFF);
     drives[3].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[3].encoder_s.v))) + lptim_corrector - 0x7FFFFFFF);
+}
+
+void PID_SetZero(uint8_t drive_num){
+    switch(drive_num){
+        case(0):{
+            ENCODER_1_COUNT = 0x7FFFFFFF;
+            drives[0].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[0].encoder_s.v))) - 0x7FFFFFFF);
+            break;
+        }
+        case(1):{
+            ENCODER_2_COUNT = 0x7FFF;
+            drives[1].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[1].encoder_s.v))) - 0x7FFF);
+            break;
+        }
+        case(2):{
+            ENCODER_3_COUNT = 0x7FFF;
+            drives[2].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[2].encoder_s.v))) - 0x7FFF);
+            break;
+        }
+        case(3):{
+            lptim_corrector = 0x7FFFFFFF - ENCODER_4_COUNT;
+            drives[3].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[3].encoder_s.v))) + lptim_corrector - 0x7FFFFFFF);
+            break;
+        }
+        default:{
+            break;
+        }
+    }
 }

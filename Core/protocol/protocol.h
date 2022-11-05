@@ -47,14 +47,15 @@ typedef enum{
 }wc_id_e;
 
 typedef enum{
-    CMD_WRITE_REG       = 0x01,
-    CMD_READ_REG        = 0x02,
-    CMD_BLOCK_DRIVE     = 0x03,
-    CMD_ENABLE_DRIVE    = 0x05,
-    CMD_READ_PLOTTABLE  = 0x06,
-    CMD_RESET_SYSTEM    = 0x07,
-    CMD_EXIT_APP        = 0x08,
-    CMD_ERROR           = 0x09
+    CMD_WRITE_REG                   = 0x01,
+    CMD_READ_REG                    = 0x02,
+    CMD_BLOCK_DRIVE                 = 0x03,
+    CMD_ENABLE_DRIVE                = 0x05,
+    CMD_READ_PLOTTABLE              = 0x06,
+    CMD_RESET_SYSTEM                = 0x07,
+    CMD_EXIT_APP                    = 0x08,
+    CMD_ERROR                       = 0x09,
+    CMD_CALIBRATE_AS_ZERO_POSITION  = 0x0A
 }wc_commands_e;
 
 typedef enum{

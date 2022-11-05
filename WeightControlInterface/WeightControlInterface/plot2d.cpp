@@ -1,12 +1,14 @@
 #include "plot2d.h"
 
-Plot2D::Plot2D(QString title, QCustomPlot * plot_h, QRadioButton * rb_turn_h, QRadioButton * rb_rads_h, QDial * dial_h, QLineEdit * lineedit_h){
+Plot2D::Plot2D(QString title, QCustomPlot * plot_h, QRadioButton * rb_turn_h, QRadioButton * rb_rads_h, QDial * dial_h, QLineEdit * lineedit_h, QPushButton * zerocalib, QPushButton * movezero){
     this->plot_parent = plot_h->parentWidget();
     this->plot = plot_h;
     this->rb_turn = rb_turn_h;
     this->rb_rads = rb_rads_h;
     this->lineedit = lineedit_h;
     this->dial = dial_h;
+    this->pb_calibzero = zerocalib;
+    this->pb_movezero = movezero;
 
     this->plot->clearItems();
     this->plot->plotLayout()->insertRow(0);
@@ -78,6 +80,8 @@ Plot2D::Plot2D(QString title, QCustomPlot * plot_h, QRadioButton * rb_turn_h, QR
     connect(this->rb_rads, &QRadioButton::clicked, this, &Plot2D::slSetRads);
     connect(this->dial, &QDial::sliderMoved, this, &Plot2D::slProcessDial);
     connect(this->dial, &QDial::sliderReleased, this, &Plot2D::slSendPosFromDial);
+    connect(this->pb_calibzero, &QPushButton::released, this, &Plot2D::slCalibrateZero);
+    connect(this->pb_movezero, &QPushButton::released, this, &Plot2D::slSetZero);
 
     this->system_time = new QTime();
     this->system_time->start();
