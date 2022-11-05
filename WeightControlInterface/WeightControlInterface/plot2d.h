@@ -18,12 +18,18 @@
 #include <QFileDialog>
 #include <QFile>
 #include <QTextStream>
+#include "global_config.h"
 
 class Plot2D : public QObject
 {
     Q_OBJECT
 public:
-    explicit Plot2D(QString title, QCustomPlot * plot_h, QRadioButton * rb_turn_h, QRadioButton * rb_rads_h, QDial * dial_h, QLineEdit * lineedit_h, QPushButton * zerocalib, QPushButton * movezero);
+    explicit Plot2D(QString title, QCustomPlot * plot_h,
+                    QRadioButton * rb_turn_h, QRadioButton * rb_rads_h, QRadioButton * rb_length_h,
+                    QDial * dial_h,
+                    QLineEdit * lineedit_h,
+                    QPushButton * zerocalib, QPushButton * movezero,
+                    double R0, double K, double MIN, double MAX);
 
     QList<QColor>   pencolor_buffer;
     QWidget *       plot_parent;
@@ -31,12 +37,18 @@ public:
 
     QRadioButton *  rb_turn;
     QRadioButton *  rb_rads;
+    QRadioButton *  rb_length;
     QLineEdit *     lineedit;
     QDial *         dial;
     QPushButton *   pb_calibzero;
     QPushButton *   pb_movezero;
 
     QMenu           plot_menu;
+
+    double R0_calib;
+    double K_calib;
+    double MAX_calib;
+    double MIN_calib;
 
     void ResetDial(void);
     void ResetPlot(void);
@@ -50,6 +62,7 @@ public slots:
     void slProcessEditLine(void);
     void slSetRads(void);
     void slSetTurns(void);
+    void slSetLength(void);
     void slSetActiveRegister(bool state);
     void slAddData(uint32_t reg, float value);
     void slShowContextMenu(const QPoint & pos);

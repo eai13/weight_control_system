@@ -41,10 +41,30 @@ SystemControl::SystemControl(QWidget *parent) :
     this->SystemTime = new QTime();
     this->SystemTime->start();
 
-    this->plots[0] = new Plot2D("Motor 1", ui->widget_plot1, ui->radioButton_m1turns, ui->radioButton_m1rads, ui->dial_motor1, ui->lineEdit_motor1pos, ui->pushButton_motor1zerocalib, ui->pushButton_motor1movezero);
-    this->plots[1] = new Plot2D("Motor 2", ui->widget_plot2, ui->radioButton_m2turns, ui->radioButton_m2rads, ui->dial_motor2, ui->lineEdit_motor2pos, ui->pushButton_motor2zerocalib, ui->pushButton_motor2movezero);
-    this->plots[2] = new Plot2D("Motor 3", ui->widget_plot3, ui->radioButton_m3turns, ui->radioButton_m3rads, ui->dial_motor3, ui->lineEdit_motor3pos, ui->pushButton_motor3zerocalib, ui->pushButton_motor3movezero);
-    this->plots[3] = new Plot2D("Motor 4", ui->widget_plot4, ui->radioButton_m4turns, ui->radioButton_m4rads, ui->dial_motor4, ui->lineEdit_motor4pos, ui->pushButton_motor4zerocalib, ui->pushButton_motor4movezero);
+    this->plots[0] = new Plot2D("Motor 1", ui->widget_plot1,
+                                ui->radioButton_m1turns, ui->radioButton_m1rads, ui->radioButton_m1length,
+                                ui->dial_motor1,
+                                ui->lineEdit_motor1pos,
+                                ui->pushButton_motor1zerocalib, ui->pushButton_motor1movezero,
+                                MOTOR_1_R0_CALIB, MOTOR_1_K_CALIB, MOTOR_1_MIN_CALIB, MOTOR_1_MAX_CALIB);
+    this->plots[1] = new Plot2D("Motor 2", ui->widget_plot2,
+                                ui->radioButton_m2turns, ui->radioButton_m2rads, ui->radioButton_m2length,
+                                ui->dial_motor2,
+                                ui->lineEdit_motor2pos,
+                                ui->pushButton_motor2zerocalib, ui->pushButton_motor2movezero,
+                                MOTOR_2_R0_CALIB, MOTOR_2_K_CALIB, MOTOR_2_MIN_CALIB, MOTOR_2_MAX_CALIB);
+    this->plots[2] = new Plot2D("Motor 3", ui->widget_plot3,
+                                ui->radioButton_m3turns, ui->radioButton_m3rads, ui->radioButton_m3length,
+                                ui->dial_motor3,
+                                ui->lineEdit_motor3pos,
+                                ui->pushButton_motor3zerocalib, ui->pushButton_motor3movezero,
+                                MOTOR_3_R0_CALIB, MOTOR_3_K_CALIB, MOTOR_3_MIN_CALIB, MOTOR_3_MAX_CALIB);
+    this->plots[3] = new Plot2D("Motor 4", ui->widget_plot4,
+                                ui->radioButton_m4turns, ui->radioButton_m4rads, ui->radioButton_m4length,
+                                ui->dial_motor4,
+                                ui->lineEdit_motor4pos,
+                                ui->pushButton_motor4zerocalib, ui->pushButton_motor4movezero,
+                                MOTOR_4_R0_CALIB, MOTOR_4_K_CALIB, MOTOR_4_MIN_CALIB, MOTOR_4_MAX_CALIB);
 
     for (uint8_t iter = 0; iter < 4; iter++){
         this->plots[iter]->setObjectName(QString::fromStdString(std::to_string(iter)));
