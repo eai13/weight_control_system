@@ -52,6 +52,9 @@ public:
 
     void ResetDial(void);
     void ResetPlot(void);
+    void PushLength(float length);
+    void PushRadians(float rads);
+    void PushTurns(float turns);
 
 public slots:
 
@@ -73,6 +76,18 @@ public slots:
 
 private:
 
+    float GetAngleFromLength(float length){
+        float a = (-1) * this->K_calib / 2 / PI;
+        float b = this->R0_calib + this->K_calib / 2 / PI * (this->MAX_calib + this->MIN_calib);
+        float c = (-1) * (this->MIN_calib * (this->R0_calib + this->K_calib * this->MAX_calib / 2 / PI) + length);
+        float D = b * b - 4 * a * c;
+        float angle = ((-1) * b + std::sqrt(D)) / 2 / a;
+        return angle;
+    }
+    float GetLengthFromAngle(float angle){
+        float length = (this->R0_calib + (this->MAX_calib - angle) * this->K_calib / 2 / PI) * (angle - this->MIN_calib);
+        return length;
+    }
     QMainWindow * fullscreen;
 
     QMap<uint16_t, QString> register_names = {
@@ -110,13 +125,8 @@ signals:
     void siSendPos(float pos);
 
 private slots:
-    void slCalibrateZero(void){
-        emit this->siCalibrateZero();
-    }
-    void slSetZero(void){
-        this->lineedit->setText("0.00");
-        this->slProcessEditLine();
-    }
+    void slCalibrateZero(void);
+    void slSetZero(void);
 
 };
 

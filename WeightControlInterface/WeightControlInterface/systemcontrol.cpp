@@ -310,16 +310,14 @@ void SystemControl::ProcessIncomingData(void){
             switch(cnt_header.id){
             case(CNT_ID_GLOBAL):{
                 qDebug() << "All Motors Zero-Calibrated";
-                for (uint8_t iter = 0; iter < 4; iter++){
-                    this->plots[iter]->lineedit->setText("0.00");
-                    this->plots[iter]->slProcessEditLine();
-                }
+                for (uint8_t iter = 0; iter < 4; iter++)
+                    this->plots[iter]->PushRadians(0);
                 break;
             }
             default:{
                 qDebug() << "Signel Motor Zero-Calibrated " << cnt_header.id;
-                this->plots[cnt_header.id]->lineedit->setText("0.00");
-                this->plots[cnt_header.id]->slProcessEditLine();
+                this->plots[cnt_header.id]->PushRadians(0);
+                break;
             }
             }
 

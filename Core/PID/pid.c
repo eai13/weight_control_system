@@ -237,7 +237,7 @@ static inline float GetRealCurrent(uint16_t raw){
 }
 
 static inline float GetRealRadial(int32_t raw){
-    return (((float)(raw)) / ((float)(600.0)) * ((float)(6.28)) / ((float)(2.0)));
+    return (((float)(raw)) / ((float)(600.0)) * ((float)(6.28)) / ((float)(4.0)));
 }
 
 static inline uint32_t VoltsToPWM(float volts){
