@@ -214,7 +214,7 @@ void Plot2D::slProcessDial(int data){
     }
     else if (this->rb_length->isChecked()){
         float angle = float(data + this->dial_counter * (this->dial->maximum() + 1)) / (this->dial->maximum() + 1) * 6.28;
-        float length = this->GetLengthFromAngle(angle); //(this->R0_calib + (this->MAX_calib - angle) * this->K_calib / 2 / PI) * (angle - this->MIN_calib);
+        float length = this->GetLengthFromAngle(angle);
         this->lineedit->setText(QString::asprintf("%.2f", length));
     }
 }
@@ -252,12 +252,12 @@ void Plot2D::slSendPosFromDial(void){
     else if (this->rb_length->isChecked()){
         float angle = this->GetAngleFromLength(str.toFloat());
         if (angle > this->MAX_calib){
-            float new_length = this->GetLengthFromAngle(this->MAX_calib);// = (this->R0_calib + (this->MAX_calib - this->MAX_calib) * this->K_calib / 2 / PI) * (this->MAX_calib - this->MIN_calib);
+            float new_length = this->GetLengthFromAngle(this->MAX_calib);
             this->lineedit->setText(QString::asprintf("%.2f", new_length));
             emit siSendPos(this->MAX_calib);
         }
         else if (angle < this->MIN_calib){
-            float new_length = this->GetLengthFromAngle(this->MIN_calib);//this->R0_calib + (this->MAX_calib - this->MIN_calib) * this->K_calib / 2 / PI) * (this->MIN_calib - this->MIN_calib);
+            float new_length = this->GetLengthFromAngle(this->MIN_calib);
             this->lineedit->setText(QString::asprintf("%.2f", new_length));
             emit siSendPos(this->MIN_calib);
         }
@@ -280,7 +280,7 @@ void Plot2D::slSetRads(void){
 
 void Plot2D::slSetLength(void){
     float angle = (float)(this->dial_counter * (this->dial->maximum() + 1) + this->dial->value()) / (float)(this->dial->maximum()) * 6.28;
-    float new_length = this->GetLengthFromAngle(angle); //this->R0_calib + (this->MAX_calib - angle) * this->K_calib / 2 / PI) * (angle - this->MIN_calib);
+    float new_length = this->GetLengthFromAngle(angle);
     this->lineedit->setText(QString::asprintf("%.2f", new_length));
 }
 
@@ -398,7 +398,7 @@ void Plot2D::PushLength(float length){
 }
 void Plot2D::PushRadians(float rads){
     if (this->rb_length->isChecked()){
-        float new_length = this->GetLengthFromAngle(rads);// (this->R0_calib + (this->MAX_calib - rads) * this->K_calib / 2 / PI) * (rads - this->MIN_calib);
+        float new_length = this->GetLengthFromAngle(rads);
     }
     else if (this->rb_rads->isChecked()){
         this->lineedit->setText(QString::asprintf("%.2f", rads));
@@ -410,7 +410,7 @@ void Plot2D::PushRadians(float rads){
 }
 void Plot2D::PushTurns(float turns){
     if (this->rb_length->isChecked()){
-        float new_length = this->GetLengthFromAngle(turns * 2 * PI); //this->R0_calib + (this->MAX_calib - (turns * 2 * PI)) * this->K_calib / 2 / PI) * ((turns * 2 * PI) - this->MIN_calib);
+        float new_length = this->GetLengthFromAngle(turns * 2 * PI);
     }
     else if (this->rb_rads->isChecked()){
         this->lineedit->setText(QString::asprintf("%.2f", turns * 2 * PI));

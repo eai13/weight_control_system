@@ -41,8 +41,8 @@
 #define MOTOR_3_MAX_CALIB   ((double)(60))
 #define MOTOR_3_MIN_CALIB   ((double)(-60))
 
-#define MOTOR_4_R0_CALIB    ((double)(0))
-#define MOTOR_4_K_CALIB     ((double)(0))
+#define MOTOR_4_R0_CALIB    ((double)(0.0589))
+#define MOTOR_4_K_CALIB     ((double)(0.0016))
 #define MOTOR_4_MAX_CALIB   ((double)(60))
 #define MOTOR_4_MIN_CALIB   ((double)(-60))
 
