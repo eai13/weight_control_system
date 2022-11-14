@@ -209,7 +209,7 @@ void SystemControl::ProcessIncomingData(void){
     bp_header.SetHeaderFromRaw(data);
 
     switch(bp_header.cmd){
-    case(this->BP_PING):{
+    case(BP_Commands::BP_PING):{
         uint32_t id = bp_header.payload[0];
         char * name = reinterpret_cast<char *>(&id);
         QString s_name = "";
@@ -234,7 +234,7 @@ void SystemControl::ProcessIncomingData(void){
         this->SerialLock.Unlock();
         break;
     }
-    case(this->BP_JUMP):{
+    case(BP_Commands::BP_JUMP):{
         ConsoleBasic("Jump back to boot");
         qDebug() << "Jump back";
         this->PlottableDataTimer->stop();
@@ -242,7 +242,7 @@ void SystemControl::ProcessIncomingData(void){
         this->SerialLock.Unlock();
         break;
     }
-    case(this->BP_CONTROL):{
+    case(BP_Commands::BP_CONTROL):{
         CNT_Header cnt_header;
         cnt_header.SetHeaderFromBPPayload(&bp_header);
         switch(cnt_header.cmd){
@@ -377,6 +377,7 @@ void SystemControl::ConsoleWarning(QString message){
 
 void SystemControl::slSendPos(float data){
     uint8_t sender_id = sender()->objectName().toInt();
+    qDebug() << "SENDER ID " << sender_id << " NAME " << sender()->objectName();
     this->C_WriteSingleData(sender_id, this->CNT_REG_POS_SP, data);
 }
 

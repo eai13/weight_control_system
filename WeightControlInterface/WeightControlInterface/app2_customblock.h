@@ -22,7 +22,7 @@ class APP2_signalnode;
 class APP2_slotnode;
 class APP2_connectline;
 
-static APP2_connectline * connect_line_buf = nullptr;
+//static APP2_connectline * connect_line_buf = nullptr;
 
 /* @brief
  * Connection Line object
@@ -85,6 +85,7 @@ public:
         return path;
     }
     void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget) override{
+        Q_UNUSED(option); Q_UNUSED(widget);
         painter->setPen(this->pen);
         painter->drawLine(0, 0, this->line.dx() / 2, 0);
         painter->drawLine(this->line.dx() / 2, 0, this->line.dx() / 2, this->line.dy());
@@ -104,7 +105,7 @@ public slots:
     void slDeleteThis(void);
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent * event){
+    void mousePressEvent(QGraphicsSceneMouseEvent * event) override{
         if (event->button() == Qt::RightButton){
             QMenu menu;
             menu.addAction("Delete", this, &APP2_connectline::slDeleteThis);
@@ -159,6 +160,7 @@ public:
         return QRectF(this->size);
     }
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override{
+        Q_UNUSED(option); Q_UNUSED(widget);
         painter->setPen(Qt::black);
         QBrush tmp_br = painter->brush();
         tmp_br.setColor(QColor(175, 0, 0));
@@ -173,17 +175,18 @@ public:
     ~APP2_slotnode(void){}
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent * event){
+    void mousePressEvent(QGraphicsSceneMouseEvent * event) override{
         if (event->button() == Qt::LeftButton){
 
         }
     }
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent * event){
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent * event) override{
         if (event->button() == Qt::LeftButton){
 
         }
     }
-    void mouseMoveEvent(QGraphicsSceneMouseEvent * event){
+    void mouseMoveEvent(QGraphicsSceneMouseEvent * event) override{
+        Q_UNUSED(event);
         if (this->flClicked){
 
         }
@@ -258,6 +261,7 @@ public:
         return QRectF(this->size);
     }
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override{
+        Q_UNUSED(option); Q_UNUSED(widget);
         painter->setPen(Qt::black);
         QBrush tmp_br = painter->brush();
         tmp_br.setColor(QColor(0, 175, 0));
@@ -272,7 +276,7 @@ public:
     ~APP2_signalnode(void){}
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent * event){
+    void mousePressEvent(QGraphicsSceneMouseEvent * event) override{
         if (event->button() == Qt::LeftButton){
             this->flClicked = true;
             APP2_connectline * tmp = new APP2_connectline(this->pos() + QPointF(10, 10), this->pos());
@@ -282,7 +286,7 @@ protected:
             this->scene()->addItem(this->signal_lines.back());
         }
     }
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent * event){
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent * event) override{
         if (event->button() == Qt::LeftButton){
             this->flClicked = false;
             if (this->signal_lines.back()->slot == nullptr){
@@ -295,7 +299,7 @@ protected:
             }
         }
     }
-    void mouseMoveEvent(QGraphicsSceneMouseEvent * event){
+    void mouseMoveEvent(QGraphicsSceneMouseEvent * event) override{
         if (this->flClicked){
             QGraphicsItem * item;
             if ((item = this->scene()->itemAt(event->scenePos(), QTransform())) != nullptr){
@@ -458,6 +462,7 @@ public:
         return QRectF(this->size);
     }
     void paint(QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget) override{
+        Q_UNUSED(option); Q_UNUSED(widget);
         QBrush br_tmp = painter->brush();
         br_tmp.setColor(Qt::white);
         br_tmp.setStyle(Qt::SolidPattern);
@@ -491,13 +496,13 @@ public:
     }
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent * event){
+    void mousePressEvent(QGraphicsSceneMouseEvent * event) override{
         if (event->button() == Qt::LeftButton){
             this->flClicked = true;
             QGraphicsItem::mousePressEvent(event);
         }
     }
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent * event){
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent * event) override{
         if (event->button() == Qt::LeftButton){
             this->flClicked = false;
             QGraphicsItem::mouseReleaseEvent(event);
@@ -510,7 +515,7 @@ protected:
             menu.exec(QCursor::pos());
         }
     }
-    void mouseMoveEvent(QGraphicsSceneMouseEvent *event){
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override{
         if (this->flClicked){
             emit this->siMoved(QRectF(this->pos(), QPointF(this->size.width() + this->pos().x(), this->size.height() + this->pos().y())));
             QGraphicsItem::mouseMoveEvent(event);
@@ -520,7 +525,7 @@ protected:
             event->ignore();
         }
     }
-    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent * event){
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent * event) override{
         emit this->siSettingsMenuShow();
         QGraphicsItem::mouseDoubleClickEvent(event);
     }
@@ -572,6 +577,7 @@ public:
         return QRectF(this->size);
     }
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override{
+        Q_UNUSED(option); Q_UNUSED(widget);
         painter->setBrush(Qt::SolidPattern);
         painter->drawRect(this->size);
     }
@@ -584,15 +590,15 @@ public:
     }
 
 protected:
-    void mousePressEvent(QGraphicsSceneMouseEvent * event){
+    void mousePressEvent(QGraphicsSceneMouseEvent * event) override{
         this->flClicked = true;
         QGraphicsItem::mousePressEvent(event);
     }
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent * event){
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent * event) override{
         this->flClicked = false;
         QGraphicsItem::mouseReleaseEvent(event);
     }
-    void mouseMoveEvent(QGraphicsSceneMouseEvent * event){
+    void mouseMoveEvent(QGraphicsSceneMouseEvent * event) override{
         if (this->flClicked){
             if (((this->main_block_bottom_corner.x() - (event->pos() + this->pos()).x()) > this->max_size) ||
                 ((this->main_block_bottom_corner.y() - (event->pos() + this->pos()).y()) > this->max_size) ||

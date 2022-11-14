@@ -53,9 +53,9 @@ void Bootloader::C_Ping(void){
         return;
     }
     ConsoleBasic("Ping");
-    MsgHeader header(this->PING, 0);
+    MsgHeader header(Commands::PING, 0);
 
-    this->data_awaited = this->PING_AWAIT_SIZE;
+    this->data_awaited = DataAwaited::PING_AWAIT_SIZE;
     this->Serial->write(header.SetRawFromHeader());
     this->TimeoutTimer->start(50);
 
@@ -67,9 +67,9 @@ void Bootloader::C_PingSilent(void){
     }
     qDebug() << "Ping Silent";
     this->console_enabled = false;
-    MsgHeader header(this->PING, 0);
+    MsgHeader header(Commands::PING, 0);
 
-    this->data_awaited = this->PING_AWAIT_SIZE;
+    this->data_awaited = DataAwaited::PING_AWAIT_SIZE;
     this->Serial->write(header.SetRawFromHeader());
     this->TimeoutTimer->start(50);
 }
@@ -79,10 +79,10 @@ void Bootloader::C_Erase(void){
         return;
     }
     ConsoleBasic("Erase");
-    MsgHeader header(this->ERASE, 1);
+    MsgHeader header(Commands::ERASE, 1);
     header.payload.append(ui->comboBox_partition->currentIndex());
 
-    this->data_awaited = this->ERASE_AWAIT_SIZE;
+    this->data_awaited = DataAwaited::ERASE_AWAIT_SIZE;
     this->Serial->write(header.SetRawFromHeader());
     this->TimeoutTimer->start(2500);
 }
@@ -92,10 +92,10 @@ void Bootloader::C_Jump(void){
         return;
     }
     ConsoleBasic("Jumping to Program " + ui->comboBox_partition->currentText());
-    MsgHeader header(this->JUMP, 1);
+    MsgHeader header(Commands::JUMP, 1);
     header.payload.append(ui->comboBox_partition->currentIndex());
 
-    this->data_awaited = this->JUMP_AWAIT_SIZE;
+    this->data_awaited = DataAwaited::JUMP_AWAIT_SIZE;
     this->Serial->write(header.SetRawFromHeader());
     this->TimeoutTimer->start(100);
 }
@@ -150,7 +150,7 @@ void Bootloader::ProcessIncomingData(void){
     header.SetHeaderFromRaw(data);
 
     switch(header.cmd){
-    case(this->PING):{
+    case(Commands::PING):{
         uint32_t id = header.payload[0];
         char * name = reinterpret_cast<char *>(&id);
         QString s_name = "";
@@ -187,16 +187,16 @@ void Bootloader::ProcessIncomingData(void){
         this->SerialLock.Unlock();
         break;
     }
-    case(this->JUMP):{
+    case(Commands::JUMP):{
         ConsoleBasic("Jump to " + ui->comboBox_partition->currentText() + " Completed Successfully");
         this->SerialLock.Unlock();
         break;
     }
-    case(this->VERIFY):{
+    case(Commands::VERIFY):{
         this->SerialLock.Unlock();
         break;
     }
-    case(this->ERASE):{
+    case(Commands::ERASE):{
         ConsoleBasic("Erasing Partition " + ui->comboBox_partition->currentText() + " Completed");
         if (!(this->flash_after)){
             this->SerialLock.Unlock();
@@ -207,20 +207,21 @@ void Bootloader::ProcessIncomingData(void){
             this->file = new QFile(ui->lineEdit_filename->text());
             this->file->open(QFile::ReadOnly);
         }
+        [[fallthrough]];
     }
-    case(this->WRITE):{
+    case(Commands::WRITE):{
         char chunk[CHUNK_SIZE_WORDS * 4];
         uint32_t chunk_size = this->file->read(chunk, CHUNK_SIZE_WORDS * 4);
         if (chunk_size){
             ConsoleBasic("Writing a Chunk of " + QString::fromStdString(std::to_string(chunk_size)) + " Bytes");
-            MsgHeader msg(this->WRITE, 3 + chunk_size / 4);
+            MsgHeader msg(Commands::WRITE, 3 + chunk_size / 4);
             msg.payload.append(ui->comboBox_partition->currentIndex());
             msg.payload.append(chunk_size / 4);
             msg.payload.append(0 /*CRC here*/);
             for (uint32_t iter = 0; iter < chunk_size; iter += 4){
                 msg.payload.append(*((uint32_t *)(chunk + iter)));
             }
-            this->data_awaited = this->WRITE_AWAIT_SIZE;
+            this->data_awaited = DataAwaited::WRITE_AWAIT_SIZE;
             qDebug() << "Bytes Written : " << this->Serial->write(msg.SetRawFromHeader());
             this->TimeoutTimer->start(1000);
         }
@@ -232,36 +233,36 @@ void Bootloader::ProcessIncomingData(void){
         }
         break;
     }
-    case(this->READ):{
+    case(Commands::READ):{
         this->SerialLock.Unlock();
         break;
     }
-    case(this->INTERNAL_ERROR):{
+    case(Commands::INTERNAL_ERROR):{
         ConsoleError("Internal Error Occured");
         this->SerialLock.Unlock();
         break;
     }
-    case(this->CRC_ERROR):{
+    case(Commands::CRC_ERROR):{
         ConsoleError("CRC Error");
         this->SerialLock.Unlock();
         break;
     }
-    case(this->CMD_ERROR):{
+    case(Commands::CMD_ERROR):{
         ConsoleError("Wrong Command for Device");
         this->SerialLock.Unlock();
         break;
     }
-    case(this->PARTITION_ERROR):{
+    case(Commands::PARTITION_ERROR):{
         ConsoleError("Wrong Partition");
         this->SerialLock.Unlock();
         break;
     }
-    case(this->LENGTH_ERROR):{
+    case(Commands::LENGTH_ERROR):{
         ConsoleError("Length Error");
         this->SerialLock.Unlock();
         break;
     }
-    case(this->DATA_ERROR):{
+    case(Commands::DATA_ERROR):{
         ConsoleError("Wrong Data");
         this->SerialLock.Unlock();
         break;

@@ -60,6 +60,7 @@ public slots:
 
     void slSaveImage(void);
     void slSaveData(void);
+    void slRescaleToDefault(void);
     void slSendPosFromDial(void);
     void slProcessDial(int data);
     void slProcessEditLine(void);

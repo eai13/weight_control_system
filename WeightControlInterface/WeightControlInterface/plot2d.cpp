@@ -30,6 +30,8 @@ Plot2D::Plot2D(QString title, QCustomPlot * plot_h,
     this->plot->yAxis->setRange(-1, 1);
     this->plot->legend->setVisible(true);
     this->plot->setInteraction(QCP::iSelectPlottables, true);
+    this->plot->setInteraction(QCP::iRangeZoom, true);
+    this->plot->setInteraction(QCP::iRangeDrag, true);
 
     this->plot_menu.clear();
     QAction * p_act = nullptr;
@@ -44,6 +46,8 @@ Plot2D::Plot2D(QString title, QCustomPlot * plot_h,
     p_act = this->plot_menu.addAction("Auto Rescale");
     p_act->setObjectName("Autorescale");
     p_act->setCheckable(true);
+
+    this->plot_menu.addAction("Rescale to Default", this, &Plot2D::slRescaleToDefault);
 
     this->plot_menu.addAction("Save Plot", this, &Plot2D::slSaveImage);
     this->plot_menu.addAction("Save Data", this, &Plot2D::slSaveData);
@@ -285,6 +289,7 @@ void Plot2D::slSetLength(void){
 }
 
 void Plot2D::slShowContextMenu(const QPoint & pos){
+    Q_UNUSED(pos);
     this->plot_menu.exec(QCursor::pos());
 }
 
@@ -399,6 +404,7 @@ void Plot2D::PushLength(float length){
 void Plot2D::PushRadians(float rads){
     if (this->rb_length->isChecked()){
         float new_length = this->GetLengthFromAngle(rads);
+        this->lineedit->setText(QString::asprintf("%.2f", new_length));
     }
     else if (this->rb_rads->isChecked()){
         this->lineedit->setText(QString::asprintf("%.2f", rads));
@@ -411,6 +417,7 @@ void Plot2D::PushRadians(float rads){
 void Plot2D::PushTurns(float turns){
     if (this->rb_length->isChecked()){
         float new_length = this->GetLengthFromAngle(turns * 2 * PI);
+        this->lineedit->setText(QString::asprintf("%.2f", new_length));
     }
     else if (this->rb_rads->isChecked()){
         this->lineedit->setText(QString::asprintf("%.2f", turns * 2 * PI));
@@ -420,3 +427,9 @@ void Plot2D::PushTurns(float turns){
     }
     this->slProcessEditLine();
 }
+
+void Plot2D::slRescaleToDefault(void){
+    this->plot->rescaleAxes();
+    this->plot->replot();
+}
+

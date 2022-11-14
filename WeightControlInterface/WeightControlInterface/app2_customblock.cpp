@@ -61,6 +61,7 @@ void APP2_connectline::slDeleteThis(void){
 }
 
 void APP2_slotnode::GetSignal(float val){
+    Q_UNUSED(val);
 //    this->previous_value = this->current_value;
 //    this->current_value = val;
 //    this->is_processed = true;
