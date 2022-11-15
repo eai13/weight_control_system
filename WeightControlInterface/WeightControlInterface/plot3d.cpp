@@ -3,23 +3,23 @@
 #include <iostream>
 
 Plot3D::Plot3D(QGroupBox *parent) : QObject(parent){
+
+    this->map_height = DEFAULT_MAP_HEIGHT;
+    this->map_width = DEFAULT_MAP_WIDTH;
+    this->map_length = DEFAULT_MAP_LENGTH;
+
     this->plot = new QtDataVisualization::Q3DScatter();
     this->plot_widget = QWidget::createWindowContainer(this->plot);
     this->group_box_parent = parent;
     this->group_box_parent->layout()->addWidget(this->plot_widget);
     this->plot_widget->show();
 
-    this->drive_vertex = new VertexCartesian(QVector3D(0, 0, POLYGON_Z_SIZE),
-                                             QVector3D(POLYGON_X_SIZE, 0, POLYGON_Z_SIZE),
-                                             QVector3D(0, POLYGON_Y_SIZE, POLYGON_Z_SIZE),
-                                             QVector3D(POLYGON_X_SIZE, POLYGON_Y_SIZE, POLYGON_Z_SIZE));
-
     this->plot->axisX()->setAutoAdjustRange(false);
-    this->plot->axisX()->setRange(0, POLYGON_X_SIZE);
+    this->plot->axisX()->setRange(0, this->map_width);
     this->plot->axisY()->setAutoAdjustRange(false);
-    this->plot->axisY()->setRange(0, POLYGON_Y_SIZE);
+    this->plot->axisY()->setRange(0, this->map_length);
     this->plot->axisZ()->setAutoAdjustRange(false);
-    this->plot->axisZ()->setRange(0, POLYGON_Z_SIZE);
+    this->plot->axisZ()->setRange(0, this->map_height);
 
     this->plot->activeTheme()->setType(QtDataVisualization::Q3DTheme::ThemePrimaryColors);
     this->plot->activeTheme()->setFont(QFont("Sans Serif", 50, QFont::Weight::Normal));
@@ -78,7 +78,7 @@ void Plot3D::ClearTarget(void){
 
 void Plot3D::BuildTargetTrajectory(QVector3D start, QVector3D end){
     QVector3D d_vec = end - start;
-    float dots_amount = d_vec.length() / CM_PER_DOT;
+    float dots_amount = d_vec.length() / M_PER_DOT;
     QVector3D step_vector(d_vec / dots_amount);
 
     float iter;
@@ -102,39 +102,31 @@ void Plot3D::BuildTargetTrajectory(QVector3D start, QVector3D end){
     }
 }
 
-QVector3D Plot3D::DirectTransform(VertexCartesian Drives, QVector<float> length){
-    float resX = (std::pow(length[0], 2) - std::pow(length[1], 2) + std::pow(Drives.Vertex[1].x(), 2)) / (2 * Drives.Vertex[1].x());
-    float resY = (std::pow(length[0], 2) - std::pow(length[2], 2) + std::pow(Drives.Vertex[2].y(), 2)) / (2 * Drives.Vertex[2].y());
-    float resZ = Drives.Vertex[0].z() - std::sqrt(std::pow(length[0], 2) - std::pow(resX, 2) - std::pow(resY, 2));
+QVector3D Plot3D::DirectTransform(QVector<float> length){
+    float resX = (std::pow(this->map_width, 2) - std::pow(length[3], 2) + std::pow(length[2], 2)) / (2 * this->map_width);
+    float resY = (std::pow(this->map_length, 2) - std::pow(length[1], 2) + std::pow(length[2], 2)) / (2 * this->map_length);
+    float resZ = this->map_height - std::sqrt(std::pow(length[0], 2) - std::pow(resX - this->map_width, 2) - std::pow(resY - this->map_length, 2));
 
     QVector3D res;
     res.setX(resX); res.setY(resY); res.setZ(resZ);
     return res;
 }
 
-QVector<float> Plot3D::InverseTransform(VertexCartesian Drives, QVector3D Object){
+QVector<float> Plot3D::InverseTransform(QVector3D object){
     QVector<float> res;
-    res.push_back(std::sqrt(std::pow(Object.x() - Drives.Vertex[0].x(), 2) + std::pow(Object.y() - Drives.Vertex[0].y(), 2) + std::pow(Object.z() - Drives.Vertex[0].z(), 2)));
-    res.push_back(std::sqrt(std::pow(Object.x() - Drives.Vertex[1].x(), 2) + std::pow(Object.y() - Drives.Vertex[1].y(), 2) + std::pow(Object.z() - Drives.Vertex[1].z(), 2)));
-    res.push_back(std::sqrt(std::pow(Object.x() - Drives.Vertex[2].x(), 2) + std::pow(Object.y() - Drives.Vertex[2].y(), 2) + std::pow(Object.z() - Drives.Vertex[2].z(), 2)));
-    res.push_back(std::sqrt(std::pow(Object.x() - Drives.Vertex[3].x(), 2) + std::pow(Object.y() - Drives.Vertex[3].y(), 2) + std::pow(Object.z() - Drives.Vertex[3].z(), 2)));
+    res.push_back(std::sqrt(std::pow(object.x() - this->map_width, 2) + std::pow(object.y() - this->map_length, 2) + std::pow(object.z() - this->map_height, 2)));
+    res.push_back(std::sqrt(std::pow(object.x(), 2) + std::pow(object.y() - this->map_length, 2) + std::pow(object.z() - this->map_height, 2)));
+    res.push_back(std::sqrt(std::pow(object.x(), 2) + std::pow(object.y(), 2) + std::pow(object.z() - this->map_height, 2)));
+    res.push_back(std::sqrt(std::pow(object.x() - this->map_width, 2) + std::pow(object.y(), 2) + std::pow(object.z() - this->map_height, 2)));
     return res;
 }
 
 float Plot3D::AngleFromLength(float length){
-    float a = 1;
-    float b = (2 * std::pow(DEFAULT_DIAL_RADIUS, 3) * std::pow(PI, 3) - 6 * PI * length * std::pow(ROPE_THICK, 2)) / std::pow(ROPE_THICK, 3);
-    float c = std::pow(DEFAULT_DIAL_RADIUS, 6) * std::pow(PI, 6) / std::pow(ROPE_THICK, 6);
-
-    float D = std::pow(b, 2) - 4 * a * c;
-    std::cout << D;
-    return 0;
+    return length;
 }
 
 float Plot3D::LengthFromAngle(float angle){
-    float length = std::pow(angle, 2) * DEFAULT_DIAL_RADIUS / 2;
-    length += std::pow(angle, 3) * ROPE_THICK / PI / 6;
-    return length;
+    return angle;
 }
 
 void Plot3D::slFullscreen(void){
@@ -173,16 +165,24 @@ void Plot3D::slTargetAdd(QVector3D data){
     this->BuildTargetTrajectory(start, data);
 }
 void Plot3D::slTargetClear(void){
-    qDebug() << "Plot3D Target Clear";
     this->ClearTarget();
 }
 void Plot3D::slTargetRemove(void){
-    qDebug() << "Plot3D Target Remove";
     this->RemoveLastTarget();
 }
 
 void Plot3D::slStartTrajectory(void){
-    qDebug() << "Plot3D Start Trajectory";
+    this->trajectory_copy.clear();
+    for (auto iter = 0; iter < this->plot->seriesList().at(0)->dataProxy()->itemCount(); iter++){
+        float x = this->plot->seriesList().at(0)->dataProxy()->itemAt(iter)->x();
+        float y = this->plot->seriesList().at(0)->dataProxy()->itemAt(iter)->y();
+        float z = this->plot->seriesList().at(0)->dataProxy()->itemAt(iter)->z();
+        this->trajectory_copy.push_back(QVector3D(x, y, z));
+        qDebug() << "X: " << x << " Y: " << y << " Z: " << z;
+        QVector<float> tmp = this->InverseTransform(QVector3D(x, y, z));
+        qDebug() << "LEN 1 : " << tmp[0] << "LEN 2 : " << tmp[1] << "LEN 3 : " << tmp[2] << "LEN 4 : " << tmp[3];
+    }
+//    qDebug() << "Plot3D Start Trajectory";
 }
 void Plot3D::slStopTrajectory(void){
     qDebug() << "Plot3D Stop Trajectory";

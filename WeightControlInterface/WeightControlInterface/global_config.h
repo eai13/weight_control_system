@@ -17,7 +17,7 @@
 #define POLYGON_Y_SIZE      100
 #define POLYGON_Z_SIZE      100
 
-#define CM_PER_DOT          2
+#define M_PER_DOT           (float)(0.05)
 
 #define DEFAULT_DIAL_RADIUS 10
 #define ROPE_THICK          2

@@ -14,6 +14,10 @@
 #include <QPushButton>
 #include "global_config.h"
 
+#define DEFAULT_MAP_HEIGHT  ((float)(2.00))
+#define DEFAULT_MAP_WIDTH   ((float)(2.70))
+#define DEFAULT_MAP_LENGTH  ((float)(3.30))
+
 class Plot3D : public QObject
 {
     Q_OBJECT
@@ -31,22 +35,19 @@ public:
 
     void BuildTargetTrajectory(QVector3D start, QVector3D end);
 
-    struct VertexCartesian{
-        VertexCartesian(QVector3D Drive1, QVector3D Drive2, QVector3D Drive3, QVector3D Drive4){
-            this->Vertex[0] = Drive1; this->Vertex[1] = Drive2; this->Vertex[2] = Drive3; this->Vertex[3] = Drive4;
-        }
-        QVector3D Vertex[4];
-    };
+    QVector3D DirectTransform(QVector<float> length);
+    QVector<float> InverseTransform(QVector3D object);
 
-    VertexCartesian * drive_vertex;
-
-    static QVector3D DirectTransform(VertexCartesian Drives, QVector<float> length);
-    static QVector<float> InverseTransform(VertexCartesian Drives, QVector3D Object);
-
-    static float AngleFromLength(float length);
-    static float LengthFromAngle(float angle);
+    float AngleFromLength(float length);
+    float LengthFromAngle(float angle);
 
 private:
+
+    float map_width;
+    float map_length;
+    float map_height;
+
+    QList<QVector3D> trajectory_copy;
 
     QGridLayout *   fullscr_layout;
     QGroupBox *     group_box_parent;

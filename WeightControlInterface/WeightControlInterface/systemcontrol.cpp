@@ -19,9 +19,9 @@ SystemControl::SystemControl(QWidget *parent) :
     ui->setupUi(this);
 
     this->plot3d = new Plot3D(ui->groupBox_plot3d);
-    this->plot3d->AddRealPoint(50, 50, 50);
-    this->plot3d->BuildTargetTrajectory(QVector3D(0, 0, 0), QVector3D(10, 1, 1));
-    this->plot3d->BuildTargetTrajectory(QVector3D(10, 1, 1), QVector3D(25, 16, 16));
+    this->plot3d->AddRealPoint(1, 1, 1);
+//    this->plot3d->BuildTargetTrajectory(QVector3D(0, 0, 0), QVector3D(10, 1, 1));
+//    this->plot3d->BuildTargetTrajectory(QVector3D(10, 1, 1), QVector3D(25, 16, 16));
 
     Plot3DConfigs * plot3dconfigs = new Plot3DConfigs();
     ui->groupBox_3dplot_settings->layout()->addWidget(plot3dconfigs);
