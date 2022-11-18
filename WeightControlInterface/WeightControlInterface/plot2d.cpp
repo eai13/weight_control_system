@@ -116,7 +116,7 @@ void Plot2D::slSetActiveRegister(bool state){
         this->system_time->restart();
     }
     else{
-        for (uint32_t iter = 0; iter < this->active_registers.size(); ){
+        for (int32_t iter = 0; iter < this->active_registers.size(); ){
             if (this->active_registers.at(iter).reg == sender_id){
                 this->ReturnColor(this->active_registers.at(iter).plot_id->pen().color());
                 this->plot->removeGraph(this->active_registers.at(iter).plot_id);
@@ -433,3 +433,16 @@ void Plot2D::slRescaleToDefault(void){
     this->plot->replot();
 }
 
+void Plot2D::slBlockModule(void){
+    this->lineedit->setEnabled(false);
+    this->dial->setEnabled(false);
+    this->pb_calibzero->setEnabled(false);
+    this->pb_movezero->setEnabled(false);
+}
+
+void Plot2D::slEnableModule(void){
+    this->lineedit->setEnabled(true);
+    this->dial->setEnabled(true);
+    this->pb_calibzero->setEnabled(true);
+    this->pb_movezero->setEnabled(true);
+}

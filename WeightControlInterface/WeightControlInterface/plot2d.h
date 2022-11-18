@@ -75,6 +75,8 @@ public slots:
     void slFullscreen(bool state);
     void slFullscreenQuit(void);
 
+    void slBlockModule(void);
+    void slEnableModule(void);
 private:
 
     float GetAngleFromLength(float length){
@@ -124,6 +126,7 @@ private:
 signals:
     void siCalibrateZero(void);
     void siSendPos(float pos);
+
 
 private slots:
     void slCalibrateZero(void);

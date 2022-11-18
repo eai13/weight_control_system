@@ -26,15 +26,15 @@
 #define PI                  3.1415
 
 
-#define MOTOR_1_R0_CALIB    ((double)(0))
-#define MOTOR_1_K_CALIB     ((double)(0))
+#define MOTOR_1_R0_CALIB    ((double)(0.061))
+#define MOTOR_1_K_CALIB     ((double)(0.0025))
 #define MOTOR_1_MAX_CALIB   ((double)(60))
 #define MOTOR_1_MIN_CALIB   ((double)(-60))
 
-#define MOTOR_2_R0_CALIB    ((double)(0))
-#define MOTOR_2_K_CALIB     ((double)(0))
-#define MOTOR_2_MAX_CALIB   ((double)(60))
-#define MOTOR_2_MIN_CALIB   ((double)(-60))
+#define MOTOR_2_R0_CALIB    ((double)(0.059))
+#define MOTOR_2_K_CALIB     ((double)(0.0012))
+#define MOTOR_2_MAX_CALIB   ((double)(63))
+#define MOTOR_2_MIN_CALIB   ((double)(-63))
 
 #define MOTOR_3_R0_CALIB    ((double)(0.062))
 #define MOTOR_3_K_CALIB     ((double)(0.002))

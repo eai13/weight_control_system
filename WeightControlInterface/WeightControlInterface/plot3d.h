@@ -13,6 +13,8 @@
 #include <QMainWindow>
 #include <QPushButton>
 #include "global_config.h"
+#include <QTime>
+#include <QTimer>
 
 #define DEFAULT_MAP_HEIGHT  ((float)(2.00))
 #define DEFAULT_MAP_WIDTH   ((float)(2.70))
@@ -47,7 +49,37 @@ private:
     float map_length;
     float map_height;
 
-    QList<QVector3D> trajectory_copy;
+    QVector3D   object_real_position;
+    float       last_experiment_time;
+
+    struct ExperimentItem{
+        QVector3D   profile;
+        QVector3D   real;
+        float       time;
+        ExperimentItem(QVector3D p, QVector3D r, float t){
+            this->profile = p; this->real = r; this->time = t;
+        }
+    };
+    struct ProfileItem{
+        QVector3D   profile;
+        float       time;
+        ProfileItem(QVector3D p, float t){
+            this->profile = p; this->time = t;
+        }
+    };
+
+    QList<ProfileItem>      profile;
+    QList<ExperimentItem>   last_experiment_data;
+    QTime *                 experiment_time = nullptr;
+    QTimer *                control_timer = nullptr;
+    void PushExperimentData(QVector3D profile_pt, QVector3D real_pt){
+        if (this->experiment_time == nullptr) return;
+        this->last_experiment_data.push_back(ExperimentItem(profile_pt, real_pt, (float)(this->experiment_time->elapsed()) / (float)(1000)));
+    }
+    void ClearExperimentData(void){
+        if (this->last_experiment_data.isEmpty()) return;
+        this->last_experiment_data.clear();
+    }
 
     QGridLayout *   fullscr_layout;
     QGroupBox *     group_box_parent;
@@ -64,16 +96,30 @@ public slots:
     void slTargetRemove(void);
 
     void slStartTrajectory(void);
-    void slStopTrajectory(void);
+    void slAbortTrajectory(void);
     void slPauseTrajectory(void);
 
     void slSaveReal(void);
     void slSaveTarget(void);
     void slUploadTarget(uint8_t format);
 
+    void slTrajectoryStarted(void);
+    void slTrajectoryStopped(void);
+    void slTrajectoryAborted(void);
+
+    void slReceiveLength(float length1, float length2, float length3, float length4){
+        QVector<float> len;
+        len.push_back(length1); len.push_back(length2); len.push_back(length3); len.push_back(length3); len.push_back(length4);
+        this->object_real_position = this->DirectTransform(len);
+    }
 private slots:
 
+    void slControlCallback(void);
+
 signals:
+//    void siSendPositionsRads(float rad1, float rad2, float rad3, float rad4);
+//    void siSendPositionsTurns(float turn1, float turn2, float turn3, float turn4);
+    void siSendLength(float length1, float length2, float length3, float length4);
 
 };
 

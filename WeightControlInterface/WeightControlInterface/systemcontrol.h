@@ -192,7 +192,7 @@ private:
             s_data.setByteOrder(QDataStream::LittleEndian);
             s_data << this->cmd;
             s_data << this->w_size;
-            for (uint32_t iter = 0; iter < this->payload.size(); iter++){
+            for (int32_t iter = 0; iter < this->payload.size(); iter++){
                 s_data << this->payload[iter];
             }
             return data;
@@ -244,7 +244,7 @@ private:
         CNT_Register(void){};
         CNT_Register(uint16_t r, QVector<float> v){
             this->reg = r;
-            for (uint32_t iter = 0; iter < v.size(); iter++){
+            for (int32_t iter = 0; iter < v.size(); iter++){
                 if (iter >= 4) break;
                 this->data.append(v[iter]);
             }
@@ -275,7 +275,7 @@ private:
 
         CNT_Plottable(void){};
         CNT_Plottable(QVector<float> v){
-            for (uint32_t iter = 0; iter < v.size(); iter++){
+            for (int32_t iter = 0; iter < v.size(); iter++){
                 this->data.append(v[iter]);
             }
         }
@@ -320,6 +320,7 @@ public slots:
     void C_SendGlobalCmd(uint16_t cmd);
 
     void slSendPos(float data);
+    void slSendLength(float len1, float len2, float len3, float len4);
     void slSendZeroCalibration(void);
     void slActivate(void);
 
@@ -331,6 +332,7 @@ signals:
     void siSendSerial(QSerialPort * p_serial);
     void siChooseTab(uint16_t tab);
 
+    void siSendRealLemgth(float len1, float len2, float len3, float len4);
 private:
 
     Plot3D * plot3d;

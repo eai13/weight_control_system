@@ -32,12 +32,14 @@ SystemControl::SystemControl(QWidget *parent) :
     connect(plot3dconfigs, &Plot3DConfigs::siStartTrajectory, this, &SystemControl::slStartTrajectory);
     connect(plot3dconfigs, &Plot3DConfigs::siStartTrajectory, this->plot3d, &Plot3D::slStartTrajectory);
     connect(plot3dconfigs, &Plot3DConfigs::siStopTrajectory, this, &SystemControl::slStopTrajectory);
-    connect(plot3dconfigs, &Plot3DConfigs::siStopTrajectory, this->plot3d, &Plot3D::slStopTrajectory);
+    connect(plot3dconfigs, &Plot3DConfigs::siStopTrajectory, this->plot3d, &Plot3D::slAbortTrajectory);
     connect(plot3dconfigs, &Plot3DConfigs::siPauseTrajectory, this, &SystemControl::slPauseTrajectory);
     connect(plot3dconfigs, &Plot3DConfigs::siPauseTrajectory, this->plot3d, &Plot3D::slPauseTrajectory);
     connect(plot3dconfigs, &Plot3DConfigs::siSaveTarget, this->plot3d, &Plot3D::slSaveTarget);
     connect(plot3dconfigs, &Plot3DConfigs::siSaveReal, this->plot3d, &Plot3D::slSaveReal);
     connect(plot3dconfigs, &Plot3DConfigs::siUploadTarget, this->plot3d, &Plot3D::slUploadTarget);
+    connect(this->plot3d, &Plot3D::siSendLength, this, &SystemControl::slSendLength);
+
     this->SystemTime = new QTime();
     this->SystemTime->start();
 
@@ -304,6 +306,7 @@ void SystemControl::ProcessIncomingData(void){
                 this->plots[iter]->slAddData(CNT_REG_CUR_FB, cnt_plottable.data[5 + iter * 7]);
                 this->plots[iter]->slAddData(CNT_REG_OUTPUT, cnt_plottable.data[6 + iter * 7]);
             }
+
             break;
         }
         case(CNT_CALIBRATE_ZERO):{
@@ -404,4 +407,8 @@ void SystemControl::slStopTrajectory(void){
 }
 void SystemControl::slPauseTrajectory(void){
     qDebug() << "SystemControl Pause Trajectory";
+}
+
+void SystemControl::slSendLength(float len1, float len2, float len3, float len4){
+
 }

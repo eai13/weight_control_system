@@ -48,6 +48,10 @@ Plot3D::Plot3D(QGroupBox *parent) : QObject(parent){
     this->plot->axisY()->setTitleVisible(true);
     this->plot->axisZ()->setTitle("Z");
     this->plot->axisZ()->setTitleVisible(true);
+
+    this->control_timer = new QTimer;
+    connect(this->control_timer, &QTimer::timeout, this, &Plot3D::slControlCallback);
+    this->experiment_time = new QTime;
 }
 
 void Plot3D::AddRealPoint(double x, double y, double z){
@@ -172,23 +176,48 @@ void Plot3D::slTargetRemove(void){
 }
 
 void Plot3D::slStartTrajectory(void){
-    this->trajectory_copy.clear();
-    for (auto iter = 0; iter < this->plot->seriesList().at(0)->dataProxy()->itemCount(); iter++){
+    this->profile.clear();
+    float time = 0;
+    for (int32_t iter = 0; iter < this->plot->seriesList().at(0)->dataProxy()->itemCount(); iter++){
         float x = this->plot->seriesList().at(0)->dataProxy()->itemAt(iter)->x();
         float y = this->plot->seriesList().at(0)->dataProxy()->itemAt(iter)->y();
         float z = this->plot->seriesList().at(0)->dataProxy()->itemAt(iter)->z();
-        this->trajectory_copy.push_back(QVector3D(x, y, z));
-        qDebug() << "X: " << x << " Y: " << y << " Z: " << z;
+        this->profile.push_back(ProfileItem(QVector3D(x, y, z), time++));
+        qDebug() << "X: " << x << " Y: " << y << " Z: " << z << " TIME: " << time;
         QVector<float> tmp = this->InverseTransform(QVector3D(x, y, z));
         qDebug() << "LEN 1 : " << tmp[0] << "LEN 2 : " << tmp[1] << "LEN 3 : " << tmp[2] << "LEN 4 : " << tmp[3];
     }
-//    qDebug() << "Plot3D Start Trajectory";
+
+    if (this->control_timer == nullptr) this->control_timer = new QTimer;
+    this->control_timer->start(250);
+
+    if (this->experiment_time == nullptr) this->experiment_time = new QTime;
+    this->experiment_time->restart();
+    qDebug() << "Plot3D Start Trajectory";
 }
-void Plot3D::slStopTrajectory(void){
+void Plot3D::slAbortTrajectory(void){
+    if (this->control_timer != nullptr)
+        if (this->control_timer->isActive()) this->control_timer->stop();
     qDebug() << "Plot3D Stop Trajectory";
 }
 void Plot3D::slPauseTrajectory(void){
+    this->last_experiment_time = (float)(this->experiment_time->elapsed()) / (float)(1000);
+    if (this->control_timer != nullptr)
+        if (this->control_timer->isActive()) this->control_timer->stop();
     qDebug() << "Plot3D Pause Trajectory";
+}
+
+void Plot3D::slControlCallback(void){
+    QVector3D current_pos = this->object_real_position;
+    float current_time = (float)(this->experiment_time->elapsed()) / (float)(1000);
+    ProfileItem pt = this->profile.front();
+    if (pt.time < current_time){
+        this->profile.pop_front();
+        QVector<float> pos = this->InverseTransform(pt.profile);
+        emit this->siSendPositionsLength(pos[0], pos[1], pos[2], pos[3]);
+    }
+    this->AddRealPoint(current_pos);
+    this->PushExperimentData(pt.profile, current_pos);
 }
 
 void Plot3D::slSaveReal(void){
