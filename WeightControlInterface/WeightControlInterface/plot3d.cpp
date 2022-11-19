@@ -39,6 +39,7 @@ Plot3D::Plot3D(QGroupBox *parent) : QObject(parent){
     target_series->setBaseColor(QColor(0, 0, 255));
     this->plot->addSeries(target_series);
 
+    real_series->setItemSize(0.15);
     real_series->setItemLabelFormat(QStringLiteral("Real Object: @xTitle: @xLabel @yTitle: @yLabel @zTitle: @zLabel"));
     real_series->setMeshSmooth(true);
     real_series->setBaseColor(QColor(255, 0, 0));
@@ -117,7 +118,6 @@ void Plot3D::BuildTargetTrajectory(QVector3D start, QVector3D end){
 }
 
 QVector3D Plot3D::DirectTransform(QVector<float> length){
-//    qDebug() << "LENGTHS: " << length;
     float resX = (std::pow(this->map_width, 2) - std::pow(length[3], 2) + std::pow(length[2], 2)) / (2 * this->map_width);
     float resY = (std::pow(this->map_length, 2) - std::pow(length[1], 2) + std::pow(length[2], 2)) / (2 * this->map_length);
     float resZ = this->map_height - std::sqrt(std::pow(length[0], 2) - std::pow(resX - this->map_width, 2) - std::pow(resY - this->map_length, 2));
@@ -156,10 +156,8 @@ void Plot3D::slFullscreen(void){
     this->fullscreen->setGeometry(position.x(), position.y(), size.width(), size.height());
     connect(this->fullscreen, &QMainWindow::destroyed, this, &Plot3D::slFullscreenClosed);
     this->fullscreen->show();
-//    this->plot_widget->show();
 }
 void Plot3D::slFullscreenClosed(void){
-    qDebug() << "Fullscreen Closed";
     this->group_box_parent->layout()->addWidget(this->plot_widget);
     this->plot_widget->show();
 }
@@ -194,7 +192,8 @@ void Plot3D::slStartTrajectory(void){
         float x = this->plot->seriesList().at(0)->dataProxy()->itemAt(iter)->x();
         float y = this->plot->seriesList().at(0)->dataProxy()->itemAt(iter)->y();
         float z = this->plot->seriesList().at(0)->dataProxy()->itemAt(iter)->z();
-        this->profile.push_back(ProfileItem(QVector3D(x, y, z), time++));
+        this->profile.push_back(ProfileItem(QVector3D(x, y, z), time));
+        time += 0.5;
         qDebug() << "X: " << x << " Y: " << y << " Z: " << z << " TIME: " << time;
         QVector<float> tmp = this->InverseTransform(QVector3D(x, y, z));
         qDebug() << "LEN 1 : " << tmp[0] << "LEN 2 : " << tmp[1] << "LEN 3 : " << tmp[2] << "LEN 4 : " << tmp[3];
