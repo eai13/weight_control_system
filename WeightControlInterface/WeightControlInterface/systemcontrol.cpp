@@ -19,26 +19,21 @@ SystemControl::SystemControl(QWidget *parent) :
     ui->setupUi(this);
 
     this->plot3d = new Plot3D(ui->groupBox_plot3d);
-    this->plot3d->AddRealPoint(1, 1, 1);
-//    this->plot3d->BuildTargetTrajectory(QVector3D(0, 0, 0), QVector3D(10, 1, 1));
-//    this->plot3d->BuildTargetTrajectory(QVector3D(10, 1, 1), QVector3D(25, 16, 16));
 
     Plot3DConfigs * plot3dconfigs = new Plot3DConfigs();
     ui->groupBox_3dplot_settings->layout()->addWidget(plot3dconfigs);
-    connect(plot3dconfigs, &Plot3DConfigs::siFullscreen, this->plot3d, &Plot3D::slFullscreen);
-    connect(plot3dconfigs, &Plot3DConfigs::siTargetAdd, this->plot3d, &Plot3D::slTargetAdd);
-    connect(plot3dconfigs, &Plot3DConfigs::siTargetClear, this->plot3d, &Plot3D::slTargetClear);
-    connect(plot3dconfigs, &Plot3DConfigs::siTargetRemove, this->plot3d, &Plot3D::slTargetRemove);
-    connect(plot3dconfigs, &Plot3DConfigs::siStartTrajectory, this, &SystemControl::slStartTrajectory);
-    connect(plot3dconfigs, &Plot3DConfigs::siStartTrajectory, this->plot3d, &Plot3D::slStartTrajectory);
-    connect(plot3dconfigs, &Plot3DConfigs::siStopTrajectory, this, &SystemControl::slStopTrajectory);
-    connect(plot3dconfigs, &Plot3DConfigs::siStopTrajectory, this->plot3d, &Plot3D::slAbortTrajectory);
-    connect(plot3dconfigs, &Plot3DConfigs::siPauseTrajectory, this, &SystemControl::slPauseTrajectory);
-    connect(plot3dconfigs, &Plot3DConfigs::siPauseTrajectory, this->plot3d, &Plot3D::slPauseTrajectory);
-    connect(plot3dconfigs, &Plot3DConfigs::siSaveTarget, this->plot3d, &Plot3D::slSaveTarget);
-    connect(plot3dconfigs, &Plot3DConfigs::siSaveReal, this->plot3d, &Plot3D::slSaveReal);
-    connect(plot3dconfigs, &Plot3DConfigs::siUploadTarget, this->plot3d, &Plot3D::slUploadTarget);
-    connect(this->plot3d, &Plot3D::siSendLength, this, &SystemControl::slSendLength);
+    connect(plot3dconfigs,  &Plot3DConfigs::siFullscreen,       this->plot3d,   &Plot3D::slFullscreen);
+    connect(plot3dconfigs,  &Plot3DConfigs::siTargetAdd,        this->plot3d,   &Plot3D::slTargetAdd);
+    connect(plot3dconfigs,  &Plot3DConfigs::siTargetClear,      this->plot3d,   &Plot3D::slTargetClear);
+    connect(plot3dconfigs,  &Plot3DConfigs::siTargetRemove,     this->plot3d,   &Plot3D::slTargetRemove);
+    connect(plot3dconfigs,  &Plot3DConfigs::siStartTrajectory,  this->plot3d,   &Plot3D::slStartTrajectory);
+    connect(plot3dconfigs,  &Plot3DConfigs::siStopTrajectory,   this->plot3d,   &Plot3D::slAbortTrajectory);
+    connect(plot3dconfigs,  &Plot3DConfigs::siPauseTrajectory,  this->plot3d,   &Plot3D::slPauseTrajectory);
+    connect(plot3dconfigs,  &Plot3DConfigs::siSaveTarget,       this->plot3d,   &Plot3D::slSaveTarget);
+    connect(plot3dconfigs,  &Plot3DConfigs::siSaveReal,         this->plot3d,   &Plot3D::slSaveReal);
+    connect(plot3dconfigs,  &Plot3DConfigs::siUploadTarget,     this->plot3d,   &Plot3D::slUploadTarget);
+    connect(this->plot3d,   &Plot3D::siSendTargetLength,        this,           &SystemControl::slSendLength);
+    connect(this,           &SystemControl::siSendRealLength,   this->plot3d,   &Plot3D::slReceiveRealLength);
 
     this->SystemTime = new QTime();
     this->SystemTime->start();
@@ -70,8 +65,11 @@ SystemControl::SystemControl(QWidget *parent) :
 
     for (uint8_t iter = 0; iter < 4; iter++){
         this->plots[iter]->setObjectName(QString::fromStdString(std::to_string(iter)));
-        connect(this->plots[iter], &Plot2D::siSendPos, this, &SystemControl::slSendPos);
-        connect(this->plots[iter], &Plot2D::siCalibrateZero, this, &SystemControl::slSendZeroCalibration);
+        connect(this->plots[iter],  &Plot2D::siSendPos,                 this,               &SystemControl::slSendPos);
+        connect(this->plots[iter],  &Plot2D::siCalibrateZero,           this,               &SystemControl::slSendZeroCalibration);
+        connect(plot3dconfigs,      &Plot3DConfigs::siStartTrajectory,  this->plots[iter],  &Plot2D::slBlockModule);
+        connect(plot3dconfigs,      &Plot3DConfigs::siPauseTrajectory,  this->plots[iter],  &Plot2D::slBlockModule);
+        connect(plot3dconfigs,      &Plot3DConfigs::siStopTrajectory,   this->plots[iter],  &Plot2D::slEnableModule);
     }
 
     this->PlottableDataTimer = new QTimer(this);
@@ -306,7 +304,11 @@ void SystemControl::ProcessIncomingData(void){
                 this->plots[iter]->slAddData(CNT_REG_CUR_FB, cnt_plottable.data[5 + iter * 7]);
                 this->plots[iter]->slAddData(CNT_REG_OUTPUT, cnt_plottable.data[6 + iter * 7]);
             }
-
+            emit this->siSendRealLength(
+                    this->plots[0]->GetLengthFromAngle(cnt_plottable.data[1]),
+                    this->plots[1]->GetLengthFromAngle(cnt_plottable.data[8]),
+                    this->plots[2]->GetLengthFromAngle(cnt_plottable.data[15]),
+                    this->plots[3]->GetLengthFromAngle(cnt_plottable.data[22]));
             break;
         }
         case(CNT_CALIBRATE_ZERO):{
@@ -318,7 +320,7 @@ void SystemControl::ProcessIncomingData(void){
                 break;
             }
             default:{
-                qDebug() << "Signel Motor Zero-Calibrated " << cnt_header.id;
+                qDebug() << "Single Motor Zero-Calibrated " << cnt_header.id;
                 this->plots[cnt_header.id]->PushRadians(0);
                 break;
             }
@@ -329,11 +331,6 @@ void SystemControl::ProcessIncomingData(void){
         }
         }
 
-//        qDebug() << "Control request";
-//        qDebug() << "BP:    CMD " << bp_header.cmd << " W_Size " << bp_header.w_size;
-//        qDebug() << "CNT:   ID  " << cnt_header.id << " CMD    " << cnt_header.cmd;
-//        qDebug() << "REG:   " << cnt_register.reg;
-//        qDebug() << "DATA:  " << cnt_register.data[0] << " " << cnt_register.data[1] << " " << cnt_register.data[2] << " " << cnt_register.data[3];
         this->SerialLock.Unlock();
         break;
     }
@@ -399,16 +396,12 @@ void SystemControl::Exit(uint8_t tab){
     emit this->siChooseTab(tab);
 }
 
-void SystemControl::slStartTrajectory(void){
-    qDebug() << "SystemControl Start Trajectory";
-}
-void SystemControl::slStopTrajectory(void){
-    qDebug() << "SystemControl Stop Trajectory";
-}
-void SystemControl::slPauseTrajectory(void){
-    qDebug() << "SystemControl Pause Trajectory";
-}
-
 void SystemControl::slSendLength(float len1, float len2, float len3, float len4){
+    QVector<float> rads;
+    rads.push_back(this->plots[0]->GetAngleFromLength(len1));
+    rads.push_back(this->plots[1]->GetAngleFromLength(len2));
+    rads.push_back(this->plots[2]->GetAngleFromLength(len3));
+    rads.push_back(this->plots[3]->GetAngleFromLength(len4));
 
+    this->C_WriteMultipleData(CONTROL_Registers::CNT_REG_POS_SP, rads);
 }

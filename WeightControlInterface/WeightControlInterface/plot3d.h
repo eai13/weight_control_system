@@ -16,7 +16,7 @@
 #include <QTime>
 #include <QTimer>
 
-#define DEFAULT_MAP_HEIGHT  ((float)(2.00))
+#define DEFAULT_MAP_HEIGHT  ((float)(2.50))
 #define DEFAULT_MAP_WIDTH   ((float)(2.70))
 #define DEFAULT_MAP_LENGTH  ((float)(3.30))
 
@@ -103,23 +103,21 @@ public slots:
     void slSaveTarget(void);
     void slUploadTarget(uint8_t format);
 
-    void slTrajectoryStarted(void);
-    void slTrajectoryStopped(void);
-    void slTrajectoryAborted(void);
-
-    void slReceiveLength(float length1, float length2, float length3, float length4){
+    void slReceiveRealLength(float length1, float length2, float length3, float length4){
         QVector<float> len;
         len.push_back(length1); len.push_back(length2); len.push_back(length3); len.push_back(length3); len.push_back(length4);
         this->object_real_position = this->DirectTransform(len);
+//        qDebug() << "OBJECT POSITION: " << this->object_real_position;
+        this->plot->seriesList().at(1)->dataProxy()->addItem(QtDataVisualization::QScatterDataItem(this->object_real_position));
+        this->plot->seriesList().at(1)->dataProxy()->removeItems(0, 1);
     }
+
 private slots:
 
     void slControlCallback(void);
 
 signals:
-//    void siSendPositionsRads(float rad1, float rad2, float rad3, float rad4);
-//    void siSendPositionsTurns(float turn1, float turn2, float turn3, float turn4);
-    void siSendLength(float length1, float length2, float length3, float length4);
+    void siSendTargetLength(float length1, float length2, float length3, float length4);
 
 };
 

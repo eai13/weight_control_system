@@ -28,8 +28,10 @@ Plot3D::Plot3D(QGroupBox *parent) : QObject(parent){
 
     QtDataVisualization::QScatterDataProxy * target_proxy = new QtDataVisualization::QScatterDataProxy;
     QtDataVisualization::QScatterDataProxy * real_proxy = new QtDataVisualization::QScatterDataProxy;
+    QtDataVisualization::QScatterDataProxy * real_traj_proxy = new QtDataVisualization::QScatterDataProxy;
     QtDataVisualization::QScatter3DSeries * target_series = new QtDataVisualization::QScatter3DSeries(target_proxy);
     QtDataVisualization::QScatter3DSeries * real_series = new QtDataVisualization::QScatter3DSeries(real_proxy);
+    QtDataVisualization::QScatter3DSeries * real_traj_series = new QtDataVisualization::QScatter3DSeries(real_traj_proxy);
 
     target_series->setItemSize(0.1);
     target_series->setItemLabelFormat(QStringLiteral("Target Trajectory: @xTitle: @xLabel @yTitle: @yLabel @zTitle: @zLabel"));
@@ -37,10 +39,16 @@ Plot3D::Plot3D(QGroupBox *parent) : QObject(parent){
     target_series->setBaseColor(QColor(0, 0, 255));
     this->plot->addSeries(target_series);
 
-    real_series->setItemLabelFormat(QStringLiteral("Real Trajectory: @xTitle: @xLabel @yTitle: @yLabel @zTitle: @zLabel"));
+    real_series->setItemLabelFormat(QStringLiteral("Real Object: @xTitle: @xLabel @yTitle: @yLabel @zTitle: @zLabel"));
     real_series->setMeshSmooth(true);
     real_series->setBaseColor(QColor(255, 0, 0));
     this->plot->addSeries(real_series);
+    this->plot->seriesList().at(1)->dataProxy()->addItem(QtDataVisualization::QScatterDataItem(QVector3D(1, 1, 1)));
+
+    real_traj_series->setItemLabelFormat(QStringLiteral("Real Trajectory: @xTitle: @xLabel @yTitle: @yLabel @zTitle: @zLabel"));
+    real_traj_series->setMeshSmooth(true);
+    real_traj_series->setBaseColor(QColor(255, 0, 0));
+    this->plot->addSeries(real_traj_series);
 
     this->plot->axisX()->setTitle("X");
     this->plot->axisX()->setTitleVisible(true);
@@ -55,11 +63,13 @@ Plot3D::Plot3D(QGroupBox *parent) : QObject(parent){
 }
 
 void Plot3D::AddRealPoint(double x, double y, double z){
-    this->plot->seriesList().at(1)->dataProxy()->addItem(QtDataVisualization::QScatterDataItem(QVector3D(x, y, z)));
+    this->plot->seriesList().at(2)->dataProxy()->addItem(QtDataVisualization::QScatterDataItem(QVector3D(x, y, z)));
 }
 void Plot3D::AddRealPoint(QVector3D pt){
-    this->plot->seriesList().at(1)->dataProxy()->addItem(QtDataVisualization::QScatterDataItem(pt));
+    this->plot->seriesList().at(2)->dataProxy()->addItem(QtDataVisualization::QScatterDataItem(pt));
 }
+
+
 
 void Plot3D::AddTargetPoint(double x, double y, double z){
     this->plot->seriesList().at(0)->dataProxy()->addItem(QtDataVisualization::QScatterDataItem(QVector3D(x, y, z)));
@@ -73,7 +83,7 @@ void Plot3D::RemoveLastTarget(void){
 }
 
 void Plot3D::ClearReal(void){
-    this->plot->seriesList().at(1)->dataProxy()->removeItems(0, this->plot->seriesList().at(1)->dataProxy()->itemCount());
+    this->plot->seriesList().at(2)->dataProxy()->removeItems(0, this->plot->seriesList().at(1)->dataProxy()->itemCount());
 }
 
 void Plot3D::ClearTarget(void){
@@ -107,6 +117,7 @@ void Plot3D::BuildTargetTrajectory(QVector3D start, QVector3D end){
 }
 
 QVector3D Plot3D::DirectTransform(QVector<float> length){
+//    qDebug() << "LENGTHS: " << length;
     float resX = (std::pow(this->map_width, 2) - std::pow(length[3], 2) + std::pow(length[2], 2)) / (2 * this->map_width);
     float resY = (std::pow(this->map_length, 2) - std::pow(length[1], 2) + std::pow(length[2], 2)) / (2 * this->map_length);
     float resZ = this->map_height - std::sqrt(std::pow(length[0], 2) - std::pow(resX - this->map_width, 2) - std::pow(resY - this->map_length, 2));
@@ -176,6 +187,7 @@ void Plot3D::slTargetRemove(void){
 }
 
 void Plot3D::slStartTrajectory(void){
+    if (this->plot->seriesList().at(0)->dataProxy()->itemCount() == 0) return;
     this->profile.clear();
     float time = 0;
     for (int32_t iter = 0; iter < this->plot->seriesList().at(0)->dataProxy()->itemCount(); iter++){
@@ -193,6 +205,7 @@ void Plot3D::slStartTrajectory(void){
 
     if (this->experiment_time == nullptr) this->experiment_time = new QTime;
     this->experiment_time->restart();
+
     qDebug() << "Plot3D Start Trajectory";
 }
 void Plot3D::slAbortTrajectory(void){
@@ -208,13 +221,18 @@ void Plot3D::slPauseTrajectory(void){
 }
 
 void Plot3D::slControlCallback(void){
+    if (this->profile.isEmpty()){
+        qDebug() << "TRAJECTORY FINISHED";
+        return;
+    }
     QVector3D current_pos = this->object_real_position;
     float current_time = (float)(this->experiment_time->elapsed()) / (float)(1000);
     ProfileItem pt = this->profile.front();
     if (pt.time < current_time){
         this->profile.pop_front();
         QVector<float> pos = this->InverseTransform(pt.profile);
-        emit this->siSendPositionsLength(pos[0], pos[1], pos[2], pos[3]);
+        qDebug() << "REQUIRED POSITIONS: " << pos;
+        emit this->siSendTargetLength(pos[0], pos[1], pos[2], pos[3]);
     }
     this->AddRealPoint(current_pos);
     this->PushExperimentData(pt.profile, current_pos);

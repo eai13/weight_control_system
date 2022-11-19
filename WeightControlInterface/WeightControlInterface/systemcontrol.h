@@ -324,15 +324,15 @@ public slots:
     void slSendZeroCalibration(void);
     void slActivate(void);
 
-    void slStartTrajectory(void);
-    void slStopTrajectory(void);
-    void slPauseTrajectory(void);
+//    void slStartTrajectory(void);
+//    void slStopTrajectory(void);
+//    void slPauseTrajectory(void);
 
 signals:
     void siSendSerial(QSerialPort * p_serial);
     void siChooseTab(uint16_t tab);
 
-    void siSendRealLemgth(float len1, float len2, float len3, float len4);
+    void siSendRealLength(float len1, float len2, float len3, float len4);
 private:
 
     Plot3D * plot3d;
