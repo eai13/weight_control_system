@@ -25,15 +25,13 @@ class Plot2D : public QObject
     Q_OBJECT
 public:
     float GetAngleFromLength(float length){
-        float a = (-1) * this->K_calib / 2 / PI;
-        float b = this->R0_calib + this->K_calib / 2 / PI * (this->MAX_calib + this->MIN_calib);
-        float c = (-1) * (this->MIN_calib * (this->R0_calib + this->K_calib * this->MAX_calib / 2 / PI) + length);
-        float D = b * b - 4 * a * c;
-        float angle = ((-1) * b + std::sqrt(D)) / 2 / a;
+        double a = this->trA_calib; double b = this->trB_calib; double c = this->trC_calib - length;
+        double D = std::pow(b, 2) - 4 * a * c;
+        double angle = ((-1) * b + std::sqrt(D)) / 2 / a;
         return angle;
     }
     float GetLengthFromAngle(float angle){
-        float length = (this->R0_calib + (this->MAX_calib - angle) * this->K_calib / 2 / PI) * (angle - this->MIN_calib);
+        float length = this->trA_calib * std::pow(angle, 2) + this->trB_calib * angle + this->trC_calib;
         return length;
     }
 
@@ -42,7 +40,7 @@ public:
                     QDial * dial_h,
                     QLineEdit * lineedit_h,
                     QPushButton * zerocalib, QPushButton * movezero,
-                    double R0, double K, double MIN, double MAX);
+                    double A_cal, double B_cal, double C_cal, double MIN_cal, double MAX_cal);
 
     QList<QColor>   pencolor_buffer;
     QWidget *       plot_parent;
@@ -58,10 +56,11 @@ public:
 
     QMenu           plot_menu;
 
-    double R0_calib;
-    double K_calib;
-    double MAX_calib;
+    double trA_calib;
+    double trB_calib;
+    double trC_calib;
     double MIN_calib;
+    double MAX_calib;
 
     void ResetDial(void);
     void ResetPlot(void);

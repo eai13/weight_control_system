@@ -16,9 +16,9 @@
 #include <QTime>
 #include <QTimer>
 
-#define DEFAULT_MAP_HEIGHT  ((float)(2.50))
-#define DEFAULT_MAP_WIDTH   ((float)(2.70))
-#define DEFAULT_MAP_LENGTH  ((float)(3.30))
+#define DEFAULT_MAP_HEIGHT  ((float)(2.60))
+#define DEFAULT_MAP_WIDTH   ((float)(2.60))
+#define DEFAULT_MAP_LENGTH  ((float)(3.33))
 
 class Plot3D : public QObject
 {

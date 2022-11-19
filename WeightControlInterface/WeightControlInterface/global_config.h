@@ -25,25 +25,28 @@
 
 #define PI                  3.1415
 
+#define MOTOR_1_A_CALIB     ((double)(-0.00028))
+#define MOTOR_1_B_CALIB     ((double)(0.09556))
+#define MOTOR_1_C_CALIB     ((double)(0.12712))
+#define MOTOR_1_MIN         ((double)(0))
+#define MOTOR_1_MAX         ((double)(50.24))
 
-#define MOTOR_1_R0_CALIB    ((double)(0.061))
-#define MOTOR_1_K_CALIB     ((double)(0.0025))
-#define MOTOR_1_MAX_CALIB   ((double)(60))
-#define MOTOR_1_MIN_CALIB   ((double)(-60))
+#define MOTOR_2_A_CALIB     ((double)(-0.00026))
+#define MOTOR_2_B_CALIB     ((double)(0.09191))
+#define MOTOR_2_C_CALIB     ((double)(0.12809))
+#define MOTOR_2_MIN         ((double)(0))
+#define MOTOR_2_MAX         ((double)(50.24))
 
-#define MOTOR_2_R0_CALIB    ((double)(0.059))
-#define MOTOR_2_K_CALIB     ((double)(0.0012))
-#define MOTOR_2_MAX_CALIB   ((double)(63))
-#define MOTOR_2_MIN_CALIB   ((double)(-63))
+#define MOTOR_3_A_CALIB     ((double)(-0.00028))
+#define MOTOR_3_B_CALIB     ((double)(0.09638))
+#define MOTOR_3_C_CALIB     ((double)(0.13003))
+#define MOTOR_3_MIN         ((double)(0))
+#define MOTOR_3_MAX         ((double)(50.24))
 
-#define MOTOR_3_R0_CALIB    ((double)(0.062))
-#define MOTOR_3_K_CALIB     ((double)(0.002))
-#define MOTOR_3_MAX_CALIB   ((double)(60))
-#define MOTOR_3_MIN_CALIB   ((double)(-60))
-
-#define MOTOR_4_R0_CALIB    ((double)(0.0589))
-#define MOTOR_4_K_CALIB     ((double)(0.0016))
-#define MOTOR_4_MAX_CALIB   ((double)(60))
-#define MOTOR_4_MIN_CALIB   ((double)(-60))
+#define MOTOR_4_A_CALIB     ((double)(-0.00026))
+#define MOTOR_4_B_CALIB     ((double)(0.09128))
+#define MOTOR_4_C_CALIB     ((double)(0.12630))
+#define MOTOR_4_MIN         ((double)(0))
+#define MOTOR_4_MAX         ((double)(50.24))
 
 #endif // GLOBAL_CONFIG_H
