@@ -38,7 +38,7 @@ Plot3DConfigs::~Plot3DConfigs()
 
 
 void Plot3DConfigs::slUpdateBar(int perc){
-
+    Q_UNUSED(perc);
 }
 
 void Plot3DConfigs::Reset(void){
@@ -62,4 +62,14 @@ void Plot3DConfigs::slTargetAdd(void){
     for (auto iter = z_str.begin(); iter != z_str.end(); iter++) if (*iter == ',') *iter = '.';
     QVector3D res(x_str.toFloat(), y_str.toFloat(), z_str.toFloat());
     emit siTargetAdd(res);
+}
+
+void Plot3DConfigs::slEnableAbort(uint8_t state){
+    ui->pushButton_3dstop->setEnabled(state);
+}
+void Plot3DConfigs::slEnableStart(uint8_t state){
+    ui->pushButton_3dstart->setEnabled(state);
+}
+void Plot3DConfigs::slEnableStop(uint8_t state){
+    ui->pushButton_3dpause->setEnabled(state);
 }

@@ -6,12 +6,13 @@
 #include "main.h"
 #include <math.h>
 #include <stdint.h>
+#include "debug.h"
 
 #include "lptim.h"
 
-#ifdef _DEBUG_VERSION_
-#include "debug.h"
-#endif
+// #ifdef _DEBUG_VERSION_
+// #include "debug.h"
+// #endif
 
 #define DRIVE   (drives[drive_num])
 #define _ABS_FLOAT(value) \

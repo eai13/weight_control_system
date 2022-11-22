@@ -4,7 +4,7 @@ Plot2D::Plot2D(QString title, QCustomPlot * plot_h,
                QRadioButton * rb_turn_h, QRadioButton * rb_rads_h, QRadioButton * rb_length_h,
                QDial * dial_h,
                QLineEdit * lineedit_h,
-               QPushButton * zerocalib, QPushButton * movezero,
+               QPushButton * zerocalib, QPushButton * stop,
                double A_cal, double B_cal, double C_cal, double MIN_cal, double MAX_cal){
     this->plot_parent = plot_h->parentWidget();
     this->plot = plot_h;
@@ -14,7 +14,7 @@ Plot2D::Plot2D(QString title, QCustomPlot * plot_h,
     this->lineedit = lineedit_h;
     this->dial = dial_h;
     this->pb_calibzero = zerocalib;
-    this->pb_movezero = movezero;
+    this->pb_stop = stop;
 
     this->trA_calib = A_cal;
     this->trB_calib = B_cal;
@@ -98,7 +98,7 @@ Plot2D::Plot2D(QString title, QCustomPlot * plot_h,
     connect(this->dial, &QDial::sliderMoved, this, &Plot2D::slProcessDial);
     connect(this->dial, &QDial::sliderReleased, this, &Plot2D::slSendPosFromDial);
     connect(this->pb_calibzero, &QPushButton::released, this, &Plot2D::slCalibrateZero);
-    connect(this->pb_movezero, &QPushButton::released, this, &Plot2D::slSetZero);
+    connect(this->pb_stop, &QPushButton::released, this, &Plot2D::slStop);
 
     this->system_time = new QTime();
     this->system_time->start();
@@ -269,7 +269,7 @@ void Plot2D::slSendPosFromDial(void){
         else{
             emit siSendPos(angle);
         }
-        qDebug() << "ANGLE FROM LENGTH IS: " << angle;
+//        qDebug() << "ANGLE FROM LENGTH IS: " << angle;
     }
 }
 
@@ -374,18 +374,19 @@ void Plot2D::slCalibrateZero(void){
     emit this->siCalibrateZero();
 }
 
-void Plot2D::slSetZero(void){
-    if (this->rb_length->isChecked()){
-        float new_length = this->GetLengthFromAngle(0);
-        this->lineedit->setText(QString::asprintf("%.4f", new_length));
-    }
-    else if (this->rb_rads->isChecked()){
-        this->lineedit->setText("0.00");
-    }
-    else if (this->rb_turn->isChecked()){
-        this->lineedit->setText("0.00");
-    }
-    this->slProcessEditLine();
+void Plot2D::slStop(void){
+    qDebug() << "SEND STOP CMD";
+//    if (this->rb_length->isChecked()){
+//        float new_length = this->GetLengthFromAngle(0);
+//        this->lineedit->setText(QString::asprintf("%.4f", new_length));
+//    }
+//    else if (this->rb_rads->isChecked()){
+//        this->lineedit->setText("0.00");
+//    }
+//    else if (this->rb_turn->isChecked()){
+//        this->lineedit->setText("0.00");
+//    }
+//    this->slProcessEditLine();
 }
 
 void Plot2D::PushLength(float length){
@@ -438,12 +439,12 @@ void Plot2D::slBlockModule(void){
     this->lineedit->setEnabled(false);
     this->dial->setEnabled(false);
     this->pb_calibzero->setEnabled(false);
-    this->pb_movezero->setEnabled(false);
+    this->pb_stop->setEnabled(false);
 }
 
 void Plot2D::slEnableModule(void){
     this->lineedit->setEnabled(true);
     this->dial->setEnabled(true);
     this->pb_calibzero->setEnabled(true);
-    this->pb_movezero->setEnabled(true);
+    this->pb_stop->setEnabled(true);
 }

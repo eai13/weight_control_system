@@ -213,6 +213,8 @@ int main(void)
     if (PID_ComputeFlag){
       PID_DriveCompute(3);
       PID_DriveCompute(2);
+      PID_DriveCompute(1);
+      PID_DriveCompute(0);
       PID_ComputeFlag = 0;
     }
 
@@ -224,6 +226,7 @@ int main(void)
     if ((HAL_GetTick() - ticks_to_position_save) > 3000){
       MEMORY_SetActualPosition(ENCODER_1_COUNT, ENCODER_2_COUNT, ENCODER_3_COUNT, PID_GetCorrector() + ENCODER_4_COUNT, 10);
       ticks_to_position_save = HAL_GetTick();
+      print_in("PID Corrector 0x%X\r\n", PID_GetCorrector());
     }
     /* USER CODE END WHILE */
 

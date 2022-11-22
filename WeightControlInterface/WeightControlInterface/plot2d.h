@@ -39,7 +39,7 @@ public:
                     QRadioButton * rb_turn_h, QRadioButton * rb_rads_h, QRadioButton * rb_length_h,
                     QDial * dial_h,
                     QLineEdit * lineedit_h,
-                    QPushButton * zerocalib, QPushButton * movezero,
+                    QPushButton * zerocalib, QPushButton * stop,
                     double A_cal, double B_cal, double C_cal, double MIN_cal, double MAX_cal);
 
     QList<QColor>   pencolor_buffer;
@@ -52,7 +52,7 @@ public:
     QLineEdit *     lineedit;
     QDial *         dial;
     QPushButton *   pb_calibzero;
-    QPushButton *   pb_movezero;
+    QPushButton *   pb_stop;
 
     QMenu           plot_menu;
 
@@ -131,7 +131,7 @@ signals:
 
 private slots:
     void slCalibrateZero(void);
-    void slSetZero(void);
+    void slStop(void);
 
 };
 

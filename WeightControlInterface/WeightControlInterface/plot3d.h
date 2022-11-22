@@ -51,6 +51,8 @@ private:
 
     QVector3D   object_real_position;
     float       last_experiment_time;
+    QVector3D   last_required_position;
+    QVector3D   curr_required_position;
 
     struct ExperimentItem{
         QVector3D   profile;
@@ -118,6 +120,9 @@ private slots:
 
 signals:
     void siSendTargetLength(float length1, float length2, float length3, float length4);
+    void siEnableStart(uint8_t state);
+    void siEnableStop(uint8_t state);
+    void siEnableAbort(uint8_t state);
 
 };
 

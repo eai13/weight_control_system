@@ -32,6 +32,9 @@ SystemControl::SystemControl(QWidget *parent) :
     connect(plot3dconfigs,  &Plot3DConfigs::siSaveTarget,       this->plot3d,   &Plot3D::slSaveTarget);
     connect(plot3dconfigs,  &Plot3DConfigs::siSaveReal,         this->plot3d,   &Plot3D::slSaveReal);
     connect(plot3dconfigs,  &Plot3DConfigs::siUploadTarget,     this->plot3d,   &Plot3D::slUploadTarget);
+    connect(this->plot3d,   &Plot3D::siEnableAbort,             plot3dconfigs,  &Plot3DConfigs::slEnableAbort);
+    connect(this->plot3d,   &Plot3D::siEnableStop,              plot3dconfigs,  &Plot3DConfigs::slEnableStop);
+    connect(this->plot3d,   &Plot3D::siEnableStart,             plot3dconfigs,  &Plot3DConfigs::slEnableStart);
     connect(this->plot3d,   &Plot3D::siSendTargetLength,        this,           &SystemControl::slSendLength);
     connect(this,           &SystemControl::siSendRealLength,   this->plot3d,   &Plot3D::slReceiveRealLength);
 
@@ -42,25 +45,25 @@ SystemControl::SystemControl(QWidget *parent) :
                                 ui->radioButton_m1turns, ui->radioButton_m1rads, ui->radioButton_m1length,
                                 ui->dial_motor1,
                                 ui->lineEdit_motor1pos,
-                                ui->pushButton_motor1zerocalib, ui->pushButton_motor1movezero,
+                                ui->pushButton_motor1zerocalib, ui->pushButton_motor1stop,
                                 MOTOR_1_A_CALIB, MOTOR_1_B_CALIB, MOTOR_1_C_CALIB, MOTOR_1_MIN, MOTOR_1_MAX);
     this->plots[1] = new Plot2D("Motor 2", ui->widget_plot2,
                                 ui->radioButton_m2turns, ui->radioButton_m2rads, ui->radioButton_m2length,
                                 ui->dial_motor2,
                                 ui->lineEdit_motor2pos,
-                                ui->pushButton_motor2zerocalib, ui->pushButton_motor2movezero,
+                                ui->pushButton_motor2zerocalib, ui->pushButton_motor2stop,
                                 MOTOR_2_A_CALIB, MOTOR_2_B_CALIB, MOTOR_2_C_CALIB, MOTOR_2_MIN, MOTOR_2_MAX);
     this->plots[2] = new Plot2D("Motor 3", ui->widget_plot3,
                                 ui->radioButton_m3turns, ui->radioButton_m3rads, ui->radioButton_m3length,
                                 ui->dial_motor3,
                                 ui->lineEdit_motor3pos,
-                                ui->pushButton_motor3zerocalib, ui->pushButton_motor3movezero,
+                                ui->pushButton_motor3zerocalib, ui->pushButton_motor3stop,
                                 MOTOR_3_A_CALIB, MOTOR_3_B_CALIB, MOTOR_3_C_CALIB, MOTOR_3_MIN, MOTOR_3_MAX);
     this->plots[3] = new Plot2D("Motor 4", ui->widget_plot4,
                                 ui->radioButton_m4turns, ui->radioButton_m4rads, ui->radioButton_m4length,
                                 ui->dial_motor4,
                                 ui->lineEdit_motor4pos,
-                                ui->pushButton_motor4zerocalib, ui->pushButton_motor4movezero,
+                                ui->pushButton_motor4zerocalib, ui->pushButton_motor4stop,
                                 MOTOR_4_A_CALIB, MOTOR_4_B_CALIB, MOTOR_4_C_CALIB, MOTOR_4_MIN, MOTOR_4_MAX);
 
     for (uint8_t iter = 0; iter < 4; iter++){
@@ -214,7 +217,7 @@ void SystemControl::ProcessIncomingData(void){
         char * name = reinterpret_cast<char *>(&id);
         QString s_name = "";
         s_name += name[0]; s_name += name[1]; s_name += name[2]; s_name += name[3];
-        qDebug() << "Ping process";
+//        qDebug() << "Ping process";
         ConsoleBasic(QString("Ping OK, Device ID is ") + s_name);
 
         if ((s_name != BOOTLOADER_ID) && (s_name != APP_1_ID) && (s_name != APP_2_ID)){
@@ -236,7 +239,7 @@ void SystemControl::ProcessIncomingData(void){
     }
     case(BP_Commands::BP_JUMP):{
         ConsoleBasic("Jump back to boot");
-        qDebug() << "Jump back";
+//        qDebug() << "Jump back";
         this->PlottableDataTimer->stop();
         this->serial_tx_queue.clear();
         this->SerialLock.Unlock();
@@ -377,7 +380,7 @@ void SystemControl::ConsoleWarning(QString message){
 
 void SystemControl::slSendPos(float data){
     uint8_t sender_id = sender()->objectName().toInt();
-    qDebug() << "SENDER ID " << sender_id << " NAME " << sender()->objectName();
+//    qDebug() << "SENDER ID " << sender_id << " NAME " << sender()->objectName();
     this->C_WriteSingleData(sender_id, this->CNT_REG_POS_SP, data);
 }
 

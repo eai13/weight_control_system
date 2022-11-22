@@ -34,6 +34,9 @@ private:
 
 public slots:
     void slUpdateBar(int perc);
+    void slEnableStart(uint8_t state);
+    void slEnableStop(uint8_t state);
+    void slEnableAbort(uint8_t state);
 
 private slots:
     void slFullScreen(void) {emit siFullscreen();}
