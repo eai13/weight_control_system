@@ -5,6 +5,7 @@ Plot2D::Plot2D(QString title, QCustomPlot * plot_h,
                QDial * dial_h,
                QLineEdit * lineedit_h,
                QPushButton * zerocalib, QPushButton * stop,
+               QPushButton * less_small, QPushButton * less_much, QPushButton * more_small, QPushButton * more_much,
                double A_cal, double B_cal, double C_cal, double MIN_cal, double MAX_cal){
     this->plot_parent = plot_h->parentWidget();
     this->plot = plot_h;
@@ -15,6 +16,10 @@ Plot2D::Plot2D(QString title, QCustomPlot * plot_h,
     this->dial = dial_h;
     this->pb_calibzero = zerocalib;
     this->pb_stop = stop;
+    this->pb_jogless_b = less_much;
+    this->pb_jogless_s = less_small;
+    this->pb_jogmore_b = more_much;
+    this->pb_jogmore_s = more_small;
 
     this->trA_calib = A_cal;
     this->trB_calib = B_cal;
@@ -91,14 +96,17 @@ Plot2D::Plot2D(QString title, QCustomPlot * plot_h,
 
     this->lineedit->setValidator(new QDoubleValidator(-1000, 1000, 3));
 
-    connect(this->lineedit, &QLineEdit::returnPressed, this, &Plot2D::slProcessEditLine);
-    connect(this->rb_turn, &QRadioButton::clicked, this, &Plot2D::slSetTurns);
-    connect(this->rb_rads, &QRadioButton::clicked, this, &Plot2D::slSetRads);
-    connect(this->rb_length, &QRadioButton::clicked, this, &Plot2D::slSetLength);
-    connect(this->dial, &QDial::sliderMoved, this, &Plot2D::slProcessDial);
-    connect(this->dial, &QDial::sliderReleased, this, &Plot2D::slSendPosFromDial);
-    connect(this->pb_calibzero, &QPushButton::released, this, &Plot2D::slCalibrateZero);
-    connect(this->pb_stop, &QPushButton::released, this, &Plot2D::slStop);
+    connect(this->lineedit,     &QLineEdit::returnPressed,  this, &Plot2D::slProcessEditLine);
+//    connect(this->lineedit,     &QLineEdit::
+    connect(this->rb_turn,      &QRadioButton::clicked,     this, &Plot2D::slSetTurns);
+    connect(this->rb_rads,      &QRadioButton::clicked,     this, &Plot2D::slSetRads);
+    connect(this->rb_length,    &QRadioButton::clicked,     this, &Plot2D::slSetLength);
+    connect(this->dial,         &QDial::sliderMoved,        this, &Plot2D::slProcessDial);
+    connect(this->dial,         &QDial::sliderReleased,     this, &Plot2D::slSendPosFromDial);
+    connect(this->dial,         &QDial::sliderPressed,      this, &Plot2D::slDialPressed);
+    connect(this->dial,         &QDial::sliderReleased,     this, &Plot2D::slDialReleased);
+    connect(this->pb_calibzero, &QPushButton::released,     this, &Plot2D::slCalibrateZero);
+    connect(this->pb_stop,      &QPushButton::released,     this, &Plot2D::slStopDrive);
 
     this->system_time = new QTime();
     this->system_time->start();
@@ -374,19 +382,9 @@ void Plot2D::slCalibrateZero(void){
     emit this->siCalibrateZero();
 }
 
-void Plot2D::slStop(void){
+void Plot2D::slStopDrive(void){
     qDebug() << "SEND STOP CMD";
-//    if (this->rb_length->isChecked()){
-//        float new_length = this->GetLengthFromAngle(0);
-//        this->lineedit->setText(QString::asprintf("%.4f", new_length));
-//    }
-//    else if (this->rb_rads->isChecked()){
-//        this->lineedit->setText("0.00");
-//    }
-//    else if (this->rb_turn->isChecked()){
-//        this->lineedit->setText("0.00");
-//    }
-//    this->slProcessEditLine();
+    emit this->siStopDrive();
 }
 
 void Plot2D::PushLength(float length){
@@ -440,6 +438,10 @@ void Plot2D::slBlockModule(void){
     this->dial->setEnabled(false);
     this->pb_calibzero->setEnabled(false);
     this->pb_stop->setEnabled(false);
+    this->pb_jogless_b->setEnabled(false);
+    this->pb_jogless_s->setEnabled(false);
+    this->pb_jogmore_b->setEnabled(false);
+    this->pb_jogmore_s->setEnabled(false);
 }
 
 void Plot2D::slEnableModule(void){
@@ -447,4 +449,42 @@ void Plot2D::slEnableModule(void){
     this->dial->setEnabled(true);
     this->pb_calibzero->setEnabled(true);
     this->pb_stop->setEnabled(true);
+    this->pb_jogless_b->setEnabled(true);
+    this->pb_jogless_s->setEnabled(true);
+    this->pb_jogmore_b->setEnabled(true);
+    this->pb_jogmore_s->setEnabled(true);
+}
+
+void Plot2D::slJogLessSmall(void){
+    this->siSendPos(this->actual_position_rads - 0.1);
+}
+void Plot2D::slJogLessMuch(void){
+    this->siSendPos(this->actual_position_rads - 1.0);
+}
+void Plot2D::slJogMoreSmall(void){
+    this->siSendPos(this->actual_position_rads + 0.1);
+}
+void Plot2D::slJogMoreMuch(void){
+    this->siSendPos(this->actual_position_rads + 1.0);
+}
+
+void Plot2D::slReceiveActualPosition(float rads){
+    this->actual_position_rads = rads;
+    if (!(this->dial_pressed)){
+        this->dial_counter = floor(rads / 6.28);
+        this->dial->setValue((int)(rads / 6.28 * (this->dial->maximum() + 1)) % (this->dial->maximum() + 1));
+        this->dial_old_value = this->dial->value();
+    }
+
+    if (!(this->lineedit_pressed)){
+        if (this->rb_length->isChecked()){
+            this->lineedit->setText(QString::asprintf("%.4f", this->GetLengthFromAngle(rads)));
+        }
+        else if (this->rb_rads->isChecked()){
+            this->lineedit->setText(QString::asprintf("%.4f", rads));
+        }
+        else if (this->rb_turn->isChecked()){
+            this->lineedit->setText(QString::asprintf("%.4f", rads / 6.28));
+        }
+    }
 }

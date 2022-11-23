@@ -76,7 +76,7 @@ void PROTOCOL_ProcessFrame(void){
             }
             MAKE_BP_HEADER(BP_CMD_JUMP, 0);
             HAL_UART_Transmit(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t), 10);
-        
+            MEMORY_SetActualPosition(ENCODER_1_COUNT, ENCODER_2_COUNT, ENCODER_3_COUNT, PID_GetCorrector() + ENCODER_4_COUNT, 10);
             HAL_NVIC_SystemReset();
         }
         case(BP_CMD_CONTROL):{
@@ -145,10 +145,13 @@ void PROTOCOL_ProcessFrame(void){
                             break;
                         }
                         case(CMD_CALIBRATE_AS_ZERO_POSITION):{
-                            PID_SetZero(0);
-                            PID_SetZero(1);
-                            PID_SetZero(2);
-                            PID_SetZero(3);
+                            PID_SetZero(4);
+                            MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
+                            HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
+                            break;
+                        }
+                        case(CMD_STOP_DRIVE):{
+                            PID_StopDrive(4);
                             MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
                             HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
                             break;
@@ -207,7 +210,7 @@ void PROTOCOL_ProcessFrame(void){
                             HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t) + sizeof(single_reg_data_t));
                             break;
                         }
-                        case(CMD_READ_REG):{ ///////// HEHRHEHHERHERHERHERHERUERHREHUERUHERUHERUHERUHREHUREHUREHUREHUERUHREUHREUE
+                        case(CMD_READ_REG):{
                             p_s_data = tx_buffer + sizeof(bp_header_t) + sizeof(control_header_t);
                             if (p_s_data->reg >= REGISTER_LAST){
                                 MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
@@ -229,6 +232,12 @@ void PROTOCOL_ProcessFrame(void){
                         }
                         case(CMD_CALIBRATE_AS_ZERO_POSITION):{
                             PID_SetZero(p_cnt->id);
+                            MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
+                            HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
+                            break;
+                        }
+                        case(CMD_STOP_DRIVE):{
+                            PID_StopDrive(p_cnt->id);
                             MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
                             HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
                             break;

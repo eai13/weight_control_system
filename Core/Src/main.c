@@ -126,7 +126,7 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
-  uint32_t position[4] = { 0x7FFFFFFF, 0x7FFF, 0x7FFF, 0x7FFFFFFF };
+  uint32_t position[4] = { 0x7FFFFFFF, 0x7FFF, 0x7FFF, 0x3FFFFFFF };
   HAL_StatusTypeDef state;
   state = MEMORY_CheckMemoryName(10);
   if (state != HAL_OK){
@@ -153,7 +153,7 @@ int main(void)
       print_er("EEPROM Failed to receive actual position STATE: 0x%X\r\n", state);
     }
     else{
-      print_in("EEPROM Succeeded to receive actual positions\r\n");
+      // print_in("EEPROM Succeeded to receive actual positions\r\n");
       print_in("EEPROM Positions: 0x%X 0x%X 0x%X 0x%X\r\n", position[0], position[1], position[2], position[3], 10);
     }
   }

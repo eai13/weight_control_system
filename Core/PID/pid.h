@@ -95,7 +95,7 @@ wc_plottables_t PID_ReadPlottables(uint8_t drive_num);
 void        PID_SetNewCorrector(uint32_t corrector);
 uint32_t    PID_GetCorrector(void);
 void        PID_MoveSetpoints(void);
-
+void        PID_StopDrive(uint8_t drive_num);
 void        PID_SetZero(uint8_t drive_num);
 
 extern device_t drives[4];

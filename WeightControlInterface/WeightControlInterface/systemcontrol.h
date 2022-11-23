@@ -112,7 +112,8 @@ private:
         CNT_BLOCK_DRIVE     = 0x03,
         CNT_ENABLE_DRIVE    = 0x05,
         CNT_READ_PLOTTABLE  = 0x06,
-        CNT_CALIBRATE_ZERO  = 0x0A
+        CNT_CALIBRATE_ZERO  = 0x0A,
+        CNT_STOP_DRIVE      = 0x0B
     };
 
     enum CONTROL_IDs{
@@ -322,6 +323,8 @@ public slots:
     void slSendPos(float data);
     void slSendLength(float len1, float len2, float len3, float len4);
     void slSendZeroCalibration(void);
+    void slStopDrive(void);
+    void slStopDriveGlobal(void);
     void slActivate(void);
 
 //    void slStartTrajectory(void);
@@ -333,6 +336,11 @@ signals:
     void siChooseTab(uint16_t tab);
 
     void siSendRealLength(float len1, float len2, float len3, float len4);
+
+    void siSendMotor1Rads(float rads);
+    void siSendMotor2Rads(float rads);
+    void siSendMotor3Rads(float rads);
+    void siSendMotor4Rads(float rads);
 private:
 
     Plot3D * plot3d;

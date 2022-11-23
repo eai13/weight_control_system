@@ -46,34 +46,47 @@ SystemControl::SystemControl(QWidget *parent) :
                                 ui->dial_motor1,
                                 ui->lineEdit_motor1pos,
                                 ui->pushButton_motor1zerocalib, ui->pushButton_motor1stop,
+                                ui->pushButton_motor1jogminusSMALL, ui->pushButton_motor1jogminusBIG,
+                                ui->pushButton_motor1jogplusSMALL, ui->pushButton_motor1jogplusBIG,
                                 MOTOR_1_A_CALIB, MOTOR_1_B_CALIB, MOTOR_1_C_CALIB, MOTOR_1_MIN, MOTOR_1_MAX);
     this->plots[1] = new Plot2D("Motor 2", ui->widget_plot2,
                                 ui->radioButton_m2turns, ui->radioButton_m2rads, ui->radioButton_m2length,
                                 ui->dial_motor2,
                                 ui->lineEdit_motor2pos,
                                 ui->pushButton_motor2zerocalib, ui->pushButton_motor2stop,
+                                ui->pushButton_motor2jogminusSMALL, ui->pushButton_motor2jogminusBIG,
+                                ui->pushButton_motor2jogplusSMALL, ui->pushButton_motor2jogplusBIG,
                                 MOTOR_2_A_CALIB, MOTOR_2_B_CALIB, MOTOR_2_C_CALIB, MOTOR_2_MIN, MOTOR_2_MAX);
     this->plots[2] = new Plot2D("Motor 3", ui->widget_plot3,
                                 ui->radioButton_m3turns, ui->radioButton_m3rads, ui->radioButton_m3length,
                                 ui->dial_motor3,
                                 ui->lineEdit_motor3pos,
                                 ui->pushButton_motor3zerocalib, ui->pushButton_motor3stop,
+                                ui->pushButton_motor3jogminusSMALL, ui->pushButton_motor3jogminusBIG,
+                                ui->pushButton_motor3jogplusSMALL, ui->pushButton_motor3jogplusBIG,
                                 MOTOR_3_A_CALIB, MOTOR_3_B_CALIB, MOTOR_3_C_CALIB, MOTOR_3_MIN, MOTOR_3_MAX);
     this->plots[3] = new Plot2D("Motor 4", ui->widget_plot4,
                                 ui->radioButton_m4turns, ui->radioButton_m4rads, ui->radioButton_m4length,
                                 ui->dial_motor4,
                                 ui->lineEdit_motor4pos,
                                 ui->pushButton_motor4zerocalib, ui->pushButton_motor4stop,
+                                ui->pushButton_motor4jogminusSMALL, ui->pushButton_motor4jogminusBIG,
+                                ui->pushButton_motor4jogplusSMALL, ui->pushButton_motor4jogplusBIG,
                                 MOTOR_4_A_CALIB, MOTOR_4_B_CALIB, MOTOR_4_C_CALIB, MOTOR_4_MIN, MOTOR_4_MAX);
 
     for (uint8_t iter = 0; iter < 4; iter++){
         this->plots[iter]->setObjectName(QString::fromStdString(std::to_string(iter)));
         connect(this->plots[iter],  &Plot2D::siSendPos,                 this,               &SystemControl::slSendPos);
         connect(this->plots[iter],  &Plot2D::siCalibrateZero,           this,               &SystemControl::slSendZeroCalibration);
+        connect(this->plots[iter],  &Plot2D::siStopDrive,               this,               &SystemControl::slStopDrive);
         connect(plot3dconfigs,      &Plot3DConfigs::siStartTrajectory,  this->plots[iter],  &Plot2D::slBlockModule);
         connect(plot3dconfigs,      &Plot3DConfigs::siPauseTrajectory,  this->plots[iter],  &Plot2D::slBlockModule);
         connect(plot3dconfigs,      &Plot3DConfigs::siStopTrajectory,   this->plots[iter],  &Plot2D::slEnableModule);
     }
+    connect(this, &SystemControl::siSendMotor1Rads, this->plots[0], &Plot2D::slReceiveActualPosition);
+    connect(this, &SystemControl::siSendMotor2Rads, this->plots[1], &Plot2D::slReceiveActualPosition);
+    connect(this, &SystemControl::siSendMotor3Rads, this->plots[2], &Plot2D::slReceiveActualPosition);
+    connect(this, &SystemControl::siSendMotor4Rads, this->plots[3], &Plot2D::slReceiveActualPosition);
 
     this->PlottableDataTimer = new QTimer(this);
     connect(this->PlottableDataTimer, &QTimer::timeout, this, &SystemControl::C_ReadPlottableRegs);
@@ -239,7 +252,6 @@ void SystemControl::ProcessIncomingData(void){
     }
     case(BP_Commands::BP_JUMP):{
         ConsoleBasic("Jump back to boot");
-//        qDebug() << "Jump back";
         this->PlottableDataTimer->stop();
         this->serial_tx_queue.clear();
         this->SerialLock.Unlock();
@@ -307,6 +319,10 @@ void SystemControl::ProcessIncomingData(void){
                 this->plots[iter]->slAddData(CNT_REG_CUR_FB, cnt_plottable.data[5 + iter * 7]);
                 this->plots[iter]->slAddData(CNT_REG_OUTPUT, cnt_plottable.data[6 + iter * 7]);
             }
+            emit this->siSendMotor1Rads(cnt_plottable.data[1]);
+            emit this->siSendMotor2Rads(cnt_plottable.data[8]);
+            emit this->siSendMotor3Rads(cnt_plottable.data[15]);
+            emit this->siSendMotor4Rads(cnt_plottable.data[22]);
             emit this->siSendRealLength(
                     this->plots[0]->GetLengthFromAngle(cnt_plottable.data[1]),
                     this->plots[1]->GetLengthFromAngle(cnt_plottable.data[8]),
@@ -332,6 +348,10 @@ void SystemControl::ProcessIncomingData(void){
             qDebug() << "Motor Calibrated to Zero";
             break;
         }
+        case(CNT_STOP_DRIVE):{
+            qDebug() << "Drive Stopped " << cnt_header.id;
+            break;
+        }
         }
 
         this->SerialLock.Unlock();
@@ -351,11 +371,11 @@ void SystemControl::PushDataFromStream(void){
 
 void SystemControl::slActivate(void){
     connect(this->Serial, &QSerialPort::readyRead, this, &SystemControl::PushDataFromStream);
-    this->DeviceCheckTimer->start(this->PERIODDeviceCheckTimer);
-    this->PlottableDataTimer->start(this->PERIODPlotDataTimer);
-    this->TransmitHandlerTimer->start(this->PERIODTransmitHandlerTimer);
+    this->DeviceCheckTimer->start(TIMER_PERIODS::PERIODDeviceCheckTimer);
+    this->PlottableDataTimer->start(TIMER_PERIODS::PERIODPlotDataTimer);
+    this->TransmitHandlerTimer->start(TIMER_PERIODS::PERIODTransmitHandlerTimer);
 
-    this->C_ReadMultipleData(this->CNT_REG_POS_SP);
+    this->C_ReadMultipleData(CONTROL_Registers::CNT_REG_POS_SP);
 }
 
 void SystemControl::ConsoleBasic(QString message){
@@ -381,12 +401,12 @@ void SystemControl::ConsoleWarning(QString message){
 void SystemControl::slSendPos(float data){
     uint8_t sender_id = sender()->objectName().toInt();
 //    qDebug() << "SENDER ID " << sender_id << " NAME " << sender()->objectName();
-    this->C_WriteSingleData(sender_id, this->CNT_REG_POS_SP, data);
+    this->C_WriteSingleData(sender_id, CONTROL_Registers::CNT_REG_POS_SP, data);
 }
 
 void SystemControl::slSendZeroCalibration(void){
     uint8_t sender_id = sender()->objectName().toInt();
-    this->C_SendSingleDriveCmd(CNT_CALIBRATE_ZERO, sender_id);
+    this->C_SendSingleDriveCmd(CONTROL_Commands::CNT_CALIBRATE_ZERO, sender_id);
 }
 
 void SystemControl::Exit(uint8_t tab){
@@ -407,4 +427,12 @@ void SystemControl::slSendLength(float len1, float len2, float len3, float len4)
     rads.push_back(this->plots[3]->GetAngleFromLength(len4));
 
     this->C_WriteMultipleData(CONTROL_Registers::CNT_REG_POS_SP, rads);
+}
+
+void SystemControl::slStopDrive(void){
+    uint8_t sender_id = sender()->objectName().toInt();
+    this->C_SendSingleDriveCmd(CONTROL_Commands::CNT_STOP_DRIVE, sender_id);
+}
+void SystemControl::slStopDriveGlobal(void){
+    this->C_SendGlobalCmd(CONTROL_Commands::CNT_STOP_DRIVE);
 }

@@ -233,19 +233,23 @@ device_t drives[4] = {
     }
 };
 
-static inline float GetRealCurrent(uint16_t raw){
+static inline
+float GetRealCurrent(uint16_t raw){
     return (((float)(abs((int16_t)(raw)) - ADC_CURRENT_0)) / ADC_RESOLUTION * ADC_REFERENCE / ADC_VPA);
 }
 
-static inline float GetRealRadial(int32_t raw){
+static inline
+float GetRealRadial(int32_t raw){
     return (((float)(raw)) / ((float)(600.0)) * ((float)(6.28)) / ((float)(4.0)));
 }
 
-static inline uint32_t VoltsToPWM(float volts){
+static inline
+uint32_t VoltsToPWM(float volts){
     return ((int32_t)((volts) / ((float)(24.0)) * ((float)(PWM_UPPER_COUNT))));
 }
 
-static inline void DriveForward(uint8_t drive_num){
+static inline
+void DriveForward(uint8_t drive_num){
     if (DRIVE.direction != DIR_FORWARD) DRIVE.direction = DIR_FORWARD;
     else return;
     HAL_GPIO_WritePin(DRIVE.dir_pins.rev_port, DRIVE.dir_pins.rev_pin, 0);
@@ -255,7 +259,8 @@ static inline void DriveForward(uint8_t drive_num){
     HAL_GPIO_WritePin(DRIVE.dir_pins.frw_port, DRIVE.dir_pins.frw_pin, 1);
 }
 
-static inline void DriveReverse(uint8_t drive_num){
+static inline
+void DriveReverse(uint8_t drive_num){
     if (DRIVE.direction != DIR_REVERSE) DRIVE.direction = DIR_REVERSE;
     else return;
     HAL_GPIO_WritePin(DRIVE.dir_pins.frw_port, DRIVE.dir_pins.frw_pin, 0);
@@ -269,7 +274,7 @@ void PID_DriveCompute(uint8_t drive_num){
     // // GETTING RADIAL POSITION
     float tmp_position = 0;
     if (drive_num == 3){
-        tmp_position = GetRealRadial(((int32_t)(*(DRIVE.encoder_s.v))) + lptim_corrector - 0x7FFFFFFF);
+        tmp_position = GetRealRadial(((int32_t)(*(DRIVE.encoder_s.v))) + lptim_corrector - 0x3FFFFFFF);
     }
     else if (drive_num == 0){
         tmp_position = GetRealRadial(((int32_t)(*(DRIVE.encoder_s.v))) - 0x7FFFFFFF);
@@ -399,33 +404,57 @@ void PID_MoveSetpoints(void){
     drives[0].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[0].encoder_s.v))) - 0x7FFFFFFF);
     drives[1].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[1].encoder_s.v))) - 0x7FFF);
     drives[2].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[2].encoder_s.v))) - 0x7FFF);
-    drives[3].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[3].encoder_s.v))) + lptim_corrector - 0x7FFFFFFF);
+    drives[3].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[3].encoder_s.v))) + lptim_corrector - 0x3FFFFFFF);
 }
 
 void PID_SetZero(uint8_t drive_num){
-    switch(drive_num){
-        case(0):{
-            ENCODER_1_COUNT = 0x7FFFFFFF;
-            drives[0].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[0].encoder_s.v))) - 0x7FFFFFFF);
-            break;
+    if (drive_num > 3){
+        ENCODER_1_COUNT = 0x7FFFFFFF;
+        drives[0].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[0].encoder_s.v))) - 0x7FFFFFFF);
+        ENCODER_2_COUNT = 0x7FFF;
+        drives[1].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[1].encoder_s.v))) - 0x7FFF);
+        ENCODER_3_COUNT = 0x7FFF;
+        drives[2].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[2].encoder_s.v))) - 0x7FFF);
+        lptim_corrector = 0x3FFFFFFF - ENCODER_4_COUNT;
+        drives[3].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[3].encoder_s.v))) + lptim_corrector - 0x3FFFFFFF);
+    }
+    else{
+        switch(drive_num){
+            case(0):{
+                ENCODER_1_COUNT = 0x7FFFFFFF;
+                drives[0].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[0].encoder_s.v))) - 0x7FFFFFFF);
+                break;
+            }
+            case(1):{
+                ENCODER_2_COUNT = 0x7FFF;
+                drives[1].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[1].encoder_s.v))) - 0x7FFF);
+                break;
+            }
+            case(2):{
+                ENCODER_3_COUNT = 0x7FFF;
+                drives[2].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[2].encoder_s.v))) - 0x7FFF);
+                break;
+            }
+            case(3):{
+                lptim_corrector = 0x3FFFFFFF - ENCODER_4_COUNT;
+                drives[3].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[3].encoder_s.v))) + lptim_corrector - 0x3FFFFFFF);
+                break;
+            }
+            default:{
+                break;
+            }
         }
-        case(1):{
-            ENCODER_2_COUNT = 0x7FFF;
-            drives[1].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[1].encoder_s.v))) - 0x7FFF);
-            break;
-        }
-        case(2):{
-            ENCODER_3_COUNT = 0x7FFF;
-            drives[2].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[2].encoder_s.v))) - 0x7FFF);
-            break;
-        }
-        case(3):{
-            lptim_corrector = 0x7FFFFFFF - ENCODER_4_COUNT;
-            drives[3].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[3].encoder_s.v))) + lptim_corrector - 0x7FFFFFFF);
-            break;
-        }
-        default:{
-            break;
-        }
+    }
+}
+
+void PID_StopDrive(uint8_t drive_num){
+    if (drive_num > 3){
+        drives[0].position_l.sp.v = drives[0].position_l.fb.v;
+        drives[1].position_l.sp.v = drives[1].position_l.fb.v;
+        drives[2].position_l.sp.v = drives[2].position_l.fb.v;
+        drives[3].position_l.sp.v = drives[3].position_l.fb.v;
+    }
+    else{
+        DRIVE.position_l.sp.v = DRIVE.position_l.fb.v;
     }
 }

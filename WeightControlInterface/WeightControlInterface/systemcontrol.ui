@@ -91,6 +91,18 @@
           </item>
           <item row="0" column="0">
            <widget class="QDial" name="dial_motor3">
+            <property name="minimumSize">
+             <size>
+              <width>110</width>
+              <height>80</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>80</height>
+             </size>
+            </property>
             <property name="wrapping">
              <bool>true</bool>
             </property>
@@ -158,7 +170,90 @@
             <property name="text">
              <string>STOP</string>
             </property>
+            <property name="shortcut">
+             <string>Ctrl+3</string>
+            </property>
            </widget>
+          </item>
+          <item row="6" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <item>
+             <widget class="QPushButton" name="pushButton_motor3jogminusBIG">
+              <property name="minimumSize">
+               <size>
+                <width>25</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>&lt;&lt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_motor3jogminusSMALL">
+              <property name="minimumSize">
+               <size>
+                <width>25</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>&lt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_motor3jogplusSMALL">
+              <property name="minimumSize">
+               <size>
+                <width>25</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_motor3jogplusBIG">
+              <property name="minimumSize">
+               <size>
+                <width>25</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>&gt;&gt;</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>
@@ -176,7 +271,7 @@
          <widget class="QCustomPlot" name="widget_plot3" native="true">
           <property name="minimumSize">
            <size>
-            <width>500</width>
+            <width>450</width>
             <height>300</height>
            </size>
           </property>
@@ -193,6 +288,28 @@
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
          <layout class="QGridLayout" name="gridLayout_6">
+          <item row="8" column="0">
+           <widget class="QPushButton" name="pushButton_motor4stop">
+            <property name="minimumSize">
+             <size>
+              <width>80</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>STOP</string>
+            </property>
+            <property name="shortcut">
+             <string>Ctrl+4</string>
+            </property>
+           </widget>
+          </item>
           <item row="5" column="0">
            <widget class="QLineEdit" name="lineEdit_motor4pos">
             <property name="minimumSize">
@@ -233,6 +350,18 @@
           </item>
           <item row="0" column="0">
            <widget class="QDial" name="dial_motor4">
+            <property name="minimumSize">
+             <size>
+              <width>110</width>
+              <height>80</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>80</height>
+             </size>
+            </property>
             <property name="wrapping">
              <bool>true</bool>
             </property>
@@ -274,24 +403,85 @@
             </property>
            </widget>
           </item>
-          <item row="8" column="0">
-           <widget class="QPushButton" name="pushButton_motor4stop">
-            <property name="minimumSize">
-             <size>
-              <width>80</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>STOP</string>
-            </property>
-           </widget>
+          <item row="6" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+            <item>
+             <widget class="QPushButton" name="pushButton_motor4jogminusBIG">
+              <property name="minimumSize">
+               <size>
+                <width>25</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>&lt;&lt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_motor4jogminusSMALL">
+              <property name="minimumSize">
+               <size>
+                <width>25</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>&lt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_motor4jogplusSMALL">
+              <property name="minimumSize">
+               <size>
+                <width>25</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_motor4jogplusBIG">
+              <property name="minimumSize">
+               <size>
+                <width>25</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>&gt;&gt;</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>
@@ -309,7 +499,7 @@
          <widget class="QCustomPlot" name="widget_plot4" native="true">
           <property name="minimumSize">
            <size>
-            <width>500</width>
+            <width>450</width>
             <height>300</height>
            </size>
           </property>
@@ -326,7 +516,29 @@
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <layout class="QGridLayout" name="gridLayout_2">
-          <item row="4" column="0">
+          <item row="11" column="0">
+           <widget class="QPushButton" name="pushButton_motor1stop">
+            <property name="minimumSize">
+             <size>
+              <width>80</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>STOP</string>
+            </property>
+            <property name="shortcut">
+             <string>Ctrl+1</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
            <widget class="QRadioButton" name="radioButton_m1rads">
             <property name="text">
              <string>Radians</string>
@@ -336,7 +548,7 @@
             </property>
            </widget>
           </item>
-          <item row="7" column="0">
+          <item row="8" column="0">
            <widget class="QLineEdit" name="lineEdit_motor1pos">
             <property name="minimumSize">
              <size>
@@ -358,7 +570,7 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
+          <item row="3" column="0">
            <widget class="QRadioButton" name="radioButton_m1length">
             <property name="text">
              <string>Length</string>
@@ -368,7 +580,7 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="4" column="0">
            <widget class="QRadioButton" name="radioButton_m1turns">
             <property name="text">
              <string>Turns</string>
@@ -378,8 +590,119 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
+          <item row="9" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
+            <item>
+             <widget class="QPushButton" name="pushButton_motor1jogminusBIG">
+              <property name="minimumSize">
+               <size>
+                <width>25</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>&lt;&lt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_motor1jogminusSMALL">
+              <property name="minimumSize">
+               <size>
+                <width>25</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>&lt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_motor1jogplusSMALL">
+              <property name="minimumSize">
+               <size>
+                <width>25</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_motor1jogplusBIG">
+              <property name="minimumSize">
+               <size>
+                <width>25</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>&gt;&gt;</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="10" column="0">
+           <widget class="QPushButton" name="pushButton_motor1zerocalib">
+            <property name="minimumSize">
+             <size>
+              <width>80</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Zero Calib</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
            <widget class="QDial" name="dial_motor1">
+            <property name="minimumSize">
+             <size>
+              <width>110</width>
+              <height>80</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>80</height>
+             </size>
+            </property>
             <property name="maximum">
              <number>99</number>
             </property>
@@ -403,44 +726,6 @@
             </property>
            </widget>
           </item>
-          <item row="9" column="0">
-           <widget class="QPushButton" name="pushButton_motor1zerocalib">
-            <property name="minimumSize">
-             <size>
-              <width>80</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Zero Calib</string>
-            </property>
-           </widget>
-          </item>
-          <item row="10" column="0">
-           <widget class="QPushButton" name="pushButton_motor1stop">
-            <property name="minimumSize">
-             <size>
-              <width>80</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>STOP</string>
-            </property>
-           </widget>
-          </item>
          </layout>
         </item>
         <item>
@@ -457,7 +742,7 @@
          <widget class="QCustomPlot" name="widget_plot1" native="true">
           <property name="minimumSize">
            <size>
-            <width>500</width>
+            <width>450</width>
             <height>300</height>
            </size>
           </property>
@@ -503,6 +788,28 @@
             </property>
            </widget>
           </item>
+          <item row="8" column="0">
+           <widget class="QPushButton" name="pushButton_motor2stop">
+            <property name="minimumSize">
+             <size>
+              <width>80</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>STOP</string>
+            </property>
+            <property name="shortcut">
+             <string>Ctrl+2</string>
+            </property>
+           </widget>
+          </item>
           <item row="2" column="0">
            <widget class="QRadioButton" name="radioButton_m2turns">
             <property name="text">
@@ -544,6 +851,18 @@
           </item>
           <item row="0" column="0">
            <widget class="QDial" name="dial_motor2">
+            <property name="minimumSize">
+             <size>
+              <width>110</width>
+              <height>80</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>80</height>
+             </size>
+            </property>
             <property name="maximum">
              <number>99</number>
             </property>
@@ -558,24 +877,85 @@
             </property>
            </widget>
           </item>
-          <item row="8" column="0">
-           <widget class="QPushButton" name="pushButton_motor2stop">
-            <property name="minimumSize">
-             <size>
-              <width>80</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>STOP</string>
-            </property>
-           </widget>
+          <item row="5" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_8">
+            <item>
+             <widget class="QPushButton" name="pushButton_motor2jogminusBIG">
+              <property name="minimumSize">
+               <size>
+                <width>25</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>&lt;&lt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_motor2jogminusSMALL">
+              <property name="minimumSize">
+               <size>
+                <width>25</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>&lt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_motor2jogplusSMALL">
+              <property name="minimumSize">
+               <size>
+                <width>25</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>&gt;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_motor2jogplusBIG">
+              <property name="minimumSize">
+               <size>
+                <width>25</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>&gt;&gt;</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>
@@ -593,7 +973,7 @@
          <widget class="QCustomPlot" name="widget_plot2" native="true">
           <property name="minimumSize">
            <size>
-            <width>500</width>
+            <width>450</width>
             <height>300</height>
            </size>
           </property>

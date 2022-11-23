@@ -40,6 +40,7 @@ public:
                     QDial * dial_h,
                     QLineEdit * lineedit_h,
                     QPushButton * zerocalib, QPushButton * stop,
+                    QPushButton * less_small, QPushButton * less_much, QPushButton * more_small, QPushButton * more_much,
                     double A_cal, double B_cal, double C_cal, double MIN_cal, double MAX_cal);
 
     QList<QColor>   pencolor_buffer;
@@ -50,11 +51,19 @@ public:
     QRadioButton *  rb_rads;
     QRadioButton *  rb_length;
     QLineEdit *     lineedit;
+    bool            lineedit_pressed = false;
     QDial *         dial;
+    bool            dial_pressed = false;
     QPushButton *   pb_calibzero;
     QPushButton *   pb_stop;
+    QPushButton *   pb_jogless_s;
+    QPushButton *   pb_jogless_b;
+    QPushButton *   pb_jogmore_s;
+    QPushButton *   pb_jogmore_b;
 
     QMenu           plot_menu;
+
+    float           actual_position_rads;
 
     double trA_calib;
     double trB_calib;
@@ -89,6 +98,8 @@ public slots:
 
     void slBlockModule(void);
     void slEnableModule(void);
+
+    void slReceiveActualPosition(float rads);
 
 private:
 
@@ -127,11 +138,32 @@ private:
 signals:
     void siCalibrateZero(void);
     void siSendPos(float pos);
-
+    void siStopDrive(void);
 
 private slots:
     void slCalibrateZero(void);
-    void slStop(void);
+    void slStopDrive(void);
+    void slJogLessSmall(void);
+    void slJogLessMuch(void);
+    void slJogMoreSmall(void);
+    void slJogMoreMuch(void);
+
+    void slDialPressed(void){
+        qDebug() << "DIAL PRESSED";
+        this->dial_pressed = true;
+    }
+    void slDialReleased(void){
+        qDebug() << "DIAL RELEASED";
+        this->dial_pressed = false;
+    }
+    void slLineEditPressed(void){
+        qDebug() << "LINEEDIT PRESSED";
+        this->lineedit_pressed = true;
+    }
+    void slLineEditReleased(void){
+        qDebug() << "LINEEDIT RELEASED";
+        this->lineedit_pressed = false;
+    }
 
 };
 

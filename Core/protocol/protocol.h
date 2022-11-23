@@ -55,7 +55,8 @@ typedef enum{
     CMD_RESET_SYSTEM                = 0x07,
     CMD_EXIT_APP                    = 0x08,
     CMD_ERROR                       = 0x09,
-    CMD_CALIBRATE_AS_ZERO_POSITION  = 0x0A
+    CMD_CALIBRATE_AS_ZERO_POSITION  = 0x0A,
+    CMD_STOP_DRIVE                  = 0x0B
 }wc_commands_e;
 
 typedef enum{

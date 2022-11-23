@@ -319,7 +319,13 @@ void Bootloader::DevicePing(void){
     this->Serial = new QSerialPort;
     this->Serial->setPortName(this->available_ports.takeFirst().portName());
     this->Serial->setBaudRate(QSerialPort::Baud57600);
-    if (!(this->Serial->open(QIODevice::ReadWrite))){
+    try{
+        if (!(this->Serial->open(QIODevice::ReadWrite))){
+            delete this->Serial;
+            return;
+        }
+    }
+    catch(...){
         delete this->Serial;
         return;
     }
