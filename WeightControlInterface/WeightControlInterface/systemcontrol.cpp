@@ -8,8 +8,6 @@
 #include <QAction>
 #include <QActionGroup>
 
-// tmp
-
 #include <iostream>
 
 SystemControl::SystemControl(QWidget *parent) :
@@ -35,6 +33,7 @@ SystemControl::SystemControl(QWidget *parent) :
     connect(this->plot3d,   &Plot3D::siEnableAbort,             plot3dconfigs,  &Plot3DConfigs::slEnableAbort);
     connect(this->plot3d,   &Plot3D::siEnableStop,              plot3dconfigs,  &Plot3DConfigs::slEnableStop);
     connect(this->plot3d,   &Plot3D::siEnableStart,             plot3dconfigs,  &Plot3DConfigs::slEnableStart);
+    connect(this->plot3d,   &Plot3D::siEnableFullscreen,        plot3dconfigs,  &Plot3DConfigs::slEnableFullscreen);
     connect(this->plot3d,   &Plot3D::siSendTargetLength,        this,           &SystemControl::slSendLength);
     connect(this,           &SystemControl::siSendRealLength,   this->plot3d,   &Plot3D::slReceiveRealLength);
 
@@ -230,7 +229,6 @@ void SystemControl::ProcessIncomingData(void){
         char * name = reinterpret_cast<char *>(&id);
         QString s_name = "";
         s_name += name[0]; s_name += name[1]; s_name += name[2]; s_name += name[3];
-//        qDebug() << "Ping process";
         ConsoleBasic(QString("Ping OK, Device ID is ") + s_name);
 
         if ((s_name != BOOTLOADER_ID) && (s_name != APP_1_ID) && (s_name != APP_2_ID)){
@@ -334,13 +332,10 @@ void SystemControl::ProcessIncomingData(void){
             switch(cnt_header.id){
             case(CNT_ID_GLOBAL):{
                 qDebug() << "All Motors Zero-Calibrated";
-                for (uint8_t iter = 0; iter < 4; iter++)
-                    this->plots[iter]->PushRadians(0);
                 break;
             }
             default:{
                 qDebug() << "Single Motor Zero-Calibrated " << cnt_header.id;
-                this->plots[cnt_header.id]->PushRadians(0);
                 break;
             }
             }
@@ -400,7 +395,6 @@ void SystemControl::ConsoleWarning(QString message){
 
 void SystemControl::slSendPos(float data){
     uint8_t sender_id = sender()->objectName().toInt();
-//    qDebug() << "SENDER ID " << sender_id << " NAME " << sender()->objectName();
     this->C_WriteSingleData(sender_id, CONTROL_Registers::CNT_REG_POS_SP, data);
 }
 

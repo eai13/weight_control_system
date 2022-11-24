@@ -123,6 +123,7 @@ signals:
     void siEnableStart(uint8_t state);
     void siEnableStop(uint8_t state);
     void siEnableAbort(uint8_t state);
+    void siEnableFullscreen(void);
 
 };
 

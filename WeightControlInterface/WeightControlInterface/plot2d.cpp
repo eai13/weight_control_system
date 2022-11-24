@@ -97,16 +97,14 @@ Plot2D::Plot2D(QString title, QCustomPlot * plot_h,
     this->lineedit->setValidator(new QDoubleValidator(-1000, 1000, 3));
 
     connect(this->lineedit,     &QLineEdit::returnPressed,  this, &Plot2D::slProcessEditLine);
-//    connect(this->lineedit,     &QLineEdit::
-    connect(this->rb_turn,      &QRadioButton::clicked,     this, &Plot2D::slSetTurns);
-    connect(this->rb_rads,      &QRadioButton::clicked,     this, &Plot2D::slSetRads);
-    connect(this->rb_length,    &QRadioButton::clicked,     this, &Plot2D::slSetLength);
     connect(this->dial,         &QDial::sliderMoved,        this, &Plot2D::slProcessDial);
     connect(this->dial,         &QDial::sliderReleased,     this, &Plot2D::slSendPosFromDial);
-    connect(this->dial,         &QDial::sliderPressed,      this, &Plot2D::slDialPressed);
-    connect(this->dial,         &QDial::sliderReleased,     this, &Plot2D::slDialReleased);
     connect(this->pb_calibzero, &QPushButton::released,     this, &Plot2D::slCalibrateZero);
     connect(this->pb_stop,      &QPushButton::released,     this, &Plot2D::slStopDrive);
+    connect(this->pb_jogless_s, &QPushButton::released,     this, &Plot2D::slJogLessSmall);
+    connect(this->pb_jogless_b, &QPushButton::released,     this, &Plot2D::slJogLessMuch);
+    connect(this->pb_jogmore_s, &QPushButton::released,     this, &Plot2D::slJogMoreSmall);
+    connect(this->pb_jogmore_b, &QPushButton::released,     this, &Plot2D::slJogMoreMuch);
 
     this->system_time = new QTime();
     this->system_time->start();
@@ -144,7 +142,7 @@ void Plot2D::slSetActiveRegister(bool state){
 }
 
 void Plot2D::ResetPlot(void){
-    this->lineedit->setText("0,000");
+//    this->lineedit->setText("0,000");
     this->rb_rads->setChecked(true);
     this->dial->setValue(0);
     this->dial_counter = 0;
@@ -218,11 +216,11 @@ void Plot2D::slProcessDial(int data){
     }
     this->dial_old_value = data;
     if (this->rb_turn->isChecked()){
-        this->lineedit->setText(QString::fromStdString(std::to_string(
+        this->lineedit->setText(QString::asprintf("%.4f", (
             float(data + this->dial_counter * (this->dial->maximum() + 1)) / (this->dial->maximum() + 1))));
     }
     else if (this->rb_rads->isChecked()){
-        this->lineedit->setText(QString::fromStdString(std::to_string(
+        this->lineedit->setText(QString::asprintf("%.4f", (
             float(data + this->dial_counter * (this->dial->maximum() + 1)) / (this->dial->maximum() + 1) * 6.28)));
     }
     else if (this->rb_length->isChecked()){
@@ -233,68 +231,8 @@ void Plot2D::slProcessDial(int data){
 }
 
 void Plot2D::slSendPosFromDial(void){
-    QString str = this->lineedit->text();
-    for (auto iter = str.begin(); iter != str.end(); iter++)
-        if (*iter == ',') *iter = '.';
-    if (this->rb_rads->isChecked()){
-        if (str.toFloat() > this->MAX_calib){
-            this->lineedit->setText(QString::asprintf("%.4f", this->MAX_calib));
-            emit siSendPos(this->MAX_calib);
-        }
-        else if (str.toFloat() < this->MIN_calib){
-            this->lineedit->setText(QString::asprintf("%.4f", this->MIN_calib));
-            emit siSendPos(this->MIN_calib);
-        }
-        else{
-            emit siSendPos(str.toFloat());
-        }
-    }
-    else if (this->rb_turn->isChecked()){
-        if ((str.toFloat() * 6.28) > this->MAX_calib){
-            this->lineedit->setText(QString::asprintf("%.4f", this->MAX_calib / 6.28));
-            emit siSendPos(this->MAX_calib / 6.28);
-        }
-        else if ((str.toFloat() * 6.28) < this->MIN_calib){
-            this->lineedit->setText(QString::asprintf("%.4f", this->MIN_calib / 6.28));
-            emit siSendPos(this->MIN_calib / 6.28);
-        }
-        else{
-            emit siSendPos(str.toFloat() * 6.28);
-        }
-    }
-    else if (this->rb_length->isChecked()){
-        float angle = this->GetAngleFromLength(str.toFloat());
-        if (angle > this->MAX_calib){
-            float new_length = this->GetLengthFromAngle(this->MAX_calib);
-            this->lineedit->setText(QString::asprintf("%.4f", new_length));
-            emit siSendPos(this->MAX_calib);
-        }
-        else if (angle < this->MIN_calib){
-            float new_length = this->GetLengthFromAngle(this->MIN_calib);
-            this->lineedit->setText(QString::asprintf("%.4f", new_length));
-            emit siSendPos(this->MIN_calib);
-        }
-        else{
-            emit siSendPos(angle);
-        }
-//        qDebug() << "ANGLE FROM LENGTH IS: " << angle;
-    }
-}
-
-void Plot2D::slSetTurns(void){
-    float new_val = (float)(this->dial_counter * (this->dial->maximum() + 1) + this->dial->value()) / (float)(this->dial->maximum());
-    this->lineedit->setText(QString::asprintf("%.4f", new_val));
-}
-
-void Plot2D::slSetRads(void){
-    float new_val = (float)(this->dial_counter * (this->dial->maximum() + 1) + this->dial->value()) / (float)(this->dial->maximum()) * 6.28;
-    this->lineedit->setText(QString::asprintf("%.4f", new_val));
-}
-
-void Plot2D::slSetLength(void){
-    float angle = (float)(this->dial_counter * (this->dial->maximum() + 1) + this->dial->value()) / (float)(this->dial->maximum()) * 6.28;
-    float new_length = this->GetLengthFromAngle(angle);
-    this->lineedit->setText(QString::asprintf("%.4f", new_length));
+    float pos = float(this->dial->value() + this->dial_counter * (this->dial->maximum() + 1)) / (this->dial->maximum() + 1) * 6.28;
+    this->siSendPos(pos);
 }
 
 void Plot2D::slShowContextMenu(const QPoint & pos){
@@ -383,49 +321,7 @@ void Plot2D::slCalibrateZero(void){
 }
 
 void Plot2D::slStopDrive(void){
-    qDebug() << "SEND STOP CMD";
     emit this->siStopDrive();
-}
-
-void Plot2D::PushLength(float length){
-    if (this->rb_length->isChecked()){
-        this->lineedit->setText(QString::asprintf("%.4f", length));
-    }
-    else if (this->rb_rads->isChecked()){
-        float angle = this->GetAngleFromLength(length);
-        this->lineedit->setText(QString::asprintf("%.4f", angle));
-    }
-    else if (this->rb_turn->isChecked()){
-        float angle = this->GetAngleFromLength(length);
-        this->lineedit->setText(QString::asprintf("%.4f", angle / 2 / PI));
-    }
-    this->slProcessEditLine();
-}
-void Plot2D::PushRadians(float rads){
-    if (this->rb_length->isChecked()){
-        float new_length = this->GetLengthFromAngle(rads);
-        this->lineedit->setText(QString::asprintf("%.4f", new_length));
-    }
-    else if (this->rb_rads->isChecked()){
-        this->lineedit->setText(QString::asprintf("%.4f", rads));
-    }
-    else if (this->rb_turn->isChecked()){
-        this->lineedit->setText(QString::asprintf("%.4f", rads / 2 / PI));
-    }
-    this->slProcessEditLine();
-}
-void Plot2D::PushTurns(float turns){
-    if (this->rb_length->isChecked()){
-        float new_length = this->GetLengthFromAngle(turns * 2 * PI);
-        this->lineedit->setText(QString::asprintf("%.4f", new_length));
-    }
-    else if (this->rb_rads->isChecked()){
-        this->lineedit->setText(QString::asprintf("%.4f", turns * 2 * PI));
-    }
-    else if (this->rb_turn->isChecked()){
-        this->lineedit->setText(QString::asprintf("%.4f", turns));
-    }
-    this->slProcessEditLine();
 }
 
 void Plot2D::slRescaleToDefault(void){
@@ -470,13 +366,10 @@ void Plot2D::slJogMoreMuch(void){
 
 void Plot2D::slReceiveActualPosition(float rads){
     this->actual_position_rads = rads;
-    if (!(this->dial_pressed)){
+    if (!((this->dial->hasFocus()) || (this->lineedit->hasFocus()))){
         this->dial_counter = floor(rads / 6.28);
         this->dial->setValue((int)(rads / 6.28 * (this->dial->maximum() + 1)) % (this->dial->maximum() + 1));
         this->dial_old_value = this->dial->value();
-    }
-
-    if (!(this->lineedit_pressed)){
         if (this->rb_length->isChecked()){
             this->lineedit->setText(QString::asprintf("%.4f", this->GetLengthFromAngle(rads)));
         }

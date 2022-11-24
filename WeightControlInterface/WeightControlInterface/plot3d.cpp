@@ -160,10 +160,10 @@ void Plot3D::slFullscreen(void){
 void Plot3D::slFullscreenClosed(void){
     this->group_box_parent->layout()->addWidget(this->plot_widget);
     this->plot_widget->show();
+    emit this->siEnableFullscreen();
 }
 
 void Plot3D::slTargetAdd(QVector3D data){
-//    qDebug() << "Plot3D Target Add";
     QVector3D start;
     if (this->plot->seriesList().at(0)->dataProxy()->itemCount()){
         start.setX(this->plot->seriesList().at(0)->dataProxy()->itemAt(this->plot->seriesList().at(0)->dataProxy()->itemCount() - 1)->x());
@@ -198,12 +198,6 @@ void Plot3D::slStartTrajectory(void){
         QVector<float> tmp = this->InverseTransform(QVector3D(x, y, z));
         qDebug() << "LEN 1 : " << tmp[0] << "LEN 2 : " << tmp[1] << "LEN 3 : " << tmp[2] << "LEN 4 : " << tmp[3];
     }
-//    this->last_required_position = this->profile.takeFirst().profile;
-//    this->curr_required_position = this->profile.takeFirst().profile;
-//    QVector<float> pos = this->InverseTransform(this->curr_required_position);
-//    qDebug() << "REQUIRED POSITIONS: " << pos;
-//    emit this->siSendTargetLength(pos[0], pos[1], pos[2], pos[3]);
-
 
     if (this->control_timer == nullptr) this->control_timer = new QTimer;
     this->control_timer->start(50);
@@ -244,16 +238,11 @@ void Plot3D::slControlCallback(void){
     QVector3D current_pos = this->object_real_position;
     float current_time = (float)(this->experiment_time->elapsed()) / (float)(1000);
     ProfileItem pt = this->profile.front();
-//    float thres = (this->curr_required_position - this->last_required_position).length() / 2;
-//    qDebug() << "DELTA " << (this->curr_required_position - this->object_real_position).length() << " THRES " << thres;
-//    if ((this->curr_required_position - this->object_real_position).length() <= thres){
     if (pt.time < current_time){
         this->profile.pop_front();
         QVector<float> pos = this->InverseTransform(pt.profile);
         qDebug() << "REQUIRED POSITIONS: " << pos;
         emit this->siSendTargetLength(pos[0], pos[1], pos[2], pos[3]);
-//        this->last_required_position = this->curr_required_position;
-//        this->curr_required_position = pt.profile;
     }
     this->AddRealPoint(current_pos);
     this->PushExperimentData(pt.profile, current_pos);

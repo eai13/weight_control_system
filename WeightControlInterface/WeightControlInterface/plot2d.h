@@ -73,9 +73,6 @@ public:
 
     void ResetDial(void);
     void ResetPlot(void);
-    void PushLength(float length);
-    void PushRadians(float rads);
-    void PushTurns(float turns);
 
 public slots:
 
@@ -85,9 +82,6 @@ public slots:
     void slSendPosFromDial(void);
     void slProcessDial(int data);
     void slProcessEditLine(void);
-    void slSetRads(void);
-    void slSetTurns(void);
-    void slSetLength(void);
     void slSetActiveRegister(bool state);
     void slAddData(uint32_t reg, float value);
     void slShowContextMenu(const QPoint & pos);
@@ -147,24 +141,6 @@ private slots:
     void slJogLessMuch(void);
     void slJogMoreSmall(void);
     void slJogMoreMuch(void);
-
-    void slDialPressed(void){
-        qDebug() << "DIAL PRESSED";
-        this->dial_pressed = true;
-    }
-    void slDialReleased(void){
-        qDebug() << "DIAL RELEASED";
-        this->dial_pressed = false;
-    }
-    void slLineEditPressed(void){
-        qDebug() << "LINEEDIT PRESSED";
-        this->lineedit_pressed = true;
-    }
-    void slLineEditReleased(void){
-        qDebug() << "LINEEDIT RELEASED";
-        this->lineedit_pressed = false;
-    }
-
 };
 
 #endif // PLOT2D_H

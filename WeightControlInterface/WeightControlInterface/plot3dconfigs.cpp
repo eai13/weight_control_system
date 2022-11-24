@@ -73,3 +73,11 @@ void Plot3DConfigs::slEnableStart(uint8_t state){
 void Plot3DConfigs::slEnableStop(uint8_t state){
     ui->pushButton_3dpause->setEnabled(state);
 }
+
+void Plot3DConfigs::slEnableFullscreen(void){
+    ui->pushButton_3dfull->setEnabled(true);
+}
+void Plot3DConfigs::slFullScreen(void){
+    ui->pushButton_3dfull->setEnabled(false);
+    emit siFullscreen();
+}

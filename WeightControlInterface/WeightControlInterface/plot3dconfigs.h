@@ -37,9 +37,10 @@ public slots:
     void slEnableStart(uint8_t state);
     void slEnableStop(uint8_t state);
     void slEnableAbort(uint8_t state);
+    void slEnableFullscreen(void);
 
 private slots:
-    void slFullScreen(void) {emit siFullscreen();}
+    void slFullScreen(void);
     void slTargetAdd(void);
     void slTargetClear(void){emit siTargetClear();}
     void slTargetRemove(void) {emit siTargetRemove();}
