@@ -51,6 +51,21 @@ private slots:
     void slSaveTarget(void) {emit siSaveTarget();}
     void slSaveReal(void) {emit siSaveReal();}
     void slUploadTarget(void);
+
+    void slJogXPlusSMALL(void)  { emit siSendObjectStep(QVector3D(0.02, 0, 0)); }
+    void slJogXPlusBIG(void)    { emit siSendObjectStep(QVector3D(0.10, 0, 0)); }
+    void slJogXMinusSMALL(void) { emit siSendObjectStep(QVector3D(-0.02, 0, 0)); }
+    void slJogXMinusBIG(void)   { emit siSendObjectStep(QVector3D(-0.10, 0, 0)); }
+
+    void slJogYPlusSMALL(void)  { emit siSendObjectStep(QVector3D(0, 0.02, 0)); }
+    void slJogYPlusBIG(void)    { emit siSendObjectStep(QVector3D(0, 0.10, 0)); }
+    void slJogYMinusSMALL(void) { emit siSendObjectStep(QVector3D(0, -0.02, 0)); }
+    void slJogYMinusBIG(void)   { emit siSendObjectStep(QVector3D(0, -0.10, 0)); }
+
+    void slJogZPlusSMALL(void)  { emit siSendObjectStep(QVector3D(0, 0, 0.02)); }
+    void slJogZPlusBIG(void)    { emit siSendObjectStep(QVector3D(0, 0, 0.10)); }
+    void slJogZMinusSMALL(void) { emit siSendObjectStep(QVector3D(0, 0, -0.02)); }
+    void slJogZMinusBIG(void)   { emit siSendObjectStep(QVector3D(0, 0, -0.10)); }
 signals:
     void siTargetAdd(QVector3D data);
     void siTargetClear(void);
@@ -64,6 +79,8 @@ signals:
     void siSaveTarget(void);
     void siSaveReal(void);
     void siUploadTarget(uint8_t format);
+
+    void siSendObjectStep(QVector3D step);
 };
 
 #endif // PLOT3DCONFIGS_H

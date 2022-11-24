@@ -30,6 +30,7 @@ SystemControl::SystemControl(QWidget *parent) :
     connect(plot3dconfigs,  &Plot3DConfigs::siSaveTarget,       this->plot3d,   &Plot3D::slSaveTarget);
     connect(plot3dconfigs,  &Plot3DConfigs::siSaveReal,         this->plot3d,   &Plot3D::slSaveReal);
     connect(plot3dconfigs,  &Plot3DConfigs::siUploadTarget,     this->plot3d,   &Plot3D::slUploadTarget);
+    connect(plot3dconfigs,  &Plot3DConfigs::siSendObjectStep,   this->plot3d,   &Plot3D::slReceiveObjectStep);
     connect(this->plot3d,   &Plot3D::siEnableAbort,             plot3dconfigs,  &Plot3DConfigs::slEnableAbort);
     connect(this->plot3d,   &Plot3D::siEnableStop,              plot3dconfigs,  &Plot3DConfigs::slEnableStop);
     connect(this->plot3d,   &Plot3D::siEnableStart,             plot3dconfigs,  &Plot3DConfigs::slEnableStart);

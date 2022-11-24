@@ -29,6 +29,21 @@ Plot3DConfigs::Plot3DConfigs(QWidget *parent) :
     connect(ui->pushButton_savetarget, &QPushButton::released, this, &Plot3DConfigs::slSaveTarget);
     connect(ui->pushButton_savereal, &QPushButton::released, this, &Plot3DConfigs::slSaveReal);
     connect(ui->pushButton_loadtarget, &QPushButton::released, this, &Plot3DConfigs::slUploadTarget);
+
+    connect(ui->pushButton_jogXplusSMALL,   &QPushButton::released, this, &Plot3DConfigs::slJogXPlusSMALL);
+    connect(ui->pushButton_jogXplusBIG,     &QPushButton::released, this, &Plot3DConfigs::slJogXPlusBIG);
+    connect(ui->pushButton_jogXminusSMALL,  &QPushButton::released, this, &Plot3DConfigs::slJogXMinusSMALL);
+    connect(ui->pushButton_jogXminusBIG,    &QPushButton::released, this, &Plot3DConfigs::slJogXMinusBIG);
+
+    connect(ui->pushButton_jogYplusSMALL,   &QPushButton::released, this, &Plot3DConfigs::slJogYPlusSMALL);
+    connect(ui->pushButton_jogYplusBIG,     &QPushButton::released, this, &Plot3DConfigs::slJogYPlusBIG);
+    connect(ui->pushButton_jogYminusSMALL,  &QPushButton::released, this, &Plot3DConfigs::slJogYMinusSMALL);
+    connect(ui->pushButton_jogYminusBIG,    &QPushButton::released, this, &Plot3DConfigs::slJogYMinusBIG);
+
+    connect(ui->pushButton_jogZplusSMALL,   &QPushButton::released, this, &Plot3DConfigs::slJogZPlusSMALL);
+    connect(ui->pushButton_jogZplusBIG,     &QPushButton::released, this, &Plot3DConfigs::slJogZPlusBIG);
+    connect(ui->pushButton_jogZminusSMALL,  &QPushButton::released, this, &Plot3DConfigs::slJogZMinusSMALL);
+    connect(ui->pushButton_jogZminusBIG,    &QPushButton::released, this, &Plot3DConfigs::slJogZMinusBIG);
 }
 
 Plot3DConfigs::~Plot3DConfigs()

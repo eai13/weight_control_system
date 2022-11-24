@@ -109,10 +109,11 @@ public slots:
         QVector<float> len;
         len.push_back(length1); len.push_back(length2); len.push_back(length3); len.push_back(length4);
         this->object_real_position = this->DirectTransform(len);
-//        qDebug() << "OBJECT POSITION: " << this->object_real_position;
         this->plot->seriesList().at(1)->dataProxy()->addItem(QtDataVisualization::QScatterDataItem(this->object_real_position));
         this->plot->seriesList().at(1)->dataProxy()->removeItems(0, 1);
     }
+
+    void slReceiveObjectStep(QVector3D step);
 
 private slots:
 
