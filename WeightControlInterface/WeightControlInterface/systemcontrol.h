@@ -336,11 +336,12 @@ signals:
     void siChooseTab(uint16_t tab);
 
     void siSendRealLength(float len1, float len2, float len3, float len4);
+    void siSendSetpointLength(float len1, float len2, float len3, float len4);
 
-    void siSendMotor1Rads(float rads);
-    void siSendMotor2Rads(float rads);
-    void siSendMotor3Rads(float rads);
-    void siSendMotor4Rads(float rads);
+    void siSendMotor1Rads(float fb_rads, float sp_rads);
+    void siSendMotor2Rads(float fb_rads, float sp_rads);
+    void siSendMotor3Rads(float fb_rads, float sp_rads);
+    void siSendMotor4Rads(float fb_rads, float sp_rads);
 private:
 
     Plot3D * plot3d;

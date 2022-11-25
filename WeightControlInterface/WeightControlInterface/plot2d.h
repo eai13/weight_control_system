@@ -64,6 +64,7 @@ public:
     QMenu           plot_menu;
 
     float           actual_position_rads;
+    float           setpoint_position_rads;
 
     double trA_calib;
     double trB_calib;
@@ -93,7 +94,7 @@ public slots:
     void slBlockModule(void);
     void slEnableModule(void);
 
-    void slReceiveActualPosition(float rads);
+    void slReceiveActualPosition(float fb_rads, float sp_rads);
 
 private:
 

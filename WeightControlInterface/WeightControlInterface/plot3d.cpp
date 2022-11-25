@@ -259,6 +259,6 @@ void Plot3D::slUploadTarget(uint8_t format){
 }
 
 void Plot3D::slReceiveObjectStep(QVector3D step){
-    QVector<float> len = this->InverseTransform(this->object_real_position + step);
+    QVector<float> len = this->InverseTransform(this->object_setpoint_position + step);
     emit this->siSendTargetLength(len[0], len[1], len[2], len[3]);
 }

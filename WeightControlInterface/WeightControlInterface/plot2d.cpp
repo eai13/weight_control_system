@@ -352,32 +352,33 @@ void Plot2D::slEnableModule(void){
 }
 
 void Plot2D::slJogLessSmall(void){
-    this->siSendPos(this->actual_position_rads - 0.1);
+    this->siSendPos(this->setpoint_position_rads - 0.1);
 }
 void Plot2D::slJogLessMuch(void){
-    this->siSendPos(this->actual_position_rads - 1.0);
+    this->siSendPos(this->setpoint_position_rads - 1.0);
 }
 void Plot2D::slJogMoreSmall(void){
-    this->siSendPos(this->actual_position_rads + 0.1);
+    this->siSendPos(this->setpoint_position_rads + 0.1);
 }
 void Plot2D::slJogMoreMuch(void){
-    this->siSendPos(this->actual_position_rads + 1.0);
+    this->siSendPos(this->setpoint_position_rads + 1.0);
 }
 
-void Plot2D::slReceiveActualPosition(float rads){
-    this->actual_position_rads = rads;
+void Plot2D::slReceiveActualPosition(float fb_rads, float sp_rads){
+    this->actual_position_rads = fb_rads;
+    this->setpoint_position_rads = sp_rads;
     if (!((this->dial->hasFocus()) || (this->lineedit->hasFocus()))){
-        this->dial_counter = floor(rads / 6.28);
-        this->dial->setValue((int)(rads / 6.28 * (this->dial->maximum() + 1)) % (this->dial->maximum() + 1));
+        this->dial_counter = floor(fb_rads / 6.28);
+        this->dial->setValue((int)(fb_rads / 6.28 * (this->dial->maximum() + 1)) % (this->dial->maximum() + 1));
         this->dial_old_value = this->dial->value();
         if (this->rb_length->isChecked()){
-            this->lineedit->setText(QString::asprintf("%.4f", this->GetLengthFromAngle(rads)));
+            this->lineedit->setText(QString::asprintf("%.4f", this->GetLengthFromAngle(fb_rads)));
         }
         else if (this->rb_rads->isChecked()){
-            this->lineedit->setText(QString::asprintf("%.4f", rads));
+            this->lineedit->setText(QString::asprintf("%.4f", fb_rads));
         }
         else if (this->rb_turn->isChecked()){
-            this->lineedit->setText(QString::asprintf("%.4f", rads / 6.28));
+            this->lineedit->setText(QString::asprintf("%.4f", fb_rads / 6.28));
         }
     }
 }

@@ -20,23 +20,24 @@ SystemControl::SystemControl(QWidget *parent) :
 
     Plot3DConfigs * plot3dconfigs = new Plot3DConfigs();
     ui->groupBox_3dplot_settings->layout()->addWidget(plot3dconfigs);
-    connect(plot3dconfigs,  &Plot3DConfigs::siFullscreen,       this->plot3d,   &Plot3D::slFullscreen);
-    connect(plot3dconfigs,  &Plot3DConfigs::siTargetAdd,        this->plot3d,   &Plot3D::slTargetAdd);
-    connect(plot3dconfigs,  &Plot3DConfigs::siTargetClear,      this->plot3d,   &Plot3D::slTargetClear);
-    connect(plot3dconfigs,  &Plot3DConfigs::siTargetRemove,     this->plot3d,   &Plot3D::slTargetRemove);
-    connect(plot3dconfigs,  &Plot3DConfigs::siStartTrajectory,  this->plot3d,   &Plot3D::slStartTrajectory);
-    connect(plot3dconfigs,  &Plot3DConfigs::siStopTrajectory,   this->plot3d,   &Plot3D::slAbortTrajectory);
-    connect(plot3dconfigs,  &Plot3DConfigs::siPauseTrajectory,  this->plot3d,   &Plot3D::slPauseTrajectory);
-    connect(plot3dconfigs,  &Plot3DConfigs::siSaveTarget,       this->plot3d,   &Plot3D::slSaveTarget);
-    connect(plot3dconfigs,  &Plot3DConfigs::siSaveReal,         this->plot3d,   &Plot3D::slSaveReal);
-    connect(plot3dconfigs,  &Plot3DConfigs::siUploadTarget,     this->plot3d,   &Plot3D::slUploadTarget);
-    connect(plot3dconfigs,  &Plot3DConfigs::siSendObjectStep,   this->plot3d,   &Plot3D::slReceiveObjectStep);
-    connect(this->plot3d,   &Plot3D::siEnableAbort,             plot3dconfigs,  &Plot3DConfigs::slEnableAbort);
-    connect(this->plot3d,   &Plot3D::siEnableStop,              plot3dconfigs,  &Plot3DConfigs::slEnableStop);
-    connect(this->plot3d,   &Plot3D::siEnableStart,             plot3dconfigs,  &Plot3DConfigs::slEnableStart);
-    connect(this->plot3d,   &Plot3D::siEnableFullscreen,        plot3dconfigs,  &Plot3DConfigs::slEnableFullscreen);
-    connect(this->plot3d,   &Plot3D::siSendTargetLength,        this,           &SystemControl::slSendLength);
-    connect(this,           &SystemControl::siSendRealLength,   this->plot3d,   &Plot3D::slReceiveRealLength);
+    connect(plot3dconfigs,  &Plot3DConfigs::siFullscreen,           this->plot3d,   &Plot3D::slFullscreen);
+    connect(plot3dconfigs,  &Plot3DConfigs::siTargetAdd,            this->plot3d,   &Plot3D::slTargetAdd);
+    connect(plot3dconfigs,  &Plot3DConfigs::siTargetClear,          this->plot3d,   &Plot3D::slTargetClear);
+    connect(plot3dconfigs,  &Plot3DConfigs::siTargetRemove,         this->plot3d,   &Plot3D::slTargetRemove);
+    connect(plot3dconfigs,  &Plot3DConfigs::siStartTrajectory,      this->plot3d,   &Plot3D::slStartTrajectory);
+    connect(plot3dconfigs,  &Plot3DConfigs::siStopTrajectory,       this->plot3d,   &Plot3D::slAbortTrajectory);
+    connect(plot3dconfigs,  &Plot3DConfigs::siPauseTrajectory,      this->plot3d,   &Plot3D::slPauseTrajectory);
+    connect(plot3dconfigs,  &Plot3DConfigs::siSaveTarget,           this->plot3d,   &Plot3D::slSaveTarget);
+    connect(plot3dconfigs,  &Plot3DConfigs::siSaveReal,             this->plot3d,   &Plot3D::slSaveReal);
+    connect(plot3dconfigs,  &Plot3DConfigs::siUploadTarget,         this->plot3d,   &Plot3D::slUploadTarget);
+    connect(plot3dconfigs,  &Plot3DConfigs::siSendObjectStep,       this->plot3d,   &Plot3D::slReceiveObjectStep);
+    connect(this->plot3d,   &Plot3D::siEnableAbort,                 plot3dconfigs,  &Plot3DConfigs::slEnableAbort);
+    connect(this->plot3d,   &Plot3D::siEnableStop,                  plot3dconfigs,  &Plot3DConfigs::slEnableStop);
+    connect(this->plot3d,   &Plot3D::siEnableStart,                 plot3dconfigs,  &Plot3DConfigs::slEnableStart);
+    connect(this->plot3d,   &Plot3D::siEnableFullscreen,            plot3dconfigs,  &Plot3DConfigs::slEnableFullscreen);
+    connect(this->plot3d,   &Plot3D::siSendTargetLength,            this,           &SystemControl::slSendLength);
+    connect(this,           &SystemControl::siSendRealLength,       this->plot3d,   &Plot3D::slReceiveRealLength);
+    connect(this,           &SystemControl::siSendSetpointLength,   this->plot3d,   &Plot3D::slReceiveSetpointLength);
 
     this->SystemTime = new QTime();
     this->SystemTime->start();
@@ -318,15 +319,20 @@ void SystemControl::ProcessIncomingData(void){
                 this->plots[iter]->slAddData(CNT_REG_CUR_FB, cnt_plottable.data[5 + iter * 7]);
                 this->plots[iter]->slAddData(CNT_REG_OUTPUT, cnt_plottable.data[6 + iter * 7]);
             }
-            emit this->siSendMotor1Rads(cnt_plottable.data[1]);
-            emit this->siSendMotor2Rads(cnt_plottable.data[8]);
-            emit this->siSendMotor3Rads(cnt_plottable.data[15]);
-            emit this->siSendMotor4Rads(cnt_plottable.data[22]);
+            emit this->siSendMotor1Rads(cnt_plottable.data[1], cnt_plottable.data[0]);
+            emit this->siSendMotor2Rads(cnt_plottable.data[8], cnt_plottable.data[7]);
+            emit this->siSendMotor3Rads(cnt_plottable.data[15], cnt_plottable.data[14]);
+            emit this->siSendMotor4Rads(cnt_plottable.data[22], cnt_plottable.data[21]);
             emit this->siSendRealLength(
                     this->plots[0]->GetLengthFromAngle(cnt_plottable.data[1]),
                     this->plots[1]->GetLengthFromAngle(cnt_plottable.data[8]),
                     this->plots[2]->GetLengthFromAngle(cnt_plottable.data[15]),
                     this->plots[3]->GetLengthFromAngle(cnt_plottable.data[22]));
+            emit this->siSendSetpointLength(
+                    this->plots[0]->GetLengthFromAngle(cnt_plottable.data[0]),
+                    this->plots[1]->GetLengthFromAngle(cnt_plottable.data[7]),
+                    this->plots[2]->GetLengthFromAngle(cnt_plottable.data[14]),
+                    this->plots[3]->GetLengthFromAngle(cnt_plottable.data[21]));
             break;
         }
         case(CNT_CALIBRATE_ZERO):{

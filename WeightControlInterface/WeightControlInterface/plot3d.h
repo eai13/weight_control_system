@@ -50,6 +50,7 @@ private:
     float map_height;
 
     QVector3D   object_real_position;
+    QVector3D   object_setpoint_position;
     float       last_experiment_time;
     QVector3D   last_required_position;
     QVector3D   curr_required_position;
@@ -111,6 +112,11 @@ public slots:
         this->object_real_position = this->DirectTransform(len);
         this->plot->seriesList().at(1)->dataProxy()->addItem(QtDataVisualization::QScatterDataItem(this->object_real_position));
         this->plot->seriesList().at(1)->dataProxy()->removeItems(0, 1);
+    }
+    void slReceiveSetpointLength(float length1, float length2, float length3, float length4){
+        QVector<float> len;
+        len.push_back(length1); len.push_back(length2); len.push_back(length3); len.push_back(length4);
+        this->object_setpoint_position = this->DirectTransform(len);
     }
 
     void slReceiveObjectStep(QVector3D step);
