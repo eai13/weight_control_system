@@ -29,12 +29,25 @@ uint32_t PID_GetCorrector(void){
     return lptim_corrector;
 }
 
+// TMP
+uint32_t int_count = 0x7FFFFFFF;
+uint32_t GetIntCount(){
+    return int_count;
+}
+// TMP
+
 void HAL_LPTIM_AutoReloadMatchCallback(LPTIM_HandleTypeDef *hlptim){
+    uint16_t tmp = ENCODER_4_COUNT;
   if (hlptim == &ENCODER_4_TIMER){
-    if (ENCODER_4_COUNT < 0x7FFF)
+    // if (tmp == 0) return;
+    if (tmp < 0x7FFF){
+      int_count++;
       lptim_corrector += 0xFFFF;
-    else
+    }
+    else{
+      int_count--;
       lptim_corrector -= 0xFFFF;
+    }
   }
 }
 
@@ -233,6 +246,12 @@ device_t drives[4] = {
     }
 };
 
+// TMP
+uint32_t GetMot4Count(void){
+  return *(drives[3].encoder_s.v);  
+}
+// TMP
+
 static inline
 float GetRealCurrent(uint16_t raw){
     return (((float)(abs((int16_t)(raw)) - ADC_CURRENT_0)) / ADC_RESOLUTION * ADC_REFERENCE / ADC_VPA);
@@ -270,24 +289,27 @@ void DriveReverse(uint8_t drive_num){
     HAL_GPIO_WritePin(DRIVE.dir_pins.rev_port, DRIVE.dir_pins.rev_pin, 1);
 }
 
+// uint8_t pid_enabled = 0;
+// void SetPIDEnabled(void) { pid_enabled = 1; }
 void PID_DriveCompute(uint8_t drive_num){
+    // if (pid_enabled == 0) return;
     // // GETTING RADIAL POSITION
     float tmp_position = 0;
     if (drive_num == 3){
         tmp_position = GetRealRadial(((int32_t)(*(DRIVE.encoder_s.v))) + lptim_corrector - 0x3FFFFFFF);
     }
     else if (drive_num == 0){
-        tmp_position = GetRealRadial(((int32_t)(*(DRIVE.encoder_s.v))) - 0x7FFFFFFF);
+        tmp_position = GetRealRadial(((int64_t)(*(DRIVE.encoder_s.v))) - 0x7FFFFFFF);
     }
     else{
         tmp_position = GetRealRadial(((int32_t)(*(DRIVE.encoder_s.v))) - 0x7FFF);
     }
     
     // FEEDBACK COMPUTE
-    DRIVE.position_l.fb.v   =
-            tmp_position;
     DRIVE.speed_l.fb.v      = 
             (tmp_position - DRIVE.position_l.fb.v) / TIME_CONSTANT;
+    DRIVE.position_l.fb.v   =
+            tmp_position;
     DRIVE.current_l.fb.v    =
             GetRealCurrent(*(DRIVE.current_s.v));
 

@@ -1,0 +1,43 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "cwd": "${workspaceRoot}",
+            "executable": "./f429boot/build/f429boot.elf",
+            "name": "OpenOCD",
+            "request": "launch",
+            "type": "cortex-debug",
+            "device": "STM32F429ZI",
+            "servertype": "openocd",
+            "configFiles": [
+                "/usr/share/openocd/scripts/board/stm32f4discovery.cfg"
+            ],
+            "searchDir": [],
+            "runToEntryPoint": "main",
+            "showDevDebugOutput": "raw",
+            "postLaunchCommands": [
+                "add-symbol-file \"/home/egor/WeightControl/weight_control_system/F429Port/WeightControl/build/WeightControl.elf\" 0x08020000 -o 0x08020000"
+            ]
+        },
+        {
+            "name": "Cortex Debug",
+            "cwd": "${workspaceFolder}",
+            "executable": "./f429boot/build/f429boot.elf",
+            "device": "STM32F429ZI",
+            "request": "launch",
+            "type": "cortex-debug",
+            // "runToEntryPoint": "main",
+            "servertype": "stutil",
+            "gdbPath": "/bin/arm-none-eabi-gdb",
+            "svdFile": "STM32F429.svd",
+            "interface": "swd",
+            "showDevDebugOutput": "raw",
+            "preLaunchCommands": [
+                "add-symbol-file \"./WeightControl/build/WeightControl.elf\" 0x08020000 -o 0x08020000"
+            ]
+        }
+    ]
+}

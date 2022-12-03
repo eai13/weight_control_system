@@ -120,6 +120,7 @@ void Plot3D::BuildTargetTrajectory(QVector3D start, QVector3D end){
 QVector3D Plot3D::DirectTransform(QVector<float> length){
     float resX = (std::pow(this->map_width, 2) - std::pow(length[3], 2) + std::pow(length[2], 2)) / (2 * this->map_width);
     float resY = (std::pow(this->map_length, 2) - std::pow(length[1], 2) + std::pow(length[2], 2)) / (2 * this->map_length);
+    qDebug() << "CHECK " << std::pow(length[0], 2) - std::pow(resX - this->map_width, 2) - std::pow(resY - this->map_length, 2);
     float resZ = this->map_height - std::sqrt(std::pow(length[0], 2) - std::pow(resX - this->map_width, 2) - std::pow(resY - this->map_length, 2));
 
     QVector3D res;

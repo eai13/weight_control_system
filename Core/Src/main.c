@@ -168,6 +168,15 @@ int main(void)
   HAL_GPIO_WritePin(DRV3_DIR_1_GPIO_Port, DRV3_DIR_1_Pin, 0);
   HAL_GPIO_WritePin(DRV4_DIR_0_GPIO_Port, DRV4_DIR_0_Pin, 0);
   HAL_GPIO_WritePin(DRV4_DIR_1_GPIO_Port, DRV4_DIR_1_Pin, 0);
+  
+  HAL_TIM_PWM_Start(&PWM_1_TIMER, PWM_1_CHANNEL);
+  PWM_1_DUTY = 0;
+  HAL_TIM_PWM_Start(&PWM_2_TIMER, PWM_2_CHANNEL);
+  PWM_2_DUTY = 0;
+  HAL_TIM_PWM_Start(&PWM_3_TIMER, PWM_3_CHANNEL);
+  PWM_3_DUTY = 0;
+  HAL_TIM_PWM_Start(&PWM_4_TIMER, PWM_4_CHANNEL);
+  PWM_4_DUTY = 0;
 
   HAL_ADCEx_Calibration_Start(&hadc1);
   HAL_ADC_Start_DMA(&hadc1, current, 4);
@@ -185,20 +194,11 @@ int main(void)
 
   PID_MoveSetpoints();
 
-  HAL_TIM_PWM_Start(&PWM_1_TIMER, PWM_1_CHANNEL);
-  PWM_1_DUTY = 0;
-  HAL_TIM_PWM_Start(&PWM_2_TIMER, PWM_2_CHANNEL);
-  PWM_2_DUTY = 0;
-  HAL_TIM_PWM_Start(&PWM_3_TIMER, PWM_3_CHANNEL);
-  PWM_3_DUTY = 0;
-  HAL_TIM_PWM_Start(&PWM_4_TIMER, PWM_4_CHANNEL);
-  PWM_4_DUTY = 0;
-
   HAL_TIM_Base_Start_IT(&CONTROL_SYSTEM_TIMER);
 
   PROTOCOL_Start();
 
-  print_in("APP1 Program Started\r\n");
+  // print_in("APP1 Program Started\r\n");
   // HAL_UART_Transmit(&huart2, "APP1 Program Started\r\n", 22, 10);
 
   /* USER CODE END 2 */
@@ -208,13 +208,21 @@ int main(void)
   uint32_t position_data[4];
   uint32_t old_position_data[4];
   uint32_t ticks_to_position_save = HAL_GetTick();
-  while (1)
-  {
+  uint32_t pid_time;
+
+  uint32_t temp = HAL_GetTick();
+  uint8_t it_started = 0;
+  while (1) {
+    // if ((it_started == 0) && ((HAL_GetTick() - temp) > 1000)){
+      // it_started = 1;
+    // }
     if (PID_ComputeFlag){
+      pid_time = HAL_GetTick();
       PID_DriveCompute(3);
       PID_DriveCompute(2);
       PID_DriveCompute(1);
       PID_DriveCompute(0);
+      pid_time = HAL_GetTick() - pid_time;
       PID_ComputeFlag = 0;
     }
 
@@ -226,7 +234,7 @@ int main(void)
     if ((HAL_GetTick() - ticks_to_position_save) > 3000){
       MEMORY_SetActualPosition(ENCODER_1_COUNT, ENCODER_2_COUNT, ENCODER_3_COUNT, PID_GetCorrector() + ENCODER_4_COUNT, 10);
       ticks_to_position_save = HAL_GetTick();
-      print_in("PID Corrector 0x%X\r\n", PID_GetCorrector());
+      print_in("Corrector 0x%X PID 0x%X INT 0x%X ENC 0x%X\r\n", PID_GetCorrector(), pid_time, GetIntCount(), GetMot4Count());
     }
     /* USER CODE END WHILE */
 

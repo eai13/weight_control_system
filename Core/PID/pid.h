@@ -98,6 +98,12 @@ void        PID_MoveSetpoints(void);
 void        PID_StopDrive(uint8_t drive_num);
 void        PID_SetZero(uint8_t drive_num);
 
+// TMP
+uint32_t GetIntCount(void);
+uint32_t GetMot4Count(void);
+// void SetPIDEnabled(void)
+// TMP
+
 extern device_t drives[4];
 extern uint16_t current[4];
 

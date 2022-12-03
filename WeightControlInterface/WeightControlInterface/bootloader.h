@@ -73,7 +73,7 @@ public slots:
 private slots:
     void Timeout(void){
         if (this->DeviceCheckTimer->isActive()) this->DeviceCheckTimer->stop();
-        this->Serial->readAll();
+//        this->Serial->readAll();
         this->SerialLock.Unlock();
         this->data_awaited = 0;
         this->flash_after = 0;
@@ -81,6 +81,7 @@ private slots:
             if (this->file->isOpen()){
                 this->file->close();
                 delete this->file;
+                this->file = nullptr;
             }
         }
 

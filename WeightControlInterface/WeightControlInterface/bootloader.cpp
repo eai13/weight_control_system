@@ -121,6 +121,7 @@ void Bootloader::C_Write(void){
     if (!(this->file->open(QFile::ReadOnly))){
         ConsoleError("Unable to Open Firmware File");
         delete this->file;
+        this->file = nullptr;
         return;
     }
     if (((ui->comboBox_partition->currentIndex() == 0) && (this->file->size() > FLASH_MAP_APP_1)) ||
@@ -129,10 +130,12 @@ void Bootloader::C_Write(void){
             ConsoleError("Firmware Size Error");
             this->file->close();
             delete this->file;
+            this->file = nullptr;
             return;
     }
     this->file->close();
     delete this->file;
+    this->file = nullptr;
 
     this->flash_after = 1;
     C_Erase();
@@ -230,6 +233,7 @@ void Bootloader::ProcessIncomingData(void){
             ConsoleBasic("Writing Ended! Jolly Good!");
             this->file->close();
             delete this->file;
+            this->file = nullptr;
         }
         break;
     }
