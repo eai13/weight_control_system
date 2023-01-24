@@ -5,6 +5,8 @@
 #include "drive_config.h"
 #include "pid.h"
 
+#define PROTOCOL_TIMEOUT    20
+
 #define SELF_ID "APP1"
 
 typedef enum{

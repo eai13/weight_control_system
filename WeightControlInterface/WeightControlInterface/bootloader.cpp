@@ -94,7 +94,7 @@ void Bootloader::C_Jump(void){
     ConsoleBasic("Jumping to Program " + ui->comboBox_partition->currentText());
     MsgHeader header(Commands::JUMP, 1);
     header.payload.append(ui->comboBox_partition->currentIndex());
-
+    qDebug() << "JUMPED";
     this->data_awaited = DataAwaited::JUMP_AWAIT_SIZE;
     this->Serial->write(header.SetRawFromHeader());
     this->TimeoutTimer->start(100);
@@ -142,15 +142,25 @@ void Bootloader::C_Write(void){
 }
 
 void Bootloader::ProcessIncomingData(void){
-    if (this->TimeoutTimer->isActive())
-        this->TimeoutTimer->stop();
-
     QByteArray data = this->Serial->read(this->data_awaited);
     this->data_awaited = 0;
     this->Serial->readAll();
 
     MsgHeader header;
-    header.SetHeaderFromRaw(data);
+    if (header.SetHeaderFromRaw(data) == -1){
+        qDebug() << "BOOTLOADER SIZE DAMAGED " << header.start_A5 << " " << header.start_5A << " " << header.cmd << " " << header.w_size;
+        this->SerialLock.Unlock();
+        return;
+    }
+    if (this->TimeoutTimer->isActive())
+        this->TimeoutTimer->stop();
+
+
+    if ((header.start_5A != 0x5A) || (header.start_A5 != 0xA5)){
+        qDebug() << "BOOTLOADER DAMAGED FRAME";
+        this->SerialLock.Unlock();
+        return;
+    }
 
     switch(header.cmd){
     case(Commands::PING):{

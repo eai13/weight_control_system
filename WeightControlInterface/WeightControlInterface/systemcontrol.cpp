@@ -110,6 +110,7 @@ void SystemControl::C_PingSilent(void){
     BP_Header header(this->BP_PING, 0);
 
     Packet pack(header.SetRawFromHeader(), this->BP_PING_AWAIT_SIZE, this->PERIODTimeoutTimer);
+    qDebug() << "System Control PING";
     this->serial_tx_queue.push_back(pack);
 }
 
@@ -215,15 +216,25 @@ SystemControl::~SystemControl()
 }
 
 void SystemControl::ProcessIncomingData(void){
-    if (this->TimeoutTimer->isActive())
-        this->TimeoutTimer->stop();
-
     QByteArray data = this->Serial->read(this->data_awaited);
     this->data_awaited = 0;
     this->Serial->readAll();
 
     BP_Header bp_header;
-    bp_header.SetHeaderFromRaw(data);
+    if (bp_header.SetHeaderFromRaw(data) == -1){
+        qDebug() << "SYSTEM CONTROL Wrong Size";
+        this->SerialLock.Unlock();
+        return;
+    }
+    if (this->TimeoutTimer->isActive())
+        this->TimeoutTimer->stop();
+
+
+    if ((bp_header.start_5A != 0x5A) || (bp_header.start_A5 != 0xA5)){
+        qDebug() << "SYSTEM CONTROL DAMAGED FRAME";
+        this->SerialLock.Unlock();
+        return;
+    }
 
     switch(bp_header.cmd){
     case(BP_Commands::BP_PING):{

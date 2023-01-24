@@ -48,8 +48,8 @@ private:
     void Exit(uint8_t tab);
 
     enum TIMER_PERIODS{
-        PERIODTransmitHandlerTimer  = 10,
-        PERIODPlotDataTimer         = 100,
+        PERIODTransmitHandlerTimer  = 5,
+        PERIODPlotDataTimer         = 50,
         PERIODDeviceCheckTimer      = 1000,
         PERIODTimeoutTimer          = 100
     };
@@ -160,37 +160,50 @@ private:
     };
 
     enum DataAwaited{
-        BP_PING_AWAIT_SIZE                  = 9,
-        BP_JUMP_AWAIT_SIZE                  = 5,
-        BP_CNT_WRITE_SINGLE_AWAIT_SIZE      = 21,
-        BP_CNT_WRITE_MULTIPLE_AWAIT_SIZE    = 33,
-        BP_CNT_READ_SINGLE_AWAIT_SIZE       = 21,
-        BP_CNT_READ_MULTIPLE_AWAIT_SIZE     = 33,
-        BP_CNT_SIGNLE_DRIVE_CMD_AWAIT_SIZE  = 13,
-        BP_CNT_GLOBAL_CMD_AWAIT_SIZE        = 13,
-        BP_CNT_READ_PLOTTABLE_AWAIT_SIZE    = 125
+        BP_PING_AWAIT_SIZE                  = 11,//9,
+        BP_JUMP_AWAIT_SIZE                  = 7,//5,
+        BP_CNT_WRITE_SINGLE_AWAIT_SIZE      = 23,//21,
+        BP_CNT_WRITE_MULTIPLE_AWAIT_SIZE    = 35,//33,
+        BP_CNT_READ_SINGLE_AWAIT_SIZE       = 23,//21,
+        BP_CNT_READ_MULTIPLE_AWAIT_SIZE     = 35,//33,
+        BP_CNT_SIGNLE_DRIVE_CMD_AWAIT_SIZE  = 15,//13,
+        BP_CNT_GLOBAL_CMD_AWAIT_SIZE        = 15,//13,
+        BP_CNT_READ_PLOTTABLE_AWAIT_SIZE    = 127,//125
     };
 
     struct BP_Header{
+        uint8_t             start_A5;
+        uint8_t             start_5A;
         uint8_t             cmd;
         uint32_t            w_size;
         QVector<uint32_t>   payload;
         BP_Header(void){}
         BP_Header(BP_Commands c, uint32_t s){
+            this->start_5A = 0x5A;
+            this->start_A5 = 0xA5;
             this->cmd = c;
             this->w_size = s;
         }
-        void SetHeaderFromRaw(QByteArray data){
-            this->cmd = data.at(0);
-            this->w_size = *reinterpret_cast<uint32_t *>(data.data() + 1);
-            for (uint32_t iter = 0; iter < this->w_size; iter++){
-                this->payload.append(*reinterpret_cast<uint32_t *>(data.data() + 5 + iter * 4));
+        int8_t SetHeaderFromRaw(QByteArray data){
+            this->start_A5 = data.at(0);
+            this->start_5A = data.at(1);
+            this->cmd = data.at(2);
+            this->w_size = *reinterpret_cast<uint32_t *>(data.data() + 3);
+            if ((this->w_size * 4) != (data.size() - 7)){
+                return -1;
             }
+            qDebug() << __FILE__ << " line[" << __LINE__ << "] BP " << this->w_size << " " << this->cmd;
+            for (uint32_t iter = 0; iter < this->w_size; iter++){
+                this->payload.append(*reinterpret_cast<uint32_t *>(data.data() + 7 + iter * 4));
+            }
+            return 0;
         }
         QByteArray SetRawFromHeader(void){
             QByteArray data;
             QDataStream s_data(&data, QIODevice::WriteOnly);
             s_data.setByteOrder(QDataStream::LittleEndian);
+            s_data << this->start_A5;
+            s_data << this->start_5A;
             s_data << this->cmd;
             s_data << this->w_size;
             for (int32_t iter = 0; iter < this->payload.size(); iter++){
@@ -220,6 +233,7 @@ private:
 
             this->id =  this->payload[0];
             this->cmd = this->payload[1];
+            qDebug() << __FILE__ << " line[" << __LINE__ << "] CNT " << this->id << this->cmd;
             this->payload.pop_front();
             this->payload.pop_front();
         }
@@ -254,6 +268,7 @@ private:
             QVector<uint32_t> tmp = header->PassPayload();
 
             this->reg = tmp[0];
+            qDebug() << "REGISTER " << this->reg;
             tmp.pop_front();
             this->data = *(reinterpret_cast<QVector<float> *>(&tmp));
         }
@@ -294,6 +309,7 @@ private slots:
         if (this->DeviceCheckTimer->isActive()) this->DeviceCheckTimer->stop();
         this->Serial->readAll();
         this->SerialLock.Unlock();
+        qDebug() << "System Control Timeout, Data Awaited " << this->data_awaited;
         this->data_awaited = 0;
         disconnect(this->Serial, &QSerialPort::readyRead, this, &SystemControl::PushDataFromStream);
         if (this->DeviceCheckTimer->isActive()) this->DeviceCheckTimer->stop();

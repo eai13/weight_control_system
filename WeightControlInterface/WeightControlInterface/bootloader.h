@@ -138,34 +138,49 @@ private:
     };
 
     enum DataAwaited{
-        PING_AWAIT_SIZE     = 9,
-        VERIFY_AWAIT_SIZE   = 9,
-        JUMP_AWAIT_SIZE     = 5,
-        READ_AWAIT_SIZE     = 9,
-        WRITE_AWAIT_SIZE    = 5,
-        ERASE_AWAIT_SIZE    = 5
+        PING_AWAIT_SIZE     = 11, //9,
+        VERIFY_AWAIT_SIZE   = 11, //9,
+        JUMP_AWAIT_SIZE     = 7, //5,
+        READ_AWAIT_SIZE     = 11, //9,
+        WRITE_AWAIT_SIZE    = 7, //5,
+        ERASE_AWAIT_SIZE    = 7 //5
     };
 
     struct MsgHeader{
+        uint8_t             start_A5;
+        uint8_t             start_5A;
         uint8_t             cmd;
         uint32_t            w_size;
         QVector<uint32_t>   payload;
         MsgHeader(void){}
         MsgHeader(Commands c, uint32_t s){
+            this->start_5A = 0x5A;
+            this->start_A5 = 0xA5;
             this->cmd = c;
             this->w_size = s;
         }
-        void SetHeaderFromRaw(QByteArray data){
-            this->cmd = data.at(0);
-            this->w_size = *reinterpret_cast<uint32_t *>(data.data() + 1);
-            for (uint32_t iter = 0; iter < this->w_size; iter++){
-                this->payload.append(*reinterpret_cast<uint32_t *>(data.data() + 5 + iter * 4));
+        int8_t SetHeaderFromRaw(QByteArray data){
+            this->start_A5 = data.at(0);
+            this->start_5A = data.at(1);
+            this->cmd = data.at(2);
+            this->w_size = *reinterpret_cast<uint32_t *>(data.data() + 3);
+            if ((this->w_size * 4) != (data.size() - 7)){
+//                qDebug() << "BOOTLOADER Wrong Size";
+                return -1;
             }
+            qDebug() << "Received W_Size " << this->w_size;
+            qDebug() << "CMD " << this->cmd;
+            for (uint32_t iter = 0; iter < this->w_size; iter++){
+                this->payload.append(*reinterpret_cast<uint32_t *>(data.data() + 7 + iter * 4));
+            }
+            return 0;
         }
         QByteArray SetRawFromHeader(void){
             QByteArray data;
             QDataStream s_data(&data, QIODevice::WriteOnly);
             s_data.setByteOrder(QDataStream::LittleEndian);
+            s_data << this->start_A5;
+            s_data << this->start_5A;
             s_data << this->cmd;
             s_data << this->w_size;
             for (uint32_t iter = 0; iter < this->w_size; iter++){

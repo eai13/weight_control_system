@@ -85,7 +85,8 @@ Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
 Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
 Core/protocol/protocol.c \
 Core/memory/memory.c \
-Core/PID/pid.c
+Core/PID/pid.c \
+../common_libs/ring_buffer/ring_buffer.c \
 
 # ASM sources
 ASM_SOURCES =  \
@@ -154,7 +155,8 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Include \
 -ICore/PID \
 -ICore/protocol \
--ICore/memory
+-ICore/memory \
+-I../common_libs/ring_buffer
 
 
 # compile gcc flags

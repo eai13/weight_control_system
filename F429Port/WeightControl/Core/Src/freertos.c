@@ -60,7 +60,7 @@
 osThreadId_t TaskProtocol;
 const osThreadAttr_t TaskProtocol_attr = {
   .name = "TASK_PROTOCOL",
-  .stack_size = 1000,
+  .stack_size = 4000,
   .priority = (osPriority_t) osPriorityNormal
 };
 /* USER CODE END Variables */
@@ -135,7 +135,7 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+    osDelay(1000000);
   }
   /* USER CODE END StartDefaultTask */
 }
