@@ -60,7 +60,7 @@
 osThreadId_t TaskProtocol;
 const osThreadAttr_t TaskProtocol_attr = {
   .name = "TASK_PROTOCOL",
-  .stack_size = 4000,
+  .stack_size = 16384,
   .priority = (osPriority_t) osPriorityNormal
 };
 /* USER CODE END Variables */

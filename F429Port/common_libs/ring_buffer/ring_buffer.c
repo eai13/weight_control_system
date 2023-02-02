@@ -2,91 +2,155 @@
 #include <stdint.h>
 #include <string.h>
 
-void        rb_init(ring_buffer_t * rb){
+#define __weak __attribute__((weak))
+
+void        rb_init(ring_buffer_t * rb, void * semaphore){
     rb->back = 0;
     rb->front = 0;
     rb->bytes_available = 0;
     memset(rb->buffer, RING_BUFFER_MASK_VALUE, RING_BUFFER_SIZE);
+    rb->semaphore = semaphore;
 }
 
-rb_status_e rb_push_data(ring_buffer_t * rb, uint8_t * source, uint32_t size){
+__weak rb_mutex_status_e rb_semaphore_acquire(ring_buffer_t * rb, uint32_t timeout){
+#ifdef RING_BUFFER_THREAD_SAFETY
+    return RB_MUTEX_ERROR;
+#else
+    return RB_MUTEX_OK;
+#endif
+}
+
+__weak rb_mutex_status_e rb_semaphore_release(ring_buffer_t * rb){
+#ifdef RING_BUFFER_THREAD_SAFETY
+    return RB_MUTEX_ERROR;
+#else
+    return MUTEX_OK;
+#endif
+}
+
+__weak rb_mutex_status_e rb_semaphore_is_free(ring_buffer_t * rb){
+#ifdef RING_BUFFER_THREAD_SAFETY
+    return RB_MUTEX_ERROR;
+#else
+    return RB_MUTEX_OK;
+#endif
+}
+
+rb_status_e rb_is_available(ring_buffer_t * rb){
+    if (rb_semaphore_is_free(rb) == RB_MUTEX_OK){
+        return RING_BUFFER_OK;
+    }
+    else{
+        return RING_BUFFER_BUSY;
+    }
+}
+
+rb_status_e rb_push_data(ring_buffer_t * rb, uint8_t * source, uint32_t size, uint32_t timeout){
     if ((!size) || (size > RING_BUFFER_SIZE))
         return RING_BUFFER_OUT_OF_RANGE;
 
-    if (size == 1){
-        rb->buffer[rb->back] = source[0];
-        rb->back = (((rb->back + 1) == RING_BUFFER_SIZE) ? (0) : (rb->back + 1));//(rb->back + 1) % RING_BUFFER_SIZE;
-        if (rb->bytes_available < RING_BUFFER_SIZE) rb->bytes_available++;
-        else rb->front = (rb->front + 1) % RING_BUFFER_SIZE;
-    }
-    else if ((RING_BUFFER_SIZE - rb->back) < size){
-        uint32_t size_1 = RING_BUFFER_SIZE - rb->back;
-        uint32_t size_2 = size - size_1;
-        memcpy(rb->buffer + rb->back, source, size_1);
-        memcpy(rb->buffer, source + size_1, size_2);
-        rb->back = size_2;
-        if (rb->front < size_2) rb->front = size_2;
-        if ((rb->bytes_available + size) > RING_BUFFER_SIZE){
-            rb->bytes_available = RING_BUFFER_SIZE;
+    if (rb_semaphore_acquire(rb, timeout) == RB_MUTEX_OK){
+        if (size == 1){
+            rb->buffer[rb->back] = source[0];
+            rb->back = (((rb->back + 1) == RING_BUFFER_SIZE) ? (0) : (rb->back + 1));//(rb->back + 1) % RING_BUFFER_SIZE;
+            if (rb->bytes_available < RING_BUFFER_SIZE) rb->bytes_available++;
+            else rb->front = (rb->front + 1) % RING_BUFFER_SIZE;
+        }
+        else if ((RING_BUFFER_SIZE - rb->back) < size){
+            uint32_t size_1 = RING_BUFFER_SIZE - rb->back;
+            uint32_t size_2 = size - size_1;
+            memcpy(rb->buffer + rb->back, source, size_1);
+            memcpy(rb->buffer, source + size_1, size_2);
+            rb->back = size_2;
+            if (rb->front < size_2) rb->front = size_2;
+            if ((rb->bytes_available + size) > RING_BUFFER_SIZE){
+                rb->bytes_available = RING_BUFFER_SIZE;
+            }
+            else{
+                rb->bytes_available += size;
+            }
         }
         else{
-            rb->bytes_available += size;
+            memcpy(rb->buffer + rb->back, source, size);
+            if (rb->bytes_available + size > RING_BUFFER_SIZE){
+                rb->back += size;
+                rb->front = rb->back;
+                rb->bytes_available = RING_BUFFER_SIZE;
+            }
+            else{
+                rb->back += size;
+                rb->bytes_available += size;
+            }
         }
-    }
-    else{
-        memcpy(rb->buffer + rb->back, source, size);
-        if (rb->bytes_available + size > RING_BUFFER_SIZE){
-            rb->back += size;
-            rb->front = rb->back;
-            rb->bytes_available = RING_BUFFER_SIZE;
-        }
-        else{
-            rb->back += size;
-            rb->bytes_available += size;
-        }
+        rb_semaphore_release(rb);
+        return RING_BUFFER_OK;
     }
 
-    return RING_BUFFER_OK;
+    return RING_BUFFER_BUSY;
 }
 
-rb_status_e rb_take_data(ring_buffer_t * rb, uint8_t * dest, uint32_t size){
+rb_status_e rb_take_data(ring_buffer_t * rb, uint8_t * dest, uint32_t size, uint32_t timeout){
     if ((!size) || (size > RING_BUFFER_SIZE) || (size > rb->bytes_available))
         return RING_BUFFER_OUT_OF_RANGE;
 
-    if (size == 1){
-        dest[0] = rb->buffer[rb->front];
-        rb->front = (rb->front + 1) % RING_BUFFER_SIZE;
-        rb->bytes_available--;
-    }
-    else if ((RING_BUFFER_SIZE - rb->front) < size){
-        uint32_t size_1 = RING_BUFFER_SIZE - rb->front;
-        uint32_t size_2 = size - size_1;
-        memcpy(dest, rb->buffer + rb->front, size_1);
-        memcpy(dest + size_1, rb->buffer, size_2);
-        rb->front = size_2;
-        rb->bytes_available -= size;
-    }
-    else{
-        memcpy(dest, rb->buffer + rb->front, size);
-        rb->front = (rb->front + size) % RING_BUFFER_SIZE;
-        rb->bytes_available -= size;
+    if (rb_semaphore_acquire(rb, timeout) == RB_MUTEX_OK){
+        if (size == 1){
+            dest[0] = rb->buffer[rb->front];
+            rb->front = (rb->front + 1) % RING_BUFFER_SIZE;
+            rb->bytes_available--;
+        }
+        else if ((RING_BUFFER_SIZE - rb->front) < size){
+            uint32_t size_1 = RING_BUFFER_SIZE - rb->front;
+            uint32_t size_2 = size - size_1;
+            memcpy(dest, rb->buffer + rb->front, size_1);
+            memcpy(dest + size_1, rb->buffer, size_2);
+            rb->front = size_2;
+            rb->bytes_available -= size;
+        }
+        else{
+            memcpy(dest, rb->buffer + rb->front, size);
+            rb->front = (rb->front + size) % RING_BUFFER_SIZE;
+            rb->bytes_available -= size;
+        }
+        rb_semaphore_release(rb);
+        return RING_BUFFER_OK;
     }
     
-    return RING_BUFFER_OK;
+    return RING_BUFFER_BUSY;
 }
 
-rb_status_e rb_popdata(ring_buffer_t * rb){
-    if (rb->bytes_available){
-        rb->front = (rb->front + 1) % RING_BUFFER_SIZE;
-        rb->bytes_available--;
+rb_status_e rb_popdata(ring_buffer_t * rb, uint32_t timeout){
+    if (rb_semaphore_acquire(rb, timeout) == RB_MUTEX_OK){
+        if (rb->bytes_available){
+            rb->front = (rb->front + 1) % RING_BUFFER_SIZE;
+            rb->bytes_available--;
+        }
+        rb_semaphore_release(rb);
+        return RING_BUFFER_OK;
     }
+    return RING_BUFFER_BUSY;
 }
 
-void        rb_flush(ring_buffer_t * rb){
+void        rb_flush(ring_buffer_t * rb, uint32_t timeout){
+    if (rb_semaphore_acquire(rb, timeout) == RB_MUTEX_OK){
 #ifdef RING_BUFFER_USE_MASK
-    memset(rb->buffer, RING_BUFFER_MASK_VALUE, RING_BUFFER_SIZE);
+        memset(rb->buffer, RING_BUFFER_MASK_VALUE, RING_BUFFER_SIZE);
 #endif
-    rb->back = 0;
-    rb->front = 0;
-    rb->bytes_available = 0;
+        rb->back = 0;
+        rb->front = 0;
+        rb->bytes_available = 0;
+
+        rb_semaphore_release(rb);
+        return RING_BUFFER_OK;
+    }
+    return RING_BUFFER_BUSY;
+}
+
+uint32_t rb_get_available(ring_buffer_t * rb, uint32_t timeout){
+    if (rb_semaphore_acquire(rb, timeout) == RB_MUTEX_OK){
+        uint32_t tmp = rb->bytes_available;
+        rb_semaphore_release(rb);
+        return tmp;
+    }
+    return 0;
 }

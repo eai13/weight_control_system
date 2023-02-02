@@ -48,7 +48,7 @@ private:
     void Exit(uint8_t tab);
 
     enum TIMER_PERIODS{
-        PERIODTransmitHandlerTimer  = 5,
+        PERIODTransmitHandlerTimer  = 25,
         PERIODPlotDataTimer         = 50,
         PERIODDeviceCheckTimer      = 1000,
         PERIODTimeoutTimer          = 100

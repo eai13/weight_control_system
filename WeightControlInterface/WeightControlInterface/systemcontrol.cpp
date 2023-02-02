@@ -222,7 +222,7 @@ void SystemControl::ProcessIncomingData(void){
 
     BP_Header bp_header;
     if (bp_header.SetHeaderFromRaw(data) == -1){
-        qDebug() << "SYSTEM CONTROL Wrong Size";
+        qDebug() << "SYSTEM CONTROL Wrong Size " << hex << bp_header.start_A5 << bp_header.start_5A << bp_header.cmd << dec << bp_header.w_size;
         this->SerialLock.Unlock();
         return;
     }
@@ -235,6 +235,7 @@ void SystemControl::ProcessIncomingData(void){
         this->SerialLock.Unlock();
         return;
     }
+    qDebug() << "SYSTEM CONTROL INFO " << hex << bp_header.start_A5 << bp_header.start_5A << bp_header.cmd << dec << bp_header.w_size;
 
     switch(bp_header.cmd){
     case(BP_Commands::BP_PING):{
