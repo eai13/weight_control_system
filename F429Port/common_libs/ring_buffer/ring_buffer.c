@@ -68,7 +68,7 @@ rb_status_e rb_push_data(ring_buffer_t * rb, uint8_t * source, uint32_t size
 #endif
         if (size == 1){
             rb->buffer[rb->back] = source[0];
-            rb->back = (((rb->back + 1) == RING_BUFFER_SIZE) ? (0) : (rb->back + 1));//(rb->back + 1) % RING_BUFFER_SIZE;
+            rb->back = (((rb->back + 1) == RING_BUFFER_SIZE) ? (0) : (rb->back + 1));
             if (rb->bytes_available < RING_BUFFER_SIZE) rb->bytes_available++;
             else rb->front = (rb->front + 1) % RING_BUFFER_SIZE;
         }

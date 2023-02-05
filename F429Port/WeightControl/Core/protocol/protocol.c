@@ -45,55 +45,17 @@ static inline rb_status_e ReceiveFromRxBuffer(uint8_t * dest, uint32_t size){
     return RING_BUFFER_OK;
 }
 
-#define MAKE_BP_HEADER(CMD, W_SIZE) \
-    p_bp->cmd = CMD; \
-    p_bp->w_size = W_SIZE;
-
-#define MAKE_CONTROL_HEADER(ID, CMD) \
-    p_cnt->id = ID; \
-    p_cnt->cmd = CMD;
-
-static volatile protocol_header_e HeaderToReceive = HEADER_BASIC;
-
-static volatile uint8_t Protocol_ProcessFlag = 0;
-
-uint8_t PROTOCOL_MessagePending(void){
-    return Protocol_ProcessFlag;
-}
-
-void PROTOCOL_ResetPendingFlag(void){
-    Protocol_ProcessFlag = 0;
-}
-
 static volatile uint8_t                 tx_buffer[512];
-static volatile uint8_t                 rx_reserve_buffer[512];
-static volatile uint32_t                rx_reserve_ptr;
-// static volatile bp_header_t *           p_bp;
-// static volatile control_header_t *      p_cnt;
-// static volatile single_reg_data_t *     p_s_data;
-// static volatile multiple_reg_data_t *   p_m_data;
-// static volatile global_cmd_data_t *     p_c_data;
-static volatile wc_plottables_t *       p_plottable[4];
+static volatile uint8_t                 rx_buffer[512];
+static volatile uint32_t                rx_ptr = 0;
 
-uint32_t buffer_flush_timeout;
-uint8_t tmp_rx;
+uint32_t buffer_ready_timeout;
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
     if (huart == &PROTOCOL_UART){
-        if (rb_is_available(&rx_rb) == RING_BUFFER_OK){
-            if (rx_reserve_ptr){
-                rb_push_data(&rx_rb, rx_reserve_buffer, rx_reserve_ptr, IRQ_TIMEOUT);
-                rx_reserve_ptr = 0;
-            }
-            rb_push_data(&rx_rb, &tmp_rx, 1, IRQ_TIMEOUT);
-        }
-        else{
-            rx_reserve_buffer[rx_reserve_ptr] = tmp_rx;
-            rx_reserve_ptr++;
-        }
-
-        buffer_flush_timeout = osKernelGetTickCount();
-        HAL_UART_Receive_IT(&PROTOCOL_UART, &tmp_rx, 1);
+        rx_ptr++;
+        buffer_ready_timeout = osKernelGetTickCount();
+        HAL_UART_Receive_IT(&PROTOCOL_UART, rx_buffer + rx_ptr, 1);
     }
 }
 
@@ -104,208 +66,12 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
     }
 }
 
-// void PROTOCOL_ProcessFrame(void){
-//     switch(p_bp->cmd){
-//         case(BP_CMD_PING):{
-//             MAKE_BP_HEADER(BP_CMD_PING, 1);
-//             tx_buffer[5] = 'A'; tx_buffer[6] = 'P'; tx_buffer[7] = 'P'; tx_buffer[8] = '1';
-//             HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + 4);
-//             break;
-//         }
-//         case(BP_CMD_JUMP):{
-//             if (*((uint32_t *)(tx_buffer + sizeof(bp_header_t))) != 0){
-//                 MAKE_BP_HEADER(BP_ERROR_UNKNOWN_CMD, 0);
-//                 HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t));
-//                 break;
-//             }
-//             MAKE_BP_HEADER(BP_CMD_JUMP, 0);
-//             HAL_UART_Transmit(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t), 10);
-//             MEMORY_SetActualPosition(ENCODER_1_COUNT, ENCODER_2_COUNT, ENCODER_3_COUNT, ENCODER_4_COUNT, 10);
-//             HAL_NVIC_SystemReset();
-//         }
-//         case(BP_CMD_CONTROL):{
-//             p_cnt = (control_header_t *)(tx_buffer + sizeof(bp_header_t));
-//             if (p_cnt->id >= ID_LAST){
-//                 MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
-//                 MAKE_CONTROL_HEADER(p_cnt->id, CMD_ERROR);
-//                 HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
-//                 break;
-//             }
-//             switch(p_cnt->id){
-//                 case(ID_GLOBAL):
-//                     switch(p_cnt->cmd){
-//                         case(CMD_READ_PLOTTABLE):{
-//                             for (uint8_t iter = 0; iter < 4; iter++){
-//                                 p_plottable[iter] = (wc_plottables_t *)(tx_buffer + sizeof(bp_header_t) + sizeof(control_header_t) + sizeof(wc_plottables_t) * iter);
-//                                 *(p_plottable[iter]) = PID_ReadPlottables(iter);
-//                             }
-//                             MAKE_BP_HEADER(BP_CMD_CONTROL, 30);
-//                             MAKE_CONTROL_HEADER(p_cnt->id, p_cnt->cmd);
-//                             HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t) + sizeof(wc_plottables_t) * 4);
-//                             break;
-//                         }
-//                         case(CMD_WRITE_REG):{
-//                             p_m_data = (multiple_reg_data_t *)(tx_buffer + sizeof(bp_header_t) + sizeof(control_header_t));
-//                             if (p_m_data->reg >= REGISTER_LAST){
-//                                 MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
-//                                 MAKE_CONTROL_HEADER(p_cnt->id, CMD_ERROR);
-//                                 HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
-//                                 break;
-//                             }
-//                             for (uint8_t iter = 0; iter < 4; iter++){
-//                                 if (PID_WriteReg(iter, p_m_data->reg, p_m_data->data[iter]) == RW_ERROR){
-//                                     MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
-//                                     MAKE_CONTROL_HEADER(p_cnt->id, CMD_ERROR);
-//                                     HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
-//                                     break;
-//                                 }
-//                             }
-//                             if (p_cnt->cmd == CMD_ERROR) break;
-//                             MAKE_BP_HEADER(BP_CMD_CONTROL, 7);
-//                             HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t) + sizeof(multiple_reg_data_t));
-//                             break;
-//                         }
-//                         case(CMD_READ_REG):{
-//                             p_m_data = (multiple_reg_data_t *)(tx_buffer + sizeof(bp_header_t) + sizeof(control_header_t));
-//                             if (p_m_data->reg >= REGISTER_LAST){
-//                                 MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
-//                                 MAKE_CONTROL_HEADER(p_cnt->id, CMD_ERROR);
-//                                 HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
-//                                 break;
-//                             }
-//                             float tmp = 0;
-//                             for (uint8_t iter = 0; iter < 4; iter++){
-//                                 if (PID_ReadReg(iter, p_m_data->reg, &tmp) == RW_ERROR){
-//                                     MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
-//                                     MAKE_CONTROL_HEADER(p_cnt->id, CMD_ERROR);
-//                                     HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
-//                                     break;
-//                                 }
-//                                 else p_m_data->data[iter] = tmp;
-//                             }
-//                             if (p_cnt->cmd == CMD_ERROR) break;
-//                             MAKE_BP_HEADER(BP_CMD_CONTROL, 7);
-//                             HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t) + sizeof(multiple_reg_data_t));
-//                             break;
-//                         }
-//                         case(CMD_CALIBRATE_AS_ZERO_POSITION):{
-//                             PID_SetZero(4);
-//                             MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
-//                             HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
-//                             break;
-//                         }
-//                         case(CMD_STOP_DRIVE):{
-//                             PID_StopDrive(4);
-//                             MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
-//                             HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
-//                             break;
-//                         }
-//                         default:{
-//                             MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
-//                             MAKE_CONTROL_HEADER(p_cnt->id, CMD_ERROR);
-//                             HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
-//                             break;
-//                         }
-//                     }
-//                     break;
-//                 case(ID_GLOBAL_CMD):
-//                     switch (p_cnt->cmd){
-//                         case(CMD_BLOCK_DRIVE):{
-//                             // +
-//                             break;
-//                         }
-//                         case(CMD_ENABLE_DRIVE):{
-//                             // +
-//                             break;
-//                         }
-//                         case(CMD_RESET_SYSTEM):{
-//                             // +
-//                             break;
-//                         }
-//                         case(CMD_EXIT_APP):{
-//                             // +
-//                             break;
-//                         }
-//                         default:{
-//                             MAKE_CONTROL_HEADER(p_cnt->id, CMD_ERROR);
-//                             break;
-//                         }
-//                     }
-//                     MAKE_BP_HEADER(p_bp->cmd, 2);
-//                     HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
-//                     break;
-//                 default:
-//                     switch(p_cnt->cmd){
-//                         case(CMD_WRITE_REG):{
-//                             p_s_data = (single_reg_data_t *)(tx_buffer + sizeof(bp_header_t) + sizeof(control_header_t));
-//                             if (p_s_data->reg >= REGISTER_LAST){
-//                                 MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
-//                                 MAKE_CONTROL_HEADER(p_cnt->id, CMD_ERROR);
-//                                 HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
-//                                 break;
-//                             }
-//                             if (PID_WriteReg(p_cnt->id, p_s_data->reg, p_s_data->data) == RW_ERROR){
-//                                 MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
-//                                 MAKE_CONTROL_HEADER(p_cnt->id, CMD_ERROR);
-//                                 HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
-//                                 break;
-//                             }
-//                             MAKE_BP_HEADER(BP_CMD_CONTROL, 4);
-//                             HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t) + sizeof(single_reg_data_t));
-//                             break;
-//                         }
-//                         case(CMD_READ_REG):{
-//                             p_s_data = tx_buffer + sizeof(bp_header_t) + sizeof(control_header_t);
-//                             if (p_s_data->reg >= REGISTER_LAST){
-//                                 MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
-//                                 MAKE_CONTROL_HEADER(p_cnt->id, CMD_ERROR);
-//                                 HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
-//                                 break;
-//                             }
-//                             float tmp = 0;
-//                             if (PID_ReadReg(p_cnt->id, p_s_data->reg, &tmp) == RW_ERROR){
-//                                 MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
-//                                 MAKE_CONTROL_HEADER(p_cnt->id, CMD_ERROR);
-//                                 HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
-//                                 break;
-//                             }
-//                             else p_s_data->data = tmp;
-//                             MAKE_BP_HEADER(BP_CMD_CONTROL, 4);
-//                             HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t) + sizeof(single_reg_data_t));
-//                             break;
-//                         }
-//                         case(CMD_CALIBRATE_AS_ZERO_POSITION):{
-//                             PID_SetZero(p_cnt->id);
-//                             MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
-//                             HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
-//                             break;
-//                         }
-//                         case(CMD_STOP_DRIVE):{
-//                             PID_StopDrive(p_cnt->id);
-//                             MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
-//                             HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
-//                             break;
-//                         }
-//                         default:{
-//                             MAKE_BP_HEADER(BP_CMD_CONTROL, 2);
-//                             MAKE_CONTROL_HEADER(p_cnt->id, CMD_ERROR);
-//                             HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t) + sizeof(control_header_t));
-//                             break;
-//                         }
-//                     }
-//                     break;
-//             }
-//             break;
-//         }
-//         default:
-//             MAKE_BP_HEADER(BP_ERROR_UNKNOWN_CMD, 0);
-//             HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, sizeof(bp_header_t));
-//             break;
-//     }
-// }
-
 void PROTOCOL_Start(void){
-    HAL_UART_Receive_IT(&PROTOCOL_UART, &tmp_rx, 1);
+    rx_ptr = 0;
+    HAL_UART_Receive_IT(&PROTOCOL_UART, rx_buffer, 1);
+}
+void PROTOCOL_Stop(void){
+    HAL_UART_AbortReceive_IT(&PROTOCOL_UART);
 }
 
 void PROTOCOL_Task(void){
@@ -321,7 +87,7 @@ void PROTOCOL_Task(void){
 
     UARTTxSemaphore = osSemaphoreNew(1, 1, NULL);
 
-    buffer_flush_timeout = osKernelGetTickCount();
+    buffer_ready_timeout = osKernelGetTickCount();
 
     PROTOCOL_Start();
 
@@ -332,10 +98,12 @@ void PROTOCOL_Task(void){
 
     while(1){
 
+        if (((osKernelGetTickCount() - buffer_ready_timeout) > 3) && (rx_ptr != 0)){
+            PROTOCOL_Stop();
+            rb_push_data(&rx_rb, rx_buffer, rx_ptr, IRQ_TIMEOUT);
+            PROTOCOL_Start();
+        }
         bytes_available = rb_get_available(&tx_rb, IRQ_TIMEOUT);
-        if (bytes_available > 145) LED_CONTROL_UP();
-        // if (bytes_available < 100) LED_CONTROL_DOWN();
-        
         if (bytes_available){
             if (osSemaphoreAcquire(UARTTxSemaphore, IRQ_TIMEOUT) == osOK){
                 if (rb_take_data(&tx_rb, tx_buffer, bytes_available, IRQ_TIMEOUT) == RING_BUFFER_OK){
@@ -367,12 +135,12 @@ void PROTOCOL_Task(void){
                     case(BP_CMD_PING):{
                         if (basic_h.w_size == 0){
                             basic_h.w_size = 1;
-                            if (rb_push_data(&tx_rb, start_bytes_tx, 2, IRQ_TIMEOUT) != RING_BUFFER_OK) LED_ERROR_UP();
-                            if (rb_push_data(&tx_rb, (uint8_t *)&basic_h, sizeof(bp_header_t), IRQ_TIMEOUT) != RING_BUFFER_OK) LED_ERROR_UP();
-                            if (rb_push_data(&tx_rb, SELF_ID, 4, IRQ_TIMEOUT) != RING_BUFFER_OK) LED_ERROR_UP();
+                            rb_push_data(&tx_rb, start_bytes_tx, 2, IRQ_TIMEOUT);
+                            rb_push_data(&tx_rb, (uint8_t *)&basic_h, sizeof(bp_header_t), IRQ_TIMEOUT);
+                            rb_push_data(&tx_rb, SELF_ID, 4, IRQ_TIMEOUT);
                         }
                         else{
-                            // rb_flush(&rx_rb, IRQ_TIMEOUT);
+                            rb_flush(&rx_rb, IRQ_TIMEOUT);
                         }
                         break;
                     }
@@ -380,7 +148,7 @@ void PROTOCOL_Task(void){
                         if (basic_h.w_size == 1){
                             uint32_t partition;
                             if (ReceiveFromRxBuffer((uint8_t *)&partition, 4) != RING_BUFFER_OK){
-                                // rb_flush(&rx_rb, IRQ_TIMEOUT);
+                                rb_flush(&rx_rb, IRQ_TIMEOUT);
                             }
                             else{
                                 if (partition == 0){
@@ -403,7 +171,7 @@ void PROTOCOL_Task(void){
                     }
                     case(BP_CMD_CONTROL):{
                         if (ReceiveFromRxBuffer((uint8_t *)&control_h, sizeof(control_header_t)) != RING_BUFFER_OK){
-                            // rb_flush(&rx_rb, IRQ_TIMEOUT);
+                            rb_flush(&rx_rb, IRQ_TIMEOUT);
                             break;
                         }
                         if (control_h.id >= ID_LAST){
@@ -432,7 +200,6 @@ void PROTOCOL_Task(void){
                                     case(CMD_WRITE_REG):{
                                         multiple_reg_data_t mrd;
                                         if (ReceiveFromRxBuffer((uint8_t *)&mrd, sizeof(multiple_reg_data_t)) != RING_BUFFER_OK){
-                                            // rb_flush(&rx_rb, IRQ_TIMEOUT);
                                             break;
                                         }
                                         if (mrd.reg >= REGISTER_LAST){
@@ -464,7 +231,6 @@ void PROTOCOL_Task(void){
                                     case(CMD_READ_REG):{
                                         multiple_reg_data_t mrd;
                                         if (ReceiveFromRxBuffer((uint8_t *)&mrd, sizeof(multiple_reg_data_t)) != RING_BUFFER_OK){
-                                            // rb_flush(&rx_rb, IRQ_TIMEOUT);
                                             break;
                                         }
                                         if (mrd.reg >= REGISTER_LAST){
@@ -554,7 +320,6 @@ void PROTOCOL_Task(void){
                                     case(CMD_WRITE_REG):{
                                         single_reg_data_t srd;
                                         if (ReceiveFromRxBuffer((uint8_t *)&srd, sizeof(single_reg_data_t)) != RING_BUFFER_OK){
-                                            // rb_flush(&rx_rb, IRQ_TIMEOUT);
                                             break;
                                         }
                                         if (srd.reg >= REGISTER_LAST){
@@ -583,7 +348,6 @@ void PROTOCOL_Task(void){
                                     case(CMD_READ_REG):{
                                         single_reg_data_t srd;
                                         if (ReceiveFromRxBuffer((uint8_t *)&srd, sizeof(single_reg_data_t)) != RING_BUFFER_OK){
-                                            // rb_flush(&rx_rb, IRQ_TIMEOUT);
                                             break;
                                         }
                                         if (srd.reg >= REGISTER_LAST){
@@ -641,15 +405,10 @@ void PROTOCOL_Task(void){
                         break;
                     }
                     default:{
-                        // rb_flush(&rx_rb, IRQ_TIMEOUT);
+                        break;
                     }
                 }
             }
-            // else{
-                // rb_flush(&rx_rb, IRQ_TIMEOUT);
-            // }
-            // else if ((osKernelGetTickCount() - buffer_flush_timeout) > 50)
-                // rb_flush(&rx_rb, IRQ_TIMEOUT);
         }
         // osDelay(5);
     }

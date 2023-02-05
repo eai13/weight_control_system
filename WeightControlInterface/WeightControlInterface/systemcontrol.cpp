@@ -222,7 +222,7 @@ void SystemControl::ProcessIncomingData(void){
 
     BP_Header bp_header;
     if (bp_header.SetHeaderFromRaw(data) == -1){
-        qDebug() << "SYSTEM CONTROL Wrong Size " << hex << bp_header.start_A5 << bp_header.start_5A << bp_header.cmd << dec << bp_header.w_size;
+//        qDebug() << "SYSTEM CONTROL Wrong Size " << hex << bp_header.start_A5 << bp_header.start_5A << bp_header.cmd << dec << bp_header.w_size;
         this->SerialLock.Unlock();
         return;
     }
@@ -231,11 +231,11 @@ void SystemControl::ProcessIncomingData(void){
 
 
     if ((bp_header.start_5A != 0x5A) || (bp_header.start_A5 != 0xA5)){
-        qDebug() << "SYSTEM CONTROL DAMAGED FRAME";
+//        qDebug() << "SYSTEM CONTROL DAMAGED FRAME";
         this->SerialLock.Unlock();
         return;
     }
-    qDebug() << "SYSTEM CONTROL INFO " << hex << bp_header.start_A5 << bp_header.start_5A << bp_header.cmd << dec << bp_header.w_size;
+//    qDebug() << "SYSTEM CONTROL INFO " << hex << bp_header.start_A5 << bp_header.start_5A << bp_header.cmd << dec << bp_header.w_size;
 
     switch(bp_header.cmd){
     case(BP_Commands::BP_PING):{
@@ -280,8 +280,8 @@ void SystemControl::ProcessIncomingData(void){
             case(CNT_ID_GLOBAL):
                 break;
             default:
-                qDebug() << cnt_header.cmd << " " << cnt_header.id;
-                qDebug() << cnt_register.reg << " " << cnt_register.data;
+//                qDebug() << cnt_header.cmd << " " << cnt_header.id;
+//                qDebug() << cnt_register.reg << " " << cnt_register.data;
                 break;
             }
             break;

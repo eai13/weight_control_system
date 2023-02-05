@@ -58,4 +58,6 @@ rb_mutex_status_e rb_semaphore_acquire(ring_buffer_t * rb);
 rb_mutex_status_e rb_semaphore_release(ring_buffer_t * rb);
 rb_mutex_status_e rb_semaphore_is_free(ring_buffer_t * rb);
 
+void              rb_semaphore_released_callback(ring_buffer_t * rb);
+
 #endif
