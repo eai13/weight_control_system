@@ -14,7 +14,6 @@
 #define THREAD_TIMEOUT  10
 
 ring_buffer_t rx_rb;
-ring_buffer_t rx_reserve_rb;
 ring_buffer_t tx_rb;
 
 rb_mutex_status_e rb_semaphore_acquire(ring_buffer_t * rb, uint32_t timeout){
@@ -37,7 +36,6 @@ rb_mutex_status_e rb_semaphore_is_free(ring_buffer_t * rb){
 static inline rb_status_e ReceiveFromRxBuffer(uint8_t * dest, uint32_t size){
     uint32_t timeout = osKernelGetTickCount();
     while(rb_get_available(&rx_rb, IRQ_TIMEOUT) < size){
-    // while(rb_take_data(&rx_rb, dest, size) != RING_BUFFER_OK){
         if ((osKernelGetTickCount() - timeout) > PROTOCOL_TIMEOUT){
             return RING_BUFFER_OUT_OF_RANGE;
         }
@@ -46,11 +44,6 @@ static inline rb_status_e ReceiveFromRxBuffer(uint8_t * dest, uint32_t size){
     rb_take_data(&rx_rb, dest, size, IRQ_TIMEOUT);
     return RING_BUFFER_OK;
 }
-
-// osSemaphoreId_t RxSemaphore;
-// osSemaphoreId_t TxSemaphore;
-
-// static inline rb_status_e Tx
 
 #define MAKE_BP_HEADER(CMD, W_SIZE) \
     p_bp->cmd = CMD; \
@@ -73,13 +66,13 @@ void PROTOCOL_ResetPendingFlag(void){
 }
 
 static volatile uint8_t                 tx_buffer[512];
-static volatile uint8_t                 rx_reserve_buffer[128];
+static volatile uint8_t                 rx_reserve_buffer[512];
 static volatile uint32_t                rx_reserve_ptr;
-static volatile bp_header_t *           p_bp = tx_buffer;
-static volatile control_header_t *      p_cnt;
-static volatile single_reg_data_t *     p_s_data;
-static volatile multiple_reg_data_t *   p_m_data;
-static volatile global_cmd_data_t *     p_c_data;
+// static volatile bp_header_t *           p_bp;
+// static volatile control_header_t *      p_cnt;
+// static volatile single_reg_data_t *     p_s_data;
+// static volatile multiple_reg_data_t *   p_m_data;
+// static volatile global_cmd_data_t *     p_c_data;
 static volatile wc_plottables_t *       p_plottable[4];
 
 uint32_t buffer_flush_timeout;
@@ -88,11 +81,8 @@ uint8_t tmp_rx;
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
     if (huart == &PROTOCOL_UART){
         if (rb_is_available(&rx_rb) == RING_BUFFER_OK){
-            // uint32_t available_bytes = rb_get_available(&rx_reserve_rb, IRQ_TIMEOUT);
-            // if (available_bytes){
             if (rx_reserve_ptr){
-                // rb_take_data(&rx_reserve_rb, rx_reserve_buffer, available_bytes, IRQ_TIMEOUT);
-                rb_push_data(&rx_rb, rx_reserve_buffer, rx_reserve_ptr, IRQ_TIMEOUT);//available_bytes, IRQ_TIMEOUT);
+                rb_push_data(&rx_rb, rx_reserve_buffer, rx_reserve_ptr, IRQ_TIMEOUT);
                 rx_reserve_ptr = 0;
             }
             rb_push_data(&rx_rb, &tmp_rx, 1, IRQ_TIMEOUT);
@@ -100,18 +90,17 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
         else{
             rx_reserve_buffer[rx_reserve_ptr] = tmp_rx;
             rx_reserve_ptr++;
-            // rb_push_data(&rx_reserve_rb, &tmp_rx, 1, IRQ_TIMEOUT);
         }
 
-        HAL_UART_Receive_IT(&PROTOCOL_UART, &tmp_rx, 1);
         buffer_flush_timeout = osKernelGetTickCount();
+        HAL_UART_Receive_IT(&PROTOCOL_UART, &tmp_rx, 1);
     }
 }
 
-osSemaphoreId_t TxSemaphore;
+osSemaphoreId_t UARTTxSemaphore;
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
     if (huart == &PROTOCOL_UART){
-        // osSemaphoreRelease(TxSemaphore);
+        osSemaphoreRelease(UARTTxSemaphore);
     }
 }
 
@@ -320,61 +309,70 @@ void PROTOCOL_Start(void){
 }
 
 void PROTOCOL_Task(void){
-    // TxSemaphore = osSemaphoreNew(1, 1, NULL);
     do{
         void * semaphore_tmp = osSemaphoreNew(1, 1, NULL);
         rb_init(&rx_rb, semaphore_tmp);
         semaphore_tmp = osSemaphoreNew(1, 1, NULL);
         rb_init(&tx_rb, semaphore_tmp);
-        semaphore_tmp = osSemaphoreNew(1, 1, NULL);
-        rb_init(&rx_reserve_rb, semaphore_tmp);
     }while(0);
 
     bp_header_t         basic_h;
     control_header_t    control_h;
+
+    UARTTxSemaphore = osSemaphoreNew(1, 1, NULL);
 
     buffer_flush_timeout = osKernelGetTickCount();
 
     PROTOCOL_Start();
 
     uint32_t bytes_available;
-
-    uint8_t start_bytes_tx[2] = { 0xA5, 0x5A };
+    
+    const uint8_t start_bytes_tx[2] = { 0xA5, 0x5A };
     uint8_t start_bytes_rx[2];
 
     while(1){
 
         bytes_available = rb_get_available(&tx_rb, IRQ_TIMEOUT);
-        // bytes_available = tx_rb.bytes_available;
-
-        // if (osSemaphoreAcquire(TxSemaphore, 0) == osOK){
+        if (bytes_available > 145) LED_CONTROL_UP();
+        // if (bytes_available < 100) LED_CONTROL_DOWN();
+        
         if (bytes_available){
-            if (rb_take_data(&tx_rb, tx_buffer, bytes_available, IRQ_TIMEOUT) == RING_BUFFER_OK){
-                HAL_UART_Transmit(&PROTOCOL_UART, tx_buffer, bytes_available, 100);
+            if (osSemaphoreAcquire(UARTTxSemaphore, IRQ_TIMEOUT) == osOK){
+                if (rb_take_data(&tx_rb, tx_buffer, bytes_available, IRQ_TIMEOUT) == RING_BUFFER_OK){
+                    HAL_UART_Transmit_IT(&PROTOCOL_UART, tx_buffer, bytes_available);
+                }
+                else{
+                    osSemaphoreRelease(UARTTxSemaphore);
+                }
             }
         }
-        // else{
-        //     osSemaphoreRelease(TxSemaphore);
-        // }
-        // }
-
-        if (ReceiveFromRxBuffer(start_bytes_rx, 2) == RING_BUFFER_OK){
-        // if (rb_take_data(&rx_rb, start_bytes_rx, 2) == RING_BUFFER_OK){
-            if ((start_bytes_rx[0] != 0xA5) || (start_bytes_rx[1] != 0x5A)){
-                rb_flush(&rx_rb, IRQ_TIMEOUT);
+        
+        if (ReceiveFromRxBuffer(start_bytes_rx, 1) == RING_BUFFER_OK){
+            if (start_bytes_rx[0] == 0xA5){
+                if (ReceiveFromRxBuffer(start_bytes_rx, 1) == RING_BUFFER_OK){
+                    if (start_bytes_rx[0] != 0x5A){
+                        continue;
+                    }
+                }
+                else{
+                    continue;
+                }
+            }
+            else{
                 continue;
             }
-            if (ReceiveFromRxBuffer((uint8_t *)&basic_h, sizeof(bp_header_t)) == RING_BUFFER_OK){//rb_take_data(&rx_rb, (uint8_t *)&basic_h, sizeof(bp_header_t)) == RING_BUFFER_OK){
+                
+            if (ReceiveFromRxBuffer((uint8_t *)&basic_h, sizeof(bp_header_t)) == RING_BUFFER_OK){
                 switch(basic_h.cmd){
                     case(BP_CMD_PING):{
                         if (basic_h.w_size == 0){
                             basic_h.w_size = 1;
-                            rb_push_data(&tx_rb, start_bytes_tx, 2, IRQ_TIMEOUT);
-                            rb_push_data(&tx_rb, (uint8_t *)&basic_h, sizeof(bp_header_t), IRQ_TIMEOUT);
-                            rb_push_data(&tx_rb, SELF_ID, 4, IRQ_TIMEOUT);
+                            if (rb_push_data(&tx_rb, start_bytes_tx, 2, IRQ_TIMEOUT) != RING_BUFFER_OK) LED_ERROR_UP();
+                            if (rb_push_data(&tx_rb, (uint8_t *)&basic_h, sizeof(bp_header_t), IRQ_TIMEOUT) != RING_BUFFER_OK) LED_ERROR_UP();
+                            if (rb_push_data(&tx_rb, SELF_ID, 4, IRQ_TIMEOUT) != RING_BUFFER_OK) LED_ERROR_UP();
                         }
                         else{
-                            rb_flush(&rx_rb, IRQ_TIMEOUT);
+                            // rb_flush(&rx_rb, IRQ_TIMEOUT);
                         }
                         break;
                     }
@@ -382,7 +380,7 @@ void PROTOCOL_Task(void){
                         if (basic_h.w_size == 1){
                             uint32_t partition;
                             if (ReceiveFromRxBuffer((uint8_t *)&partition, 4) != RING_BUFFER_OK){
-                                rb_flush(&rx_rb, IRQ_TIMEOUT);
+                                // rb_flush(&rx_rb, IRQ_TIMEOUT);
                             }
                             else{
                                 if (partition == 0){
@@ -405,7 +403,7 @@ void PROTOCOL_Task(void){
                     }
                     case(BP_CMD_CONTROL):{
                         if (ReceiveFromRxBuffer((uint8_t *)&control_h, sizeof(control_header_t)) != RING_BUFFER_OK){
-                            rb_flush(&rx_rb, IRQ_TIMEOUT);
+                            // rb_flush(&rx_rb, IRQ_TIMEOUT);
                             break;
                         }
                         if (control_h.id >= ID_LAST){
@@ -434,7 +432,7 @@ void PROTOCOL_Task(void){
                                     case(CMD_WRITE_REG):{
                                         multiple_reg_data_t mrd;
                                         if (ReceiveFromRxBuffer((uint8_t *)&mrd, sizeof(multiple_reg_data_t)) != RING_BUFFER_OK){
-                                            rb_flush(&rx_rb, IRQ_TIMEOUT);
+                                            // rb_flush(&rx_rb, IRQ_TIMEOUT);
                                             break;
                                         }
                                         if (mrd.reg >= REGISTER_LAST){
@@ -466,7 +464,7 @@ void PROTOCOL_Task(void){
                                     case(CMD_READ_REG):{
                                         multiple_reg_data_t mrd;
                                         if (ReceiveFromRxBuffer((uint8_t *)&mrd, sizeof(multiple_reg_data_t)) != RING_BUFFER_OK){
-                                            rb_flush(&rx_rb, IRQ_TIMEOUT);
+                                            // rb_flush(&rx_rb, IRQ_TIMEOUT);
                                             break;
                                         }
                                         if (mrd.reg >= REGISTER_LAST){
@@ -556,7 +554,7 @@ void PROTOCOL_Task(void){
                                     case(CMD_WRITE_REG):{
                                         single_reg_data_t srd;
                                         if (ReceiveFromRxBuffer((uint8_t *)&srd, sizeof(single_reg_data_t)) != RING_BUFFER_OK){
-                                            rb_flush(&rx_rb, IRQ_TIMEOUT);
+                                            // rb_flush(&rx_rb, IRQ_TIMEOUT);
                                             break;
                                         }
                                         if (srd.reg >= REGISTER_LAST){
@@ -585,7 +583,7 @@ void PROTOCOL_Task(void){
                                     case(CMD_READ_REG):{
                                         single_reg_data_t srd;
                                         if (ReceiveFromRxBuffer((uint8_t *)&srd, sizeof(single_reg_data_t)) != RING_BUFFER_OK){
-                                            rb_flush(&rx_rb, IRQ_TIMEOUT);
+                                            // rb_flush(&rx_rb, IRQ_TIMEOUT);
                                             break;
                                         }
                                         if (srd.reg >= REGISTER_LAST){
@@ -643,16 +641,16 @@ void PROTOCOL_Task(void){
                         break;
                     }
                     default:{
-                        rb_flush(&rx_rb, IRQ_TIMEOUT);
+                        // rb_flush(&rx_rb, IRQ_TIMEOUT);
                     }
                 }
             }
-            else{
-                rb_flush(&rx_rb, IRQ_TIMEOUT);
-            }
+            // else{
+                // rb_flush(&rx_rb, IRQ_TIMEOUT);
+            // }
             // else if ((osKernelGetTickCount() - buffer_flush_timeout) > 50)
-                // rb_flush(&rx_rb);
+                // rb_flush(&rx_rb, IRQ_TIMEOUT);
         }
-        osDelay(5);
+        // osDelay(5);
     }
 }
