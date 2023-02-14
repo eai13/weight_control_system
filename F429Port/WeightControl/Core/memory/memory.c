@@ -1,9 +1,12 @@
 #include "memory.h"
 #include "stm32f4xx_hal_i2c.h"
-// #include "stm32f4xx_hal_i2c_ex.h"
 #include "i2c.h"
 #include "string.h"
 #include <stdint.h>
+#include "main.h"
+#include "cmsis_os2.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 HAL_StatusTypeDef MEMORY_CheckMemoryName(uint32_t timeout){
     HAL_StatusTypeDef status = HAL_OK;
@@ -66,4 +69,15 @@ HAL_StatusTypeDef MEMORY_GetActualPosition(uint32_t * pos, uint32_t timeout){
                                                 I2C_MEMADD_SIZE_8BIT,
                                                 pos, 16, timeout);
     return status;
+}
+
+void MEMORY_Task(void){
+    
+    while(1){
+        // LED_CONTROL_UP();
+        osDelay(3000);
+        // MEMORY_SetActualPosition()
+        LED_CONTROL_TOGGLE();
+        // LED_CONTROL_DOWN();
+    }
 }

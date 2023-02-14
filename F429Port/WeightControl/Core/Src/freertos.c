@@ -26,6 +26,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "protocol.h"
+#include "memory.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,12 +52,12 @@
 //   .stack_mem = 2000,
 //   .priority = (osPriority_t) osPriorityHigh
 // };
-// osThreadId_t TaskMemory;
-// const osThreadAttr_t TaskMemory_attr = {
-//   .name = "TASK_MEMORY",
-//   .stack_mem = 1000,
-//   .priority = (osPriority_t) osPriorityLow
-// };
+osThreadId_t TaskMemory;
+const osThreadAttr_t TaskMemory_attr = {
+  .name = "TASK_MEMORY",
+  .stack_size = 2048,
+  .priority = (osPriority_t) osPriorityLow
+};
 osThreadId_t TaskProtocol;
 const osThreadAttr_t TaskProtocol_attr = {
   .name = "TASK_PROTOCOL",
@@ -112,7 +113,8 @@ void MX_FREERTOS_Init(void) {
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  TaskProtocol = osThreadNew(PROTOCOL_Task, NULL, &TaskProtocol_attr);
+  TaskProtocol  = osThreadNew(PROTOCOL_Task, NULL, &TaskProtocol_attr);
+  TaskMemory    = osThreadNew(MEMORY_Task, NULL, &TaskMemory_attr);
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 

@@ -410,6 +410,6 @@ void PROTOCOL_Task(void){
                 }
             }
         }
-        // osDelay(5);
+        osDelay(5);
     }
 }

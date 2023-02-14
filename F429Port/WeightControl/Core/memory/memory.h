@@ -21,4 +21,6 @@ HAL_StatusTypeDef MEMORY_PreparePartition(uint32_t timeout);
 HAL_StatusTypeDef MEMORY_SetActualPosition(uint32_t pos1, uint32_t pos2, uint32_t pos3, uint32_t pos4, uint32_t timeout);
 HAL_StatusTypeDef MEMORY_GetActualPosition(uint32_t * pos, uint32_t timeout);
 
+void MEMORY_Task(void);
+
 #endif

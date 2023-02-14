@@ -32,6 +32,35 @@
 /* USER CODE BEGIN Includes */
 #include "protocol.h"
 #include "memory.h"
+
+#define __MEMORY_INIT_OK() \
+    {   \
+        LED_CONTROL_UP(); \
+        HAL_Delay(100); \
+        LED_CONTROL_DOWN(); \
+    }
+
+#define __MEMORY_INIT_FAILED() \
+    { \
+        LED_ERROR_UP(); \
+        HAL_Delay(500); \
+        HAL_NVIC_SystemReset(); \
+    }
+
+#define __MEMORY_REINITIALIZED() \
+    { \
+        LED_CONTROL_UP(); \
+        HAL_Delay(100); \
+        LED_CONTROL_DOWN(); \
+        HAL_Delay(100); \
+        LED_CONTROL_UP(); \
+        HAL_Delay(100); \
+        LED_CONTROL_DOWN(); \
+        HAL_Delay(100); \
+        LED_CONTROL_UP(); \
+        HAL_Delay(100); \
+        LED_CONTROL_DOWN(); \
+    }
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -115,46 +144,46 @@ int main(void)
   MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
   // HAL_Delay(100);
-  LED_CONTROL_UP(); LED_ERROR_UP(); LED_PROTOCOL_UP();
-  HAL_Delay(100);
-  LED_CONTROL_DOWN(); LED_ERROR_DOWN(); LED_PROTOCOL_DOWN();
-  // uint32_t position[4] = { 0x7FFF, 0x7FFFFFFF, 0x7FFF, 0x7FFF };
-  // HAL_StatusTypeDef state;
-  // state = MEMORY_CheckMemoryName(10);
-  // if (state != HAL_OK){
-  //   // print_wr("EEPROM Partition name is not good STATE: 0x%X\r\n", state);
-  //   state = MEMORY_PreparePartition(10);
-  //   if (state != HAL_OK){
-  //     // print_er("EEPROM Partition name setting failed STATE: 0x%X\r\n", state);
-  //     LED_ERROR_UP();
-  //   }
-  //   else{
-  //     // print_in("EEPROM Partition name set\r\n");
-  //     state = MEMORY_SetActualPosition(position[0], position[1], position[2], position[3], 10);
-  //     if (state != HAL_OK){
-  //       // print_er("EEPROM Failed to set initial positions STATE: 0x%X\r\n", state);
-  //     }
-  //     else{
-  //       // print_in("EEPROM Succeeded to set initial positions\r\n");
-  //       LED_CONTROL_UP();
-  //     }
-  //   }
-  // }
-  // else{
-  //   // print_in("EEPROM Partition name is ok\r\n");
-  //   state = MEMORY_GetActualPosition(position, 10);
-  //   if (state != HAL_OK){
-  //     LED_ERROR_UP();
-  //     // print_er("EEPROM Failed to receive actual position STATE: 0x%X\r\n", state);
-  //   }
-  //   else{
-  //     // print_in("EEPROM Succeeded to receive actual positions\r\n");
-  //     LED_PROTOCOL_UP();
-  //     // print_in("EEPROM Positions: 0x%X 0x%X 0x%X 0x%X\r\n", position[0], position[1], position[2], position[3], 10);
-  //   }
-  // }
+  // LED_CONTROL_UP(); LED_ERROR_UP(); LED_PROTOCOL_UP();
+  // HAL_Delay(100);
+  // LED_CONTROL_DOWN(); LED_ERROR_DOWN(); LED_PROTOCOL_DOWN();
+  
+  uint32_t position[4] = { 0x7FFFFFFF, 0x7FFF, 0x7FFF, 0x7FFFFFFF };
+  HAL_StatusTypeDef state;
+  state = MEMORY_CheckMemoryName(10);
+  if (state != HAL_OK){
+      // EEPROM Partition Name Is Not Good
+      state = MEMORY_PreparePartition(10);
+      if (state != HAL_OK){
+          // EEPROM Partition Name Setting Failed
+          __MEMORY_INIT_FAILED();
+      }
+      else{
+          // EEPROM Partition Name Set
+          state = MEMORY_SetActualPosition(position[0], position[1], position[2], position[3], 10);
+          if (state != HAL_OK){
+              // EEPROM Failed To Set Initial Positions
+              __MEMORY_INIT_FAILED();
+          }
+          else{
+              // EEPROM Succeeded To Set Initial Positions
+              __MEMORY_REINITIALIZED();
+          }
+      }
+  }
+  else{
+      // EEPROM Partitions Name Is Ok
+      state = MEMORY_GetActualPosition(position, 10);
+      if (state != HAL_OK){
+          // EEPROM Failed To Receive Actual Position
+          __MEMORY_INIT_FAILED();
+      }
+      else{
+          // EEPROM Succeeded To Receive Actual Positions
+          __MEMORY_INIT_OK();
+      }
+  }
 
-  // PROTOCOL_Start();
   /* USER CODE END 2 */
 
   /* Init scheduler */
