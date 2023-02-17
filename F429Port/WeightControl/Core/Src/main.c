@@ -32,6 +32,7 @@
 /* USER CODE BEGIN Includes */
 #include "protocol.h"
 #include "memory.h"
+#include "stm32f4xx_hal.h"
 
 #define __MEMORY_INIT_OK() \
     {   \
@@ -179,6 +180,10 @@ int main(void)
           __MEMORY_INIT_OK();
       }
   }
+
+  // HAL_ADCEx_Calibration_Start(&hadc1);
+  HAL_ADC_Start_DMA(&hadc1, current, 4);
+  HAL_TIM_Base_Start(&htim8);
 
   /* USER CODE END 2 */
 

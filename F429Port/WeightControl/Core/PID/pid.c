@@ -268,7 +268,7 @@ void DriveForward(uint8_t drive_num){
     if (DRIVE.direction != DIR_FORWARD) DRIVE.direction = DIR_FORWARD;
     else return;
     HAL_GPIO_WritePin(DRIVE.dir_pins.rev_port, DRIVE.dir_pins.rev_pin, 0);
-    for (uint32_t iter = 0; iter < 100; iter++){
+    for (uint32_t iter = 0; iter < 300; iter++){
         __NOP();
     }
     HAL_GPIO_WritePin(DRIVE.dir_pins.frw_port, DRIVE.dir_pins.frw_pin, 1);
@@ -279,7 +279,7 @@ void DriveReverse(uint8_t drive_num){
     if (DRIVE.direction != DIR_REVERSE) DRIVE.direction = DIR_REVERSE;
     else return;
     HAL_GPIO_WritePin(DRIVE.dir_pins.frw_port, DRIVE.dir_pins.frw_pin, 0);
-    for (uint32_t iter = 0; iter < 100; iter++){
+    for (uint32_t iter = 0; iter < 300; iter++){
         __NOP();
     }
     HAL_GPIO_WritePin(DRIVE.dir_pins.rev_port, DRIVE.dir_pins.rev_pin, 1);
