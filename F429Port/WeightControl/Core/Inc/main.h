@@ -69,8 +69,6 @@ void Error_Handler(void);
 #define DRV1_DIR_0_GPIO_Port GPIOC
 #define DRV1_DIR_1_Pin GPIO_PIN_9
 #define DRV1_DIR_1_GPIO_Port GPIOC
-#define DRV2_DIR_1_Pin GPIO_PIN_10
-#define DRV2_DIR_1_GPIO_Port GPIOC
 #define DRV3_DIR_1_Pin GPIO_PIN_4
 #define DRV3_DIR_1_GPIO_Port GPIOD
 #define DRV3_DIR_0_Pin GPIO_PIN_5
@@ -79,6 +77,8 @@ void Error_Handler(void);
 #define DRV2_DIR_0_GPIO_Port GPIOD
 #define EMERGENCY_STOP_Pin GPIO_PIN_7
 #define EMERGENCY_STOP_GPIO_Port GPIOD
+#define DRV2_DIR_1_Pin GPIO_PIN_9
+#define DRV2_DIR_1_GPIO_Port GPIOG
 #define LED_CONTROL_Pin GPIO_PIN_7
 #define LED_CONTROL_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */

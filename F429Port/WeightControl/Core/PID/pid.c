@@ -6,13 +6,9 @@
 #include "main.h"
 #include <math.h>
 #include <stdint.h>
-// #include "debug.h"
+#include "cmsis_os.h"
 
-// #include "lptim.h"
-
-// #ifdef _DEBUG_VERSION_
-// #include "debug.h"
-// #endif
+#include "macros.h"
 
 #define DRIVE   (drives[drive_num])
 #define _ABS_FLOAT(value) \
@@ -478,5 +474,31 @@ void PID_StopDrive(uint8_t drive_num){
     }
     else{
         DRIVE.position_l.sp.v = DRIVE.position_l.fb.v;
+    }
+}
+
+void PID_Task(void){
+    
+    drives[0].last_pid_call = osKernelGetTickCount();
+    drives[1].last_pid_call = osKernelGetTickCount();
+    drives[2].last_pid_call = osKernelGetTickCount();
+    drives[3].last_pid_call = osKernelGetTickCount();
+    osDelay(10);
+
+    _TIME_START_(led_notification, 100);
+
+    while(1){
+        
+        PID_DriveCompute(0);
+        PID_DriveCompute(1);
+        PID_DriveCompute(2);
+        PID_DriveCompute(3);
+
+        osDelay(10);
+
+        if (_IS_TIMEOUT_(led_notification)){
+            LED_PROTOCOL_TOGGLE();
+            _TIME_UPDATE_(led_notification);
+        }
     }
 }

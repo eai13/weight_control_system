@@ -56,6 +56,7 @@ typedef enum{
 }wc_drive_dir_e;
 
 typedef struct{
+    uint32_t last_pid_call;
     union{
         struct{
             float_register_t    torque;
@@ -98,7 +99,7 @@ void        PID_MoveSetpoints(void);
 void        PID_StopDrive(uint8_t drive_num);
 void        PID_SetZero(uint8_t drive_num);
 
-void PID_Thread(void);
+void PID_Task(void);
 
 // TMP
 uint32_t GetIntCount(void);

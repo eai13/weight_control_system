@@ -143,10 +143,6 @@ int main(void)
   MX_TIM10_Init();
   MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
-  // HAL_Delay(100);
-  // LED_CONTROL_UP(); LED_ERROR_UP(); LED_PROTOCOL_UP();
-  // HAL_Delay(100);
-  // LED_CONTROL_DOWN(); LED_ERROR_DOWN(); LED_PROTOCOL_DOWN();
   
   uint32_t position[4] = { 0x7FFFFFFF, 0x7FFF, 0x7FFF, 0x7FFFFFFF };
   HAL_StatusTypeDef state;

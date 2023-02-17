@@ -46,12 +46,12 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-// osThreadId_t TaskPID;
-// const osThreadAttr_t TaskPID_attr = {
-//   .name = "TASK_PID",
-//   .stack_mem = 2000,
-//   .priority = (osPriority_t) osPriorityHigh
-// };
+osThreadId_t TaskPID;
+const osThreadAttr_t TaskPID_attr = {
+  .name = "TASK_PID",
+  .stack_size = 4096,
+  .priority = (osPriority_t) osPriorityHigh
+};
 osThreadId_t TaskMemory;
 const osThreadAttr_t TaskMemory_attr = {
   .name = "TASK_MEMORY",
@@ -115,6 +115,7 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_THREADS */
   TaskProtocol  = osThreadNew(PROTOCOL_Task, NULL, &TaskProtocol_attr);
   TaskMemory    = osThreadNew(MEMORY_Task, NULL, &TaskMemory_attr);
+  TaskPID       = osThreadNew(PID_Task, NULL, &TaskPID_attr);
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
