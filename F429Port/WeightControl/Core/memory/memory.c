@@ -7,6 +7,7 @@
 #include "cmsis_os2.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "pid.h"
 
 HAL_StatusTypeDef MEMORY_CheckMemoryName(uint32_t timeout){
     HAL_StatusTypeDef status = HAL_OK;
@@ -73,11 +74,17 @@ HAL_StatusTypeDef MEMORY_GetActualPosition(uint32_t * pos, uint32_t timeout){
 
 void MEMORY_Task(void){
     
+    uint32_t positions_to_save[4];
+
     while(1){
-        // LED_CONTROL_UP();
-        osDelay(3000);
-        // MEMORY_SetActualPosition()
+
+        PID_GetPositions(positions_to_save);
+        MEMORY_SetActualPosition(positions_to_save[0],
+                                 positions_to_save[1],
+                                 positions_to_save[2],
+                                 positions_to_save[3], 100);
         LED_CONTROL_TOGGLE();
-        // LED_CONTROL_DOWN();
+        osDelay(3000);
+        
     }
 }

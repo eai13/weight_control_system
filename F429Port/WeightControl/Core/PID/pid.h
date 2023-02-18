@@ -94,19 +94,13 @@ rw_status_t     PID_WriteReg(uint8_t drive_num, uint8_t reg, float data);
 rw_status_t     PID_ReadReg(uint8_t drive_num, uint8_t reg, float * data);
 wc_plottables_t PID_ReadPlottables(uint8_t drive_num);
 
-void        PID_SetNewCorrector(uint32_t corrector);
-uint32_t    PID_GetCorrector(void);
 void        PID_MoveSetpoints(void);
 void        PID_StopDrive(uint8_t drive_num);
 void        PID_SetZero(uint8_t drive_num);
 
 void PID_Task(void);
 
-// TMP
-uint32_t GetIntCount(void);
-uint32_t GetMot4Count(void);
-// void SetPIDEnabled(void)
-// TMP
+void PID_GetPositions(uint32_t * pos);
 
 extern device_t drives[4];
 extern uint16_t current[4];

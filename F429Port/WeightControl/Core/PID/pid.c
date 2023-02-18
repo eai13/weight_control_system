@@ -390,58 +390,100 @@ wc_plottables_t PID_ReadPlottables(uint8_t drive_num){
 }
 
 void PID_MoveSetpoints(void){
-    if (osSemaphoreAcquire(drives[0].semaphore, 100) != osOK) return;
-    drives[0].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[0].encoder_s.v))) - 0x7FFF);
-    osSemaphoreRelease(drives[0].semaphore);
-
-    if (osSemaphoreAcquire(drives[1].semaphore, 100) != osOK) return;
-    drives[1].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[1].encoder_s.v))) - 0x7FFF);
-    osSemaphoreRelease(drives[1].semaphore);
-    
-    if (osSemaphoreAcquire(drives[2].semaphore, 100) != osOK) return;
-    drives[2].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[2].encoder_s.v))) - 0x7FFF);
-    osSemaphoreRelease(drives[2].semaphore);
-    
-    if (osSemaphoreAcquire(drives[3].semaphore, 100) != osOK) return;
-    drives[3].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[3].encoder_s.v))) - 0x7FFF);
-    osSemaphoreRelease(drives[3].semaphore);
+    if (osSemaphoreAcquire(drives[0].semaphore, 100) == osOK){
+        drives[0].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[0].encoder_s.v))) - 0x7FFF);
+        osSemaphoreRelease(drives[0].semaphore);
+    }
+    if (osSemaphoreAcquire(drives[1].semaphore, 100) == osOK){
+        drives[1].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[1].encoder_s.v))) - 0x7FFF);
+        osSemaphoreRelease(drives[1].semaphore);
+    }
+    if (osSemaphoreAcquire(drives[2].semaphore, 100) == osOK){
+        drives[2].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[2].encoder_s.v))) - 0x7FFF);
+        osSemaphoreRelease(drives[2].semaphore);
+    }
+    if (osSemaphoreAcquire(drives[3].semaphore, 100) == osOK){
+        drives[3].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[3].encoder_s.v))) - 0x7FFF);
+        osSemaphoreRelease(drives[3].semaphore);
+    }
 }
 
 void PID_SetZero(uint8_t drive_num){
     if (drive_num > 3){
-        ENCODER_1_COUNT = 0x7FFF;
-        drives[0].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[0].encoder_s.v))) - 0x7FFF);
-        ENCODER_2_COUNT = 0x7FFF;
-        drives[1].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[1].encoder_s.v))) - 0x7FFF);
-        ENCODER_3_COUNT = 0x7FFF;
-        drives[2].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[2].encoder_s.v))) - 0x7FFF);
-        ENCODER_4_COUNT = 0x7FFF;
-        drives[3].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[3].encoder_s.v))) - 0x7FFF);
+        if (osSemaphoreAcquire(drives[0].semaphore, 100) == osOK){
+            ENCODER_1_COUNT = 0x7FFF;
+            drives[0].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[0].encoder_s.v))) - 0x7FFF);
+            osSemaphoreRelease(drives[0].semaphore);
+        }
+        if (osSemaphoreAcquire(drives[1].semaphore, 100) == osOK){
+            ENCODER_2_COUNT = 0x7FFF;
+            drives[1].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[1].encoder_s.v))) - 0x7FFF);
+            osSemaphoreRelease(drives[1].semaphore);
+        }
+        if (osSemaphoreAcquire(drives[2].semaphore, 100) == osOK){
+            ENCODER_3_COUNT = 0x7FFF;
+            drives[2].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[2].encoder_s.v))) - 0x7FFF);
+            osSemaphoreRelease(drives[2].semaphore);
+        }
+        if (osSemaphoreAcquire(drives[3].semaphore, 100) == osOK){
+            ENCODER_4_COUNT = 0x7FFF;
+            drives[3].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[3].encoder_s.v))) - 0x7FFF);
+            osSemaphoreRelease(drives[3].semaphore);
+        }
     }
     else{
-        (*(DRIVE.encoder_s.v)) = 0x7FFF;
-        DRIVE.position_l.sp.v = GetRealRadial(((int32_t)(*(DRIVE.encoder_s.v))) - 0x7FFF);
+        if (osSemaphoreAcquire(DRIVE.semaphore, 100) == osOK){
+            (*(DRIVE.encoder_s.v)) = 0x7FFF;
+            DRIVE.position_l.sp.v = GetRealRadial(((int32_t)(*(DRIVE.encoder_s.v))) - 0x7FFF);
+            osSemaphoreRelease(DRIVE.semaphore);
+        }
     }
 }
 
 void PID_StopDrive(uint8_t drive_num){
     if (drive_num > 3){
-        drives[0].position_l.sp.v = drives[0].position_l.fb.v;
-        drives[1].position_l.sp.v = drives[1].position_l.fb.v;
-        drives[2].position_l.sp.v = drives[2].position_l.fb.v;
-        drives[3].position_l.sp.v = drives[3].position_l.fb.v;
+        if (osSemaphoreAcquire(drives[0].semaphore, 100) == osOK){
+            drives[0].position_l.sp.v = drives[0].position_l.fb.v;
+            osSemaphoreRelease(drives[0].semaphore);
+        }
+        if (osSemaphoreAcquire(drives[1].semaphore, 100) == osOK){
+            drives[1].position_l.sp.v = drives[1].position_l.fb.v;
+            osSemaphoreRelease(drives[1].semaphore);
+        }
+        if (osSemaphoreAcquire(drives[2].semaphore, 100) == osOK){
+            drives[2].position_l.sp.v = drives[2].position_l.fb.v;
+            osSemaphoreRelease(drives[2].semaphore);
+        }
+        if (osSemaphoreAcquire(drives[3].semaphore, 100) == osOK){
+            drives[3].position_l.sp.v = drives[3].position_l.fb.v;
+            osSemaphoreRelease(drives[3].semaphore);
+        }
     }
     else{
-        DRIVE.position_l.sp.v = DRIVE.position_l.fb.v;
+        if (osSemaphoreAcquire(DRIVE.semaphore, 100) == osOK){
+            DRIVE.position_l.sp.v = DRIVE.position_l.fb.v;
+            osSemaphoreRelease(DRIVE.semaphore);
+        }
     }
 }
 
 void PID_GetPositions(uint32_t * pos){
-
-    pos[0] = *(drives[0].encoder_s.v);
-    pos[1] = *(drives[1].encoder_s.v);
-    pos[2] = *(drives[2].encoder_s.v);
-    pos[3] = *(drives[3].encoder_s.v);
+    if (osSemaphoreAcquire(drives[0].semaphore, 100) == osOK){
+        pos[0] = *(drives[0].encoder_s.v);
+        osSemaphoreRelease(drives[0].semaphore);
+    }
+    if (osSemaphoreAcquire(drives[1].semaphore, 100) == osOK){
+        pos[1] = *(drives[1].encoder_s.v);
+        osSemaphoreRelease(drives[1].semaphore);
+    }
+    if (osSemaphoreAcquire(drives[2].semaphore, 100) == osOK){
+        pos[2] = *(drives[2].encoder_s.v);
+        osSemaphoreRelease(drives[2].semaphore);
+    }
+    if (osSemaphoreAcquire(drives[3].semaphore, 100) == osOK){
+        pos[3] = *(drives[3].encoder_s.v);
+        osSemaphoreRelease(drives[3].semaphore);
+    }
 }
 
 void PID_Task(void){
