@@ -95,6 +95,9 @@ void Error_Handler(void);
 #define LED_CONTROL_DOWN()    HAL_GPIO_WritePin(LED_CONTROL_GPIO_Port, LED_CONTROL_Pin, 0)
 #define LED_CONTROL_TOGGLE()  HAL_GPIO_TogglePin(LED_CONTROL_GPIO_Port, LED_CONTROL_Pin)
 
+#define _IS_EM_STOP_() \
+  (HAL_GPIO_ReadPin(EMERGENCY_STOP_GPIO_Port, EMERGENCY_STOP_Pin) == 0)
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

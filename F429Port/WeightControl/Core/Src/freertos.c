@@ -50,13 +50,13 @@ osThreadId_t TaskPID;
 const osThreadAttr_t TaskPID_attr = {
   .name = "TASK_PID",
   .stack_size = 4096,
-  .priority = (osPriority_t) osPriorityHigh
+  .priority = (osPriority_t) osPriorityNormal
 };
 osThreadId_t TaskMemory;
 const osThreadAttr_t TaskMemory_attr = {
   .name = "TASK_MEMORY",
   .stack_size = 2048,
-  .priority = (osPriority_t) osPriorityLow
+  .priority = (osPriority_t) osPriorityNormal
 };
 osThreadId_t TaskProtocol;
 const osThreadAttr_t TaskProtocol_attr = {

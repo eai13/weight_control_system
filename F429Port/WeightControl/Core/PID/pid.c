@@ -492,6 +492,8 @@ void PID_Task(void){
     drives[1].semaphore = osSemaphoreNew(1, 1, NULL);
     drives[2].semaphore = osSemaphoreNew(1, 1, NULL);
     drives[3].semaphore = osSemaphoreNew(1, 1, NULL);
+    
+    PID_MoveSetpoints();
 
     _TIME_START_(led_notification, 100);
     
@@ -501,8 +503,23 @@ void PID_Task(void){
     drives[3].last_pid_call = osKernelGetTickCount();
     osDelay(10);
 
+    uint8_t emergency_stop_pressed = 0;
+
     while(1){
-        
+
+        if (_IS_EM_STOP_()){
+            if (!emergency_stop_pressed){
+                LED_PROTOCOL_UP();
+                PID_StopDrive(4);
+                emergency_stop_pressed = 1;
+            }
+            osDelay(10);
+            continue;
+        }
+        else{
+            emergency_stop_pressed = 0;
+        }
+
         PID_DriveCompute(0);
         PID_DriveCompute(1);
         PID_DriveCompute(2);

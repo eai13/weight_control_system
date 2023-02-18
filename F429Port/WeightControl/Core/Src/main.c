@@ -201,8 +201,6 @@ int main(void)
   HAL_TIM_Encoder_Start(&ENCODER_4_TIMER, TIM_CHANNEL_ALL);
   ENCODER_4_COUNT = position[3];
 
-  PID_MoveSetpoints();
-
   /* USER CODE END 2 */
 
   /* Init scheduler */
