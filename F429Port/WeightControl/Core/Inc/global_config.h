@@ -33,9 +33,6 @@
 #define PWM_4_CHANNEL       TIM_CHANNEL_1
 #define PWM_4_DUTY          (TIM11->CCR1)
 
-// DRIVE COMPUTE TIMER
-// #define CONTROL_SYSTEM_TIMER      htim14
-
-#define PWM_UPPER_COUNT     2500
+#define PWM_UPPER_COUNT     1000
 
 #endif

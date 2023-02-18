@@ -56,6 +56,7 @@ typedef enum{
 }wc_drive_dir_e;
 
 typedef struct{
+    void * semaphore;
     uint32_t last_pid_call;
     union{
         struct{

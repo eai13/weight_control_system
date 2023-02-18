@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "memory.h": "c",
-        "macros.h": "c"
+        "macros.h": "c",
+        "iwdg.h": "c"
     }
 }

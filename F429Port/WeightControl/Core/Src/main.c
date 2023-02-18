@@ -88,7 +88,6 @@
 void SystemClock_Config(void);
 void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -130,7 +129,7 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_ADC1_Init();
-  // MX_IWDG_Init();
+  MX_IWDG_Init();
   MX_TIM1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
@@ -145,7 +144,7 @@ int main(void)
   MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
   
-  uint32_t position[4] = { 0x7FFFFFFF, 0x7FFF, 0x7FFF, 0x7FFFFFFF };
+  uint32_t position[4] = { 0x7FFF, 0x7FFF, 0x7FFF, 0x7FFF };
   HAL_StatusTypeDef state;
   state = MEMORY_CheckMemoryName(10);
   if (state != HAL_OK){
@@ -181,9 +180,28 @@ int main(void)
       }
   }
 
-  // HAL_ADCEx_Calibration_Start(&hadc1);
+  HAL_TIM_PWM_Start(&PWM_1_TIMER, PWM_1_CHANNEL);
+  PWM_1_DUTY = 0;
+  HAL_TIM_PWM_Start(&PWM_2_TIMER, PWM_2_CHANNEL);
+  PWM_2_DUTY = 0;
+  HAL_TIM_PWM_Start(&PWM_3_TIMER, PWM_3_CHANNEL);
+  PWM_3_DUTY = 0;
+  HAL_TIM_PWM_Start(&PWM_4_TIMER, PWM_4_CHANNEL);
+  PWM_4_DUTY = 0;
+
   HAL_ADC_Start_DMA(&hadc1, current, 4);
   HAL_TIM_Base_Start(&htim8);
+
+  HAL_TIM_Encoder_Start(&ENCODER_1_TIMER, TIM_CHANNEL_ALL);
+  ENCODER_1_COUNT = position[0];
+  HAL_TIM_Encoder_Start(&ENCODER_2_TIMER, TIM_CHANNEL_ALL);
+  ENCODER_2_COUNT = position[1];
+  HAL_TIM_Encoder_Start(&ENCODER_3_TIMER, TIM_CHANNEL_ALL);
+  ENCODER_3_COUNT = position[2];
+  HAL_TIM_Encoder_Start(&ENCODER_4_TIMER, TIM_CHANNEL_ALL);
+  ENCODER_4_COUNT = position[3];
+
+  PID_MoveSetpoints();
 
   /* USER CODE END 2 */
 

@@ -222,7 +222,6 @@ void SystemControl::ProcessIncomingData(void){
 
     BP_Header bp_header;
     if (bp_header.SetHeaderFromRaw(data) == -1){
-//        qDebug() << "SYSTEM CONTROL Wrong Size " << hex << bp_header.start_A5 << bp_header.start_5A << bp_header.cmd << dec << bp_header.w_size;
         this->SerialLock.Unlock();
         return;
     }
@@ -231,11 +230,9 @@ void SystemControl::ProcessIncomingData(void){
 
 
     if ((bp_header.start_5A != 0x5A) || (bp_header.start_A5 != 0xA5)){
-//        qDebug() << "SYSTEM CONTROL DAMAGED FRAME";
         this->SerialLock.Unlock();
         return;
     }
-//    qDebug() << "SYSTEM CONTROL INFO " << hex << bp_header.start_A5 << bp_header.start_5A << bp_header.cmd << dec << bp_header.w_size;
 
     switch(bp_header.cmd){
     case(BP_Commands::BP_PING):{
@@ -402,6 +399,12 @@ void SystemControl::ConsoleError(QString message){
     if (!(this->console_enabled)) return;
     ui->listWidget_debugconsole->addItem("[WARNING] " + message);
     ui->listWidget_debugconsole->item(ui->listWidget_debugconsole->count() - 1)->setForeground(QColor(219, 169, 0));
+    ui->listWidget_debugconsole->scrollToBottom();
+}
+
+void SystemControl::ConsoleDebug(QString message){
+    ui->listWidget_debugconsole->addItem("[DEBUG] " + message);
+    ui->listWidget_debugconsole->item(ui->listWidget_debugconsole->count() - 1)->setForeground(QColor(0, 0, 255));
     ui->listWidget_debugconsole->scrollToBottom();
 }
 

@@ -15,37 +15,6 @@
             ((((float)(value)) > ((float)(0.0))) ? ((float)(value)) : (((float)(-1)) * ((float)(value))))
 
 uint16_t current[4] = { 0, 0, 0, 0 };
-float    set_position[4] = { 0, 0, 0, 0 };
-// uint32_t lptim_corrector = 0;
-
-// void PID_SetNewCorrector(uint32_t corrector){
-    // lptim_corrector = corrector;
-// }
-// uint32_t PID_GetCorrector(void){
-    // return lptim_corrector;
-// }
-
-// TMP
-// uint32_t int_count = 0x7FFFFFFF;
-// uint32_t GetIntCount(){
-    // return int_count;
-// }
-// TMP
-
-// void HAL_LPTIM_AutoReloadMatchCallback(LPTIM_HandleTypeDef *hlptim){
-    // uint16_t tmp = ENCODER_4_COUNT;
-//   if (hlptim == &ENCODER_4_TIMER){
-    // if (tmp == 0) return;
-    // if (tmp < 0x7FFF){
-    //   int_count++;
-    //   lptim_corrector += 0xFFFF;
-    // }
-    // else{
-    //   int_count--;
-    //   lptim_corrector -= 0xFFFF;
-    // }
-//   }
-// }
 
 device_t drives[4] = {
     { // DRIVE 1
@@ -242,12 +211,6 @@ device_t drives[4] = {
     }
 };
 
-// TMP
-uint32_t GetMot4Count(void){
-  return *(drives[3].encoder_s.v);  
-}
-// TMP
-
 static inline
 float GetRealCurrent(uint16_t raw){
     return (((float)(abs((int16_t)(raw)) - ADC_CURRENT_0)) / ADC_RESOLUTION * ADC_REFERENCE / ADC_VPA);
@@ -285,25 +248,16 @@ void DriveReverse(uint8_t drive_num){
     HAL_GPIO_WritePin(DRIVE.dir_pins.rev_port, DRIVE.dir_pins.rev_pin, 1);
 }
 
-// uint8_t pid_enabled = 0;
-// void SetPIDEnabled(void) { pid_enabled = 1; }
 void PID_DriveCompute(uint8_t drive_num){
-    // if (pid_enabled == 0) return;
-    // // GETTING RADIAL POSITION
-    float tmp_position = 0;
-    if (drive_num == 3){
-        // tmp_position = GetRealRadial(((int32_t)(*(DRIVE.encoder_s.v))) + lptim_corrector - 0x3FFFFFFF);
-    }
-    else if (drive_num == 0){
-        tmp_position = GetRealRadial(((int64_t)(*(DRIVE.encoder_s.v))) - 0x7FFFFFFF);
-    }
-    else{
-        tmp_position = GetRealRadial(((int32_t)(*(DRIVE.encoder_s.v))) - 0x7FFF);
-    }
+    if (osSemaphoreAcquire(DRIVE.semaphore, 100) != osOK) return;
+    // GETTING RADIAL POSITION
+    float tmp_position = GetRealRadial(((int32_t)(*(DRIVE.encoder_s.v))) - 0x7FFF);
     
+    float pid_period = ((float)(osKernelGetTickCount() - DRIVE.last_pid_call)) / (float)(1000);
+
     // FEEDBACK COMPUTE
     DRIVE.speed_l.fb.v      = 
-            (tmp_position - DRIVE.position_l.fb.v) / TIME_CONSTANT;
+            (tmp_position - DRIVE.position_l.fb.v) / pid_period;
     DRIVE.position_l.fb.v   =
             tmp_position;
     DRIVE.current_l.fb.v    =
@@ -313,14 +267,14 @@ void PID_DriveCompute(uint8_t drive_num){
     if (DRIVE.position_l.isActive.v > 0){
         if (DRIVE.position_l.Ki.v){
             DRIVE.position_l.acc.v +=
-                    (DRIVE.position_l.sp.v - DRIVE.position_l.fb.v) * DRIVE.position_l.Ki.v;
+                    (DRIVE.position_l.sp.v - DRIVE.position_l.fb.v) * DRIVE.position_l.Ki.v * pid_period;
             if (DRIVE.position_l.acc.v > DRIVE.position_l.acc_thres.v) DRIVE.position_l.acc.v = DRIVE.position_l.acc_thres.v;
             else if (DRIVE.position_l.acc.v < -DRIVE.position_l.acc_thres.v) DRIVE.position_l.acc.v = -DRIVE.position_l.acc_thres.v;
         }
         float d_part = 0;
         if (DRIVE.position_l.Kd.v){
             float nerr = DRIVE.position_l.sp.v - DRIVE.position_l.fb.v;
-            d_part = (nerr - DRIVE.position_l.perr.v) / TIME_CONSTANT;
+            d_part = (nerr - DRIVE.position_l.perr.v) / pid_period;
             DRIVE.position_l.perr.v = nerr;
         }
         DRIVE.speed_l.sp.v = 
@@ -334,14 +288,14 @@ void PID_DriveCompute(uint8_t drive_num){
     if (DRIVE.speed_l.isActive.v > 0){
         if (DRIVE.speed_l.Ki.v){
             DRIVE.speed_l.acc.v += 
-                    (DRIVE.speed_l.sp.v - DRIVE.speed_l.fb.v) * DRIVE.speed_l.Ki.v;
+                    (DRIVE.speed_l.sp.v - DRIVE.speed_l.fb.v) * DRIVE.speed_l.Ki.v * pid_period;
             if (DRIVE.speed_l.acc.v > DRIVE.speed_l.acc_thres.v) DRIVE.speed_l.acc.v = DRIVE.speed_l.acc_thres.v;
             else if (DRIVE.speed_l.acc.v < -DRIVE.speed_l.acc_thres.v) DRIVE.speed_l.acc.v = -DRIVE.speed_l.acc_thres.v;
         }
         float d_part = 0;
         if (DRIVE.speed_l.Kd.v){
             float nerr = DRIVE.speed_l.sp.v - DRIVE.speed_l.fb.v;
-            d_part = (nerr - DRIVE.speed_l.perr.v) / TIME_CONSTANT;
+            d_part = (nerr - DRIVE.speed_l.perr.v) / pid_period;
             DRIVE.speed_l.perr.v = nerr;
         }
         DRIVE.current_l.sp.v = 
@@ -355,14 +309,14 @@ void PID_DriveCompute(uint8_t drive_num){
     if (DRIVE.current_l.isActive.v > 0){
         if (DRIVE.current_l.Ki.v){
             DRIVE.current_l.acc.v += 
-                    (DRIVE.current_l.sp.v / DRIVE_REDUCTION + DRIVE.torque.v - DRIVE.current_l.fb.v) * DRIVE.current_l.Ki.v;
+                    (DRIVE.current_l.sp.v / DRIVE_REDUCTION + DRIVE.torque.v - DRIVE.current_l.fb.v) * DRIVE.current_l.Ki.v * pid_period;
             if (DRIVE.current_l.acc.v > DRIVE.current_l.acc_thres.v) DRIVE.current_l.acc.v = DRIVE.current_l.acc_thres.v;
             else if (DRIVE.current_l.acc.v < -DRIVE.current_l.acc_thres.v) DRIVE.current_l.acc.v = -DRIVE.current_l.acc_thres.v;
         }
         float d_part = 0;
         if (DRIVE.current_l.Kd.v){
             float nerr = DRIVE.current_l.sp.v - DRIVE.current_l.fb.v;
-            d_part = (nerr - DRIVE.current_l.perr.v) / TIME_CONSTANT;
+            d_part = (nerr - DRIVE.current_l.perr.v) / pid_period;
             DRIVE.current_l.perr.v = nerr;
         }
         DRIVE.output.v = 
@@ -387,27 +341,43 @@ void PID_DriveCompute(uint8_t drive_num){
         *(DRIVE.pwm_duty.v) = DRIVE.output_thres.v;
     else
         *(DRIVE.pwm_duty.v) = pwm_out;
+
+    osSemaphoreRelease(DRIVE.semaphore);
 }
 
 rw_status_t PID_WriteReg(uint8_t drive_num, uint8_t reg, float data){
+    if (osSemaphoreAcquire(DRIVE.semaphore, 100) != osOK) return RW_ERROR;
     if (DRIVE.all_registers[reg].p & WO){
         DRIVE.all_registers[reg].v = data;
+        osSemaphoreRelease(DRIVE.semaphore);
         return RW_OK;
     }
-    else return RW_ERROR;
+    else{
+        osSemaphoreRelease(DRIVE.semaphore);
+        return RW_ERROR;
+    }
 }
 
 rw_status_t PID_ReadReg(uint8_t drive_num, uint8_t reg, float * data){
+    if (osSemaphoreAcquire(DRIVE.semaphore, 100) != osOK) return RW_ERROR;
     if (DRIVE.all_registers[reg].p & RO){
         *data = DRIVE.all_registers[reg].v;
+        osSemaphoreRelease(DRIVE.semaphore);
         return RW_OK;
     }
-    else return RW_ERROR;
+    else{
+        osSemaphoreRelease(DRIVE.semaphore);
+        return RW_ERROR;
+    }
 }
 
 wc_plottables_t PID_ReadPlottables(uint8_t drive_num){
     wc_plottables_t tmp = { 0 };
-    if (drive_num >= 4) return tmp; 
+    if (osSemaphoreAcquire(DRIVE.semaphore, 100) != osOK) return tmp;
+    if (drive_num >= 4){
+        osSemaphoreRelease(DRIVE.semaphore);
+        return tmp;
+    } 
     tmp.pos_sp = DRIVE.position_l.sp.v;
     tmp.pos_fb = DRIVE.position_l.fb.v;
     tmp.spd_sp = DRIVE.speed_l.sp.v;
@@ -415,53 +385,42 @@ wc_plottables_t PID_ReadPlottables(uint8_t drive_num){
     tmp.cur_sp = DRIVE.current_l.sp.v;
     tmp.cur_fb = DRIVE.current_l.fb.v;
     tmp.output = DRIVE.output.v;
+    osSemaphoreRelease(DRIVE.semaphore);
     return tmp;
 }
 
 void PID_MoveSetpoints(void){
-    // drives[0].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[0].encoder_s.v))) - 0x7FFFFFFF);
-    // drives[1].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[1].encoder_s.v))) - 0x7FFF);
-    // drives[2].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[2].encoder_s.v))) - 0x7FFF);
-    // drives[3].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[3].encoder_s.v))) + lptim_corrector - 0x3FFFFFFF);
+    if (osSemaphoreAcquire(drives[0].semaphore, 100) != osOK) return;
+    drives[0].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[0].encoder_s.v))) - 0x7FFF);
+    osSemaphoreRelease(drives[0].semaphore);
+
+    if (osSemaphoreAcquire(drives[1].semaphore, 100) != osOK) return;
+    drives[1].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[1].encoder_s.v))) - 0x7FFF);
+    osSemaphoreRelease(drives[1].semaphore);
+    
+    if (osSemaphoreAcquire(drives[2].semaphore, 100) != osOK) return;
+    drives[2].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[2].encoder_s.v))) - 0x7FFF);
+    osSemaphoreRelease(drives[2].semaphore);
+    
+    if (osSemaphoreAcquire(drives[3].semaphore, 100) != osOK) return;
+    drives[3].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[3].encoder_s.v))) - 0x7FFF);
+    osSemaphoreRelease(drives[3].semaphore);
 }
 
 void PID_SetZero(uint8_t drive_num){
     if (drive_num > 3){
-        ENCODER_1_COUNT = 0x7FFFFFFF;
-        drives[0].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[0].encoder_s.v))) - 0x7FFFFFFF);
+        ENCODER_1_COUNT = 0x7FFF;
+        drives[0].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[0].encoder_s.v))) - 0x7FFF);
         ENCODER_2_COUNT = 0x7FFF;
         drives[1].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[1].encoder_s.v))) - 0x7FFF);
         ENCODER_3_COUNT = 0x7FFF;
         drives[2].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[2].encoder_s.v))) - 0x7FFF);
-        // lptim_corrector = 0x3FFFFFFF - ENCODER_4_COUNT;
-        // drives[3].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[3].encoder_s.v))) + lptim_corrector - 0x3FFFFFFF);
+        ENCODER_4_COUNT = 0x7FFF;
+        drives[3].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[3].encoder_s.v))) - 0x7FFF);
     }
     else{
-        switch(drive_num){
-            case(0):{
-                ENCODER_1_COUNT = 0x7FFFFFFF;
-                drives[0].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[0].encoder_s.v))) - 0x7FFFFFFF);
-                break;
-            }
-            case(1):{
-                ENCODER_2_COUNT = 0x7FFF;
-                drives[1].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[1].encoder_s.v))) - 0x7FFF);
-                break;
-            }
-            case(2):{
-                ENCODER_3_COUNT = 0x7FFF;
-                drives[2].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[2].encoder_s.v))) - 0x7FFF);
-                break;
-            }
-            case(3):{
-                // lptim_corrector = 0x3FFFFFFF - ENCODER_4_COUNT;
-                // drives[3].position_l.sp.v = GetRealRadial(((int32_t)(*(drives[3].encoder_s.v))) + lptim_corrector - 0x3FFFFFFF);
-                break;
-            }
-            default:{
-                break;
-            }
-        }
+        (*(DRIVE.encoder_s.v)) = 0x7FFF;
+        DRIVE.position_l.sp.v = GetRealRadial(((int32_t)(*(DRIVE.encoder_s.v))) - 0x7FFF);
     }
 }
 
@@ -477,15 +436,28 @@ void PID_StopDrive(uint8_t drive_num){
     }
 }
 
+void PID_GetPositions(uint32_t * pos){
+
+    pos[0] = *(drives[0].encoder_s.v);
+    pos[1] = *(drives[1].encoder_s.v);
+    pos[2] = *(drives[2].encoder_s.v);
+    pos[3] = *(drives[3].encoder_s.v);
+}
+
 void PID_Task(void){
+    
+    drives[0].semaphore = osSemaphoreNew(1, 1, NULL);
+    drives[1].semaphore = osSemaphoreNew(1, 1, NULL);
+    drives[2].semaphore = osSemaphoreNew(1, 1, NULL);
+    drives[3].semaphore = osSemaphoreNew(1, 1, NULL);
+
+    _TIME_START_(led_notification, 100);
     
     drives[0].last_pid_call = osKernelGetTickCount();
     drives[1].last_pid_call = osKernelGetTickCount();
     drives[2].last_pid_call = osKernelGetTickCount();
     drives[3].last_pid_call = osKernelGetTickCount();
     osDelay(10);
-
-    _TIME_START_(led_notification, 100);
 
     while(1){
         

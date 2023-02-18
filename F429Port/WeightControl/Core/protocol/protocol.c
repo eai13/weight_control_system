@@ -2,8 +2,10 @@
 #include "global_config.h"
 #include "pid.h"
 #include "ring_buffer.h"
+#include "macros.h"
 
 #include "stm32f429xx.h"
+#include "iwdg.h"
 #include "usart.h"
 #include "main.h"
 
@@ -48,6 +50,7 @@ static inline rb_status_e ReceiveFromRxBuffer(uint8_t * dest, uint32_t size){
 static volatile uint8_t                 tx_buffer[512];
 static volatile uint8_t                 rx_buffer[512];
 static volatile uint32_t                rx_ptr = 0;
+
 
 uint32_t buffer_ready_timeout;
 
@@ -96,7 +99,14 @@ void PROTOCOL_Task(void){
     const uint8_t start_bytes_tx[2] = { 0xA5, 0x5A };
     uint8_t start_bytes_rx[2];
 
+    _TIME_START_(wd_feed, 500);
+
     while(1){
+
+        if (_IS_TIMEOUT_(wd_feed) && ((osKernelGetTickCount() - buffer_ready_timeout) < 500)){
+            HAL_IWDG_Refresh(&hiwdg);
+            _TIME_UPDATE_(wd_feed);
+        }
 
         if (((osKernelGetTickCount() - buffer_ready_timeout) > 3) && (rx_ptr != 0)){
             PROTOCOL_Stop();

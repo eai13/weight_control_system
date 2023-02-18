@@ -97,13 +97,15 @@ private:
     void ConsoleBasic(QString message);
     void ConsoleWarning(QString message);
     void ConsoleError(QString message);
+    void ConsoleDebug(QString message);
 
     void ProcessIncomingData(void);
 
     enum BP_Commands{
         BP_PING     = 0x01,
         BP_JUMP     = 0x03,
-        BP_CONTROL  = 0xF0
+        BP_CONTROL  = 0xF0,
+        BP_DEBUG    = 0xFF
     };
 
     enum CONTROL_Commands{
