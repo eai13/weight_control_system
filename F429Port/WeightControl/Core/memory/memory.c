@@ -72,6 +72,17 @@ HAL_StatusTypeDef MEMORY_GetActualPosition(uint32_t * pos, uint32_t timeout){
     return status;
 }
 
+void MEMORY_SaveAndExit(void){
+    uint32_t positions_to_save[4];
+    PID_GetPositions(positions_to_save);
+    taskENTER_CRITICAL();
+    MEMORY_SetActualPosition(positions_to_save[0],
+                             positions_to_save[1],
+                             positions_to_save[2],
+                             positions_to_save[3], 100);
+    HAL_NVIC_SystemReset();
+}
+
 void MEMORY_Task(void){
     
     uint32_t positions_to_save[4];

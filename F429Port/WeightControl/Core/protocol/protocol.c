@@ -3,6 +3,7 @@
 #include "pid.h"
 #include "ring_buffer.h"
 #include "macros.h"
+#include "memory.h"
 
 #include "stm32f429xx.h"
 #include "iwdg.h"
@@ -167,7 +168,8 @@ void PROTOCOL_Task(void){
                                     taskENTER_CRITICAL();
                                     HAL_UART_Transmit(&PROTOCOL_UART, start_bytes_tx, 2, 10);
                                     HAL_UART_Transmit(&PROTOCOL_UART, (uint8_t *)&basic_h, sizeof(bp_header_t), 10);
-                                    HAL_NVIC_SystemReset();
+                                    taskEXIT_CRITICAL();
+                                    MEMORY_SaveAndExit();
                                 }
                                 else{
                                     basic_h.cmd = BP_ERROR_UNKNOWN_CMD;
