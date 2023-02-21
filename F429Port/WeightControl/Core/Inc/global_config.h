@@ -33,6 +33,6 @@
 #define PWM_4_CHANNEL       TIM_CHANNEL_1
 #define PWM_4_DUTY          (TIM11->CCR1)
 
-#define PWM_UPPER_COUNT     1000
+#define PWM_UPPER_COUNT     2000
 
 #endif
