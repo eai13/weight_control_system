@@ -39,7 +39,7 @@ public:
                     QRadioButton * rb_turn_h, QRadioButton * rb_rads_h, QRadioButton * rb_length_h,
                     QDial * dial_h,
                     QLineEdit * lineedit_h,
-                    QPushButton * zerocalib, QPushButton * stop,
+                    QPushButton * zerocalib, QPushButton * stop, QPushButton * setpos,
                     QPushButton * less_small, QPushButton * less_much, QPushButton * more_small, QPushButton * more_much,
                     double A_cal, double B_cal, double C_cal, double MIN_cal, double MAX_cal);
 
@@ -56,10 +56,13 @@ public:
     bool            dial_pressed = false;
     QPushButton *   pb_calibzero;
     QPushButton *   pb_stop;
+    QPushButton *   pb_setpos;
     QPushButton *   pb_jogless_s;
     QPushButton *   pb_jogless_b;
     QPushButton *   pb_jogmore_s;
     QPushButton *   pb_jogmore_b;
+
+    QLineEdit *     lineedit_setpos;
 
     QMenu           plot_menu;
 
@@ -77,6 +80,8 @@ public:
 
 public slots:
 
+    void slSendSetPos(void);
+    void slSetPos(void);
     void slSaveImage(void);
     void slSaveData(void);
     void slRescaleToDefault(void);
@@ -133,6 +138,7 @@ private:
 signals:
     void siCalibrateZero(void);
     void siSendPos(float pos);
+    void siSendSetPos(float pos);
     void siStopDrive(void);
 
 private slots:

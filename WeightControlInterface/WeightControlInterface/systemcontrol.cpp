@@ -46,7 +46,7 @@ SystemControl::SystemControl(QWidget *parent) :
                                 ui->radioButton_m1turns, ui->radioButton_m1rads, ui->radioButton_m1length,
                                 ui->dial_motor1,
                                 ui->lineEdit_motor1pos,
-                                ui->pushButton_motor1zerocalib, ui->pushButton_motor1stop,
+                                ui->pushButton_motor1zerocalib, ui->pushButton_motor1stop, ui->pushButton_motor1setpos,
                                 ui->pushButton_motor1jogminusSMALL, ui->pushButton_motor1jogminusBIG,
                                 ui->pushButton_motor1jogplusSMALL, ui->pushButton_motor1jogplusBIG,
                                 MOTOR_1_A_CALIB, MOTOR_1_B_CALIB, MOTOR_1_C_CALIB, MOTOR_1_MIN, MOTOR_1_MAX);
@@ -54,7 +54,7 @@ SystemControl::SystemControl(QWidget *parent) :
                                 ui->radioButton_m2turns, ui->radioButton_m2rads, ui->radioButton_m2length,
                                 ui->dial_motor2,
                                 ui->lineEdit_motor2pos,
-                                ui->pushButton_motor2zerocalib, ui->pushButton_motor2stop,
+                                ui->pushButton_motor2zerocalib, ui->pushButton_motor2stop, ui->pushButton_motor2setpos,
                                 ui->pushButton_motor2jogminusSMALL, ui->pushButton_motor2jogminusBIG,
                                 ui->pushButton_motor2jogplusSMALL, ui->pushButton_motor2jogplusBIG,
                                 MOTOR_2_A_CALIB, MOTOR_2_B_CALIB, MOTOR_2_C_CALIB, MOTOR_2_MIN, MOTOR_2_MAX);
@@ -62,7 +62,7 @@ SystemControl::SystemControl(QWidget *parent) :
                                 ui->radioButton_m3turns, ui->radioButton_m3rads, ui->radioButton_m3length,
                                 ui->dial_motor3,
                                 ui->lineEdit_motor3pos,
-                                ui->pushButton_motor3zerocalib, ui->pushButton_motor3stop,
+                                ui->pushButton_motor3zerocalib, ui->pushButton_motor3stop, ui->pushButton_motor3setpos,
                                 ui->pushButton_motor3jogminusSMALL, ui->pushButton_motor3jogminusBIG,
                                 ui->pushButton_motor3jogplusSMALL, ui->pushButton_motor3jogplusBIG,
                                 MOTOR_3_A_CALIB, MOTOR_3_B_CALIB, MOTOR_3_C_CALIB, MOTOR_3_MIN, MOTOR_3_MAX);
@@ -70,7 +70,7 @@ SystemControl::SystemControl(QWidget *parent) :
                                 ui->radioButton_m4turns, ui->radioButton_m4rads, ui->radioButton_m4length,
                                 ui->dial_motor4,
                                 ui->lineEdit_motor4pos,
-                                ui->pushButton_motor4zerocalib, ui->pushButton_motor4stop,
+                                ui->pushButton_motor4zerocalib, ui->pushButton_motor4stop, ui->pushButton_motor4setpos,
                                 ui->pushButton_motor4jogminusSMALL, ui->pushButton_motor4jogminusBIG,
                                 ui->pushButton_motor4jogplusSMALL, ui->pushButton_motor4jogplusBIG,
                                 MOTOR_4_A_CALIB, MOTOR_4_B_CALIB, MOTOR_4_C_CALIB, MOTOR_4_MIN, MOTOR_4_MAX);
@@ -80,6 +80,7 @@ SystemControl::SystemControl(QWidget *parent) :
         connect(this->plots[iter],  &Plot2D::siSendPos,                 this,               &SystemControl::slSendPos);
         connect(this->plots[iter],  &Plot2D::siCalibrateZero,           this,               &SystemControl::slSendZeroCalibration);
         connect(this->plots[iter],  &Plot2D::siStopDrive,               this,               &SystemControl::slStopDrive);
+        connect(this->plots[iter],  &Plot2D::siSendSetPos,              this,               &SystemControl::slReceiveSetPos);
         connect(plot3dconfigs,      &Plot3DConfigs::siStartTrajectory,  this->plots[iter],  &Plot2D::slBlockModule);
         connect(plot3dconfigs,      &Plot3DConfigs::siPauseTrajectory,  this->plots[iter],  &Plot2D::slBlockModule);
         connect(plot3dconfigs,      &Plot3DConfigs::siStopTrajectory,   this->plots[iter],  &Plot2D::slEnableModule);
@@ -210,12 +211,26 @@ void SystemControl::C_SendGlobalCmd(uint16_t cmd){
     this->serial_tx_queue.push_back(pack);
 }
 
+void SystemControl::C_SendCalibrateEncoder(uint16_t id, float value){
+    BP_Header       bp_header(this->BP_CONTROL, 3);
+    CNT_Header      cnt_header(id, CNT_CALIBRATE_ENCODER);
+
+    QByteArray b_data = bp_header.SetRawFromHeader();
+    b_data.append(cnt_header.SetRawFromHeader());
+    b_data.append(reinterpret_cast<char *>(&value), sizeof(float));
+    qDebug() << "DATA AMOUNT TO SEND: " << b_data.size();
+
+    Packet pack(b_data, this->BP_CNT_CALIBRATE_ENCODER_AWAIT_SIZE, 100);
+    this->serial_tx_queue.push_back(pack);
+}
+
 SystemControl::~SystemControl()
 {
     delete ui;
 }
 
 void SystemControl::ProcessIncomingData(void){
+
     QByteArray data = this->Serial->read(this->data_awaited);
     this->data_awaited = 0;
     this->Serial->readAll();
@@ -225,9 +240,9 @@ void SystemControl::ProcessIncomingData(void){
         this->SerialLock.Unlock();
         return;
     }
+
     if (this->TimeoutTimer->isActive())
         this->TimeoutTimer->stop();
-
 
     if ((bp_header.start_5A != 0x5A) || (bp_header.start_A5 != 0xA5)){
         this->SerialLock.Unlock();
@@ -359,6 +374,10 @@ void SystemControl::ProcessIncomingData(void){
             qDebug() << "Motor Calibrated to Zero";
             break;
         }
+        case(CNT_CALIBRATE_ENCODER):{
+            qDebug() << "ENCODER CALIBRATED";
+            break;
+        }
         case(CNT_STOP_DRIVE):{
             qDebug() << "Drive Stopped " << cnt_header.id;
             break;
@@ -451,4 +470,11 @@ void SystemControl::slStopDrive(void){
 }
 void SystemControl::slStopDriveGlobal(void){
     this->C_SendGlobalCmd(CONTROL_Commands::CNT_STOP_DRIVE);
+}
+
+void SystemControl::slReceiveSetPos(float length){
+    uint8_t sender_id = sender()->objectName().toInt();
+    float radians = this->plots[sender_id]->GetAngleFromLength(length);
+
+    this->C_SendCalibrateEncoder(sender_id, radians);
 }

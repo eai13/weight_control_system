@@ -97,6 +97,7 @@ wc_plottables_t PID_ReadPlottables(uint8_t drive_num);
 void        PID_MoveSetpoints(void);
 void        PID_StopDrive(uint8_t drive_num);
 void        PID_SetZero(uint8_t drive_num);
+float       PID_CalibEncoder(uint8_t drive_num, float value);
 
 void PID_Task(void);
 

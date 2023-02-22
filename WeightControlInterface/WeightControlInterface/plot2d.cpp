@@ -1,10 +1,12 @@
 #include "plot2d.h"
+#include <QWidget>
+#include <QBoxLayout>
 
 Plot2D::Plot2D(QString title, QCustomPlot * plot_h,
                QRadioButton * rb_turn_h, QRadioButton * rb_rads_h, QRadioButton * rb_length_h,
                QDial * dial_h,
                QLineEdit * lineedit_h,
-               QPushButton * zerocalib, QPushButton * stop,
+               QPushButton * zerocalib, QPushButton * stop, QPushButton * setpos,
                QPushButton * less_small, QPushButton * less_much, QPushButton * more_small, QPushButton * more_much,
                double A_cal, double B_cal, double C_cal, double MIN_cal, double MAX_cal){
     this->plot_parent = plot_h->parentWidget();
@@ -16,6 +18,7 @@ Plot2D::Plot2D(QString title, QCustomPlot * plot_h,
     this->dial = dial_h;
     this->pb_calibzero = zerocalib;
     this->pb_stop = stop;
+    this->pb_setpos = setpos;
     this->pb_jogless_b = less_much;
     this->pb_jogless_s = less_small;
     this->pb_jogmore_b = more_much;
@@ -101,6 +104,7 @@ Plot2D::Plot2D(QString title, QCustomPlot * plot_h,
     connect(this->dial,         &QDial::sliderReleased,     this, &Plot2D::slSendPosFromDial);
     connect(this->pb_calibzero, &QPushButton::released,     this, &Plot2D::slCalibrateZero);
     connect(this->pb_stop,      &QPushButton::released,     this, &Plot2D::slStopDrive);
+    connect(this->pb_setpos,    &QPushButton::released,     this, &Plot2D::slSetPos);
     connect(this->pb_jogless_s, &QPushButton::released,     this, &Plot2D::slJogLessSmall);
     connect(this->pb_jogless_b, &QPushButton::released,     this, &Plot2D::slJogLessMuch);
     connect(this->pb_jogmore_s, &QPushButton::released,     this, &Plot2D::slJogMoreSmall);
@@ -381,4 +385,37 @@ void Plot2D::slReceiveActualPosition(float fb_rads, float sp_rads){
             this->lineedit->setText(QString::asprintf("%.4f", fb_rads / 6.28));
         }
     }
+}
+
+void Plot2D::slSetPos(void){
+    QWidget * set_pos_window = new QWidget();
+    set_pos_window->setWindowModality(Qt::ApplicationModal);
+    QBoxLayout * layout = new QBoxLayout(QBoxLayout::TopToBottom);
+    QPushButton * set_button = new QPushButton("Set Position");
+    this->lineedit_setpos = new QLineEdit();
+    QDoubleValidator * value_validator = new QDoubleValidator(0, 5, 3);
+    this->lineedit_setpos->setValidator(value_validator);
+    QLabel * label = new QLabel("Rope Length, m");
+
+    layout->addWidget(label);
+    layout->addWidget(this->lineedit_setpos);
+    layout->addWidget(set_button);
+
+    set_pos_window->setLayout(layout);
+
+    connect(set_pos_window, &QWidget::destroyed, set_pos_window, &QWidget::deleteLater);
+    connect(set_button, &QPushButton::released, this, &Plot2D::slSendSetPos);
+    connect(this, &Plot2D::siSendSetPos, set_pos_window, &QWidget::deleteLater);
+    set_pos_window->show();
+}
+
+void Plot2D::slSendSetPos(void){
+    QString str_val = this->lineedit_setpos->text();
+
+    for (auto iter = str_val.begin(); iter != str_val.end(); iter++){
+        if ((*iter) == ',') (*iter) = '.';
+    }
+    float fl_value = str_val.toFloat();
+
+    emit this->siSendSetPos(fl_value);
 }

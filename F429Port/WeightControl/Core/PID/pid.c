@@ -222,6 +222,13 @@ float GetRealRadial(int32_t raw){
 }
 
 static inline
+uint16_t GetEncoderFromRadial(float value){
+    int32_t tmp_val = (int32_t)(value * ((float)(4.0)) / ((float)(6.28)) * ((float)(600.0)));
+    tmp_val += (int32_t)(0x7FFF);
+    return (uint16_t)(tmp_val);
+}
+
+static inline
 uint32_t VoltsToPWM(float volts){
     return ((int32_t)((volts) / ((float)(24.0)) * ((float)(PWM_UPPER_COUNT))));
 }
@@ -438,6 +445,14 @@ void PID_SetZero(uint8_t drive_num){
             osSemaphoreRelease(DRIVE.semaphore);
         }
     }
+}
+
+float PID_CalibEncoder(uint8_t drive_num, float value){
+    if (osSemaphoreAcquire(DRIVE.semaphore, 100) == osOK){
+        (*(DRIVE.encoder_s.v)) = GetEncoderFromRadial(value);
+        DRIVE.position_l.sp.v = value;
+    }
+    return GetRealRadial((int32_t)(*(DRIVE.encoder_s.v)) - 0x7FFF);
 }
 
 void PID_StopDrive(uint8_t drive_num){

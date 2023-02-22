@@ -77,8 +77,8 @@ private:
             if (this->SerialLock.Lock()){
                 Packet pack = this->serial_tx_queue.takeFirst();
                 this->data_awaited = pack.await_size;
-                this->Serial->write(pack.data);
                 this->TimeoutTimer->start(pack.timeout);
+                this->Serial->write(pack.data);
             }
         }
     }
@@ -109,13 +109,14 @@ private:
     };
 
     enum CONTROL_Commands{
-        CNT_WRITE_REG       = 0x01,
-        CNT_READ_REG        = 0x02,
-        CNT_BLOCK_DRIVE     = 0x03,
-        CNT_ENABLE_DRIVE    = 0x05,
-        CNT_READ_PLOTTABLE  = 0x06,
-        CNT_CALIBRATE_ZERO  = 0x0A,
-        CNT_STOP_DRIVE      = 0x0B
+        CNT_WRITE_REG           = 0x01,
+        CNT_READ_REG            = 0x02,
+        CNT_BLOCK_DRIVE         = 0x03,
+        CNT_ENABLE_DRIVE        = 0x05,
+        CNT_READ_PLOTTABLE      = 0x06,
+        CNT_CALIBRATE_ZERO      = 0x0A,
+        CNT_STOP_DRIVE          = 0x0B,
+        CNT_CALIBRATE_ENCODER   = 0x0C
     };
 
     enum CONTROL_IDs{
@@ -171,6 +172,7 @@ private:
         BP_CNT_SIGNLE_DRIVE_CMD_AWAIT_SIZE  = 15,//13,
         BP_CNT_GLOBAL_CMD_AWAIT_SIZE        = 15,//13,
         BP_CNT_READ_PLOTTABLE_AWAIT_SIZE    = 127,//125
+        BP_CNT_CALIBRATE_ENCODER_AWAIT_SIZE = 19 //17
     };
 
     struct BP_Header{
@@ -337,6 +339,7 @@ public slots:
     void C_ReadPlottableRegs(void);
     void C_SendSingleDriveCmd(uint16_t cmd, uint16_t id);
     void C_SendGlobalCmd(uint16_t cmd);
+    void C_SendCalibrateEncoder(uint16_t id, float value);
 
     void slSendPos(float data);
     void slSendLength(float len1, float len2, float len3, float len4);
@@ -345,6 +348,7 @@ public slots:
     void slStopDriveGlobal(void);
     void slActivate(void);
 
+    void slReceiveSetPos(float length);
 //    void slStartTrajectory(void);
 //    void slStopTrajectory(void);
 //    void slPauseTrajectory(void);

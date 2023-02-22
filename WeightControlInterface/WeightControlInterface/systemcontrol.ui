@@ -60,8 +60,18 @@
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
          <layout class="QGridLayout" name="gridLayout_4">
-          <item row="7" column="0">
-           <widget class="QPushButton" name="pushButton_motor3zerocalib">
+          <item row="2" column="0">
+           <widget class="QRadioButton" name="radioButton_m3turns">
+            <property name="text">
+             <string>Turns</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLineEdit" name="lineEdit_motor3pos">
             <property name="minimumSize">
              <size>
               <width>80</width>
@@ -75,17 +85,29 @@
              </size>
             </property>
             <property name="text">
-             <string>Zero Calib</string>
+             <string>0,000</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
-           <widget class="QRadioButton" name="radioButton_m3rads">
-            <property name="text">
-             <string>Radians</string>
+          <item row="9" column="0">
+           <widget class="QPushButton" name="pushButton_motor3stop">
+            <property name="minimumSize">
+             <size>
+              <width>80</width>
+              <height>25</height>
+             </size>
             </property>
-            <property name="checked">
-             <bool>true</bool>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>STOP</string>
+            </property>
+            <property name="shortcut">
+             <string>Ctrl+3</string>
             </property>
            </widget>
           </item>
@@ -114,25 +136,6 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
-           <widget class="QLineEdit" name="lineEdit_motor3pos">
-            <property name="minimumSize">
-             <size>
-              <width>80</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>0,000</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0">
            <widget class="QRadioButton" name="radioButton_m3length">
             <property name="text">
@@ -143,35 +146,13 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QRadioButton" name="radioButton_m3turns">
+          <item row="3" column="0">
+           <widget class="QRadioButton" name="radioButton_m3rads">
             <property name="text">
-             <string>Turns</string>
+             <string>Radians</string>
             </property>
             <property name="checked">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="0">
-           <widget class="QPushButton" name="pushButton_motor3stop">
-            <property name="minimumSize">
-             <size>
-              <width>80</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>STOP</string>
-            </property>
-            <property name="shortcut">
-             <string>Ctrl+3</string>
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -255,6 +236,48 @@
             </item>
            </layout>
           </item>
+          <item row="7" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_10">
+            <item>
+             <widget class="QPushButton" name="pushButton_motor3zerocalib">
+              <property name="minimumSize">
+               <size>
+                <width>80</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Zero Calib</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_motor3setpos">
+              <property name="minimumSize">
+               <size>
+                <width>80</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Set Pos</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
          </layout>
         </item>
         <item>
@@ -271,7 +294,7 @@
          <widget class="QCustomPlot" name="widget_plot3" native="true">
           <property name="minimumSize">
            <size>
-            <width>450</width>
+            <width>410</width>
             <height>300</height>
            </size>
           </property>
@@ -288,28 +311,6 @@
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
          <layout class="QGridLayout" name="gridLayout_6">
-          <item row="8" column="0">
-           <widget class="QPushButton" name="pushButton_motor4stop">
-            <property name="minimumSize">
-             <size>
-              <width>80</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>STOP</string>
-            </property>
-            <property name="shortcut">
-             <string>Ctrl+4</string>
-            </property>
-           </widget>
-          </item>
           <item row="5" column="0">
            <widget class="QLineEdit" name="lineEdit_motor4pos">
             <property name="minimumSize">
@@ -329,8 +330,18 @@
             </property>
            </widget>
           </item>
-          <item row="7" column="0">
-           <widget class="QPushButton" name="pushButton_motor4zerocalib">
+          <item row="1" column="0">
+           <widget class="QRadioButton" name="radioButton_m4length">
+            <property name="text">
+             <string>Length</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="QPushButton" name="pushButton_motor4stop">
             <property name="minimumSize">
              <size>
               <width>80</width>
@@ -344,7 +355,10 @@
              </size>
             </property>
             <property name="text">
-             <string>Zero Calib</string>
+             <string>STOP</string>
+            </property>
+            <property name="shortcut">
+             <string>Ctrl+4</string>
             </property>
            </widget>
           </item>
@@ -370,26 +384,6 @@
             </property>
             <property name="notchesVisible">
              <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QRadioButton" name="radioButton_m4rads">
-            <property name="text">
-             <string>Radians</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QRadioButton" name="radioButton_m4length">
-            <property name="text">
-             <string>Length</string>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -483,6 +477,58 @@
             </item>
            </layout>
           </item>
+          <item row="3" column="0">
+           <widget class="QRadioButton" name="radioButton_m4rads">
+            <property name="text">
+             <string>Radians</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_13">
+            <item>
+             <widget class="QPushButton" name="pushButton_motor4zerocalib">
+              <property name="minimumSize">
+               <size>
+                <width>80</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Zero Calib</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_motor4setpos">
+              <property name="minimumSize">
+               <size>
+                <width>80</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Set Pos</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
          </layout>
         </item>
         <item>
@@ -499,7 +545,7 @@
          <widget class="QCustomPlot" name="widget_plot4" native="true">
           <property name="minimumSize">
            <size>
-            <width>450</width>
+            <width>410</width>
             <height>300</height>
            </size>
           </property>
@@ -516,7 +562,7 @@
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <layout class="QGridLayout" name="gridLayout_2">
-          <item row="11" column="0">
+          <item row="12" column="0">
            <widget class="QPushButton" name="pushButton_motor1stop">
             <property name="minimumSize">
              <size>
@@ -548,38 +594,6 @@
             </property>
            </widget>
           </item>
-          <item row="8" column="0">
-           <widget class="QLineEdit" name="lineEdit_motor1pos">
-            <property name="minimumSize">
-             <size>
-              <width>80</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>0,000</string>
-            </property>
-            <property name="clearButtonEnabled">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QRadioButton" name="radioButton_m1length">
-            <property name="text">
-             <string>Length</string>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
           <item row="4" column="0">
            <widget class="QRadioButton" name="radioButton_m1turns">
             <property name="text">
@@ -587,6 +601,43 @@
             </property>
             <property name="checked">
              <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QDial" name="dial_motor1">
+            <property name="minimumSize">
+             <size>
+              <width>110</width>
+              <height>80</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>80</height>
+             </size>
+            </property>
+            <property name="maximum">
+             <number>99</number>
+            </property>
+            <property name="singleStep">
+             <number>1</number>
+            </property>
+            <property name="pageStep">
+             <number>10</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="wrapping">
+             <bool>true</bool>
+            </property>
+            <property name="notchTarget">
+             <double>0.000000000000000</double>
+            </property>
+            <property name="notchesVisible">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -670,8 +721,8 @@
             </item>
            </layout>
           </item>
-          <item row="10" column="0">
-           <widget class="QPushButton" name="pushButton_motor1zerocalib">
+          <item row="8" column="0">
+           <widget class="QLineEdit" name="lineEdit_motor1pos">
             <property name="minimumSize">
              <size>
               <width>80</width>
@@ -685,46 +736,64 @@
              </size>
             </property>
             <property name="text">
-             <string>Zero Calib</string>
+             <string>0,000</string>
+            </property>
+            <property name="clearButtonEnabled">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QDial" name="dial_motor1">
-            <property name="minimumSize">
-             <size>
-              <width>110</width>
-              <height>80</height>
-             </size>
+          <item row="3" column="0">
+           <widget class="QRadioButton" name="radioButton_m1length">
+            <property name="text">
+             <string>Length</string>
             </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>80</height>
-             </size>
-            </property>
-            <property name="maximum">
-             <number>99</number>
-            </property>
-            <property name="singleStep">
-             <number>1</number>
-            </property>
-            <property name="pageStep">
-             <number>10</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="wrapping">
-             <bool>true</bool>
-            </property>
-            <property name="notchTarget">
-             <double>0.000000000000000</double>
-            </property>
-            <property name="notchesVisible">
-             <bool>true</bool>
+            <property name="checked">
+             <bool>false</bool>
             </property>
            </widget>
+          </item>
+          <item row="10" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_9">
+            <item>
+             <widget class="QPushButton" name="pushButton_motor1zerocalib">
+              <property name="minimumSize">
+               <size>
+                <width>80</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Zero Calib</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_motor1setpos">
+              <property name="minimumSize">
+               <size>
+                <width>80</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Set Pos</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>
@@ -742,7 +811,7 @@
          <widget class="QCustomPlot" name="widget_plot1" native="true">
           <property name="minimumSize">
            <size>
-            <width>450</width>
+            <width>410</width>
             <height>300</height>
            </size>
           </property>
@@ -759,25 +828,6 @@
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
          <layout class="QGridLayout" name="gridLayout_5">
-          <item row="7" column="0">
-           <widget class="QPushButton" name="pushButton_motor2zerocalib">
-            <property name="minimumSize">
-             <size>
-              <width>80</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>25</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>Zero Calib</string>
-            </property>
-           </widget>
-          </item>
           <item row="3" column="0">
            <widget class="QRadioButton" name="radioButton_m2rads">
             <property name="text">
@@ -957,6 +1007,48 @@
             </item>
            </layout>
           </item>
+          <item row="6" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_12">
+            <item>
+             <widget class="QPushButton" name="pushButton_motor2zerocalib">
+              <property name="minimumSize">
+               <size>
+                <width>80</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Zero Calib</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_motor2setpos">
+              <property name="minimumSize">
+               <size>
+                <width>80</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>25</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Set Pos</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
          </layout>
         </item>
         <item>
@@ -973,7 +1065,7 @@
          <widget class="QCustomPlot" name="widget_plot2" native="true">
           <property name="minimumSize">
            <size>
-            <width>450</width>
+            <width>410</width>
             <height>300</height>
            </size>
           </property>

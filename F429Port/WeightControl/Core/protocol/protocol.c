@@ -395,6 +395,27 @@ void PROTOCOL_Task(void){
                                         rb_push_data(&tx_rb, (uint8_t *)&control_h, sizeof(control_header_t), IRQ_TIMEOUT);
                                         break;
                                     }
+                                    case(CMD_CALIBRATE_ENCODER_VALUE):{
+                                        float data;
+                                        if (ReceiveFromRxBuffer((uint8_t *)&data, sizeof(float)) != RING_BUFFER_OK){
+                                            break;
+                                        }
+                                        if (control_h.id > 3){
+                                            basic_h.cmd = BP_CMD_CONTROL; basic_h.w_size = 2;
+                                            control_h.cmd = CMD_ERROR;
+                                            rb_push_data(&tx_rb, start_bytes_tx, 2, IRQ_TIMEOUT);
+                                            rb_push_data(&tx_rb, (uint8_t *)&basic_h, sizeof(bp_header_t), IRQ_TIMEOUT);
+                                            rb_push_data(&tx_rb, (uint8_t *)&control_h, sizeof(control_header_t), IRQ_TIMEOUT);
+                                            break;
+                                        }
+                                        data = PID_CalibEncoder(control_h.id, data);
+                                        basic_h.cmd = BP_CMD_CONTROL; basic_h.w_size = 3;
+                                        rb_push_data(&tx_rb, start_bytes_tx, 2, IRQ_TIMEOUT);
+                                        rb_push_data(&tx_rb, (uint8_t *)&basic_h, sizeof(bp_header_t), IRQ_TIMEOUT);
+                                        rb_push_data(&tx_rb, (uint8_t *)&control_h, sizeof(control_header_t), IRQ_TIMEOUT);
+                                        rb_push_data(&tx_rb, (uint8_t *)&data, sizeof(float), IRQ_TIMEOUT);
+                                        break;
+                                    }
                                     case(CMD_STOP_DRIVE):{
                                         PID_StopDrive(control_h.id);
                                         basic_h.cmd = BP_CMD_CONTROL; basic_h.w_size = 2;
