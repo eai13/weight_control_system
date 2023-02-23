@@ -451,6 +451,7 @@ float PID_CalibEncoder(uint8_t drive_num, float value){
     if (osSemaphoreAcquire(DRIVE.semaphore, 100) == osOK){
         (*(DRIVE.encoder_s.v)) = GetEncoderFromRadial(value);
         DRIVE.position_l.sp.v = value;
+        osSemaphoreRelease(DRIVE.semaphore);
     }
     return GetRealRadial((int32_t)(*(DRIVE.encoder_s.v)) - 0x7FFF);
 }
