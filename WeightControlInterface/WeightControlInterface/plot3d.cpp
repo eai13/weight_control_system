@@ -1,6 +1,8 @@
 #include "plot3d.h"
 #include <QtCore/qglobal.h>
 #include <iostream>
+#include <QFileDialog>
+#include <QString>
 
 Plot3D::Plot3D(QGroupBox *parent) : QObject(parent){
 
@@ -194,14 +196,14 @@ void Plot3D::slStartTrajectory(void){
         float y = this->plot->seriesList().at(0)->dataProxy()->itemAt(iter)->y();
         float z = this->plot->seriesList().at(0)->dataProxy()->itemAt(iter)->z();
         this->profile.push_back(ProfileItem(QVector3D(x, y, z), time));
-        time += 0.15;
+        time += 0.5;
         qDebug() << "X: " << x << " Y: " << y << " Z: " << z << " TIME: " << time;
         QVector<float> tmp = this->InverseTransform(QVector3D(x, y, z));
         qDebug() << "LEN 1 : " << tmp[0] << "LEN 2 : " << tmp[1] << "LEN 3 : " << tmp[2] << "LEN 4 : " << tmp[3];
     }
 
     if (this->control_timer == nullptr) this->control_timer = new QTimer;
-    this->control_timer->start(50);
+    this->control_timer->start(200);
 
     if (this->experiment_time == nullptr) this->experiment_time = new QTime;
     this->experiment_time->restart();
@@ -251,9 +253,41 @@ void Plot3D::slControlCallback(void){
 
 void Plot3D::slSaveReal(void){
     qDebug() << "Plot3D Save Real";
+    QString filter;
+    QString fname = QFileDialog::getSaveFileName(nullptr, "Save Target Trajectory", QDir::currentPath(), "CSV (*.csv)", &filter);
+    QFile file(fname + ".csv");
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)){
+        QTextStream file_stream(&file);
+        file_stream << "X;Y;Z\n";
+        for (int32_t iter = 0; iter < this->plot->seriesList().at(2)->dataProxy()->itemCount(); iter++){
+            float x = this->plot->seriesList().at(2)->dataProxy()->itemAt(iter)->x();
+            float y = this->plot->seriesList().at(2)->dataProxy()->itemAt(iter)->y();
+            float z = this->plot->seriesList().at(2)->dataProxy()->itemAt(iter)->z();
+            file_stream << QString::asprintf("%.2f", x) << ";" <<
+                           QString::asprintf("%.2f", y) << ";" <<
+                           QString::asprintf("%.2f", z) << "\n";
+        }
+        file.close();
+    }
 }
 void Plot3D::slSaveTarget(void){
     qDebug() << "Plot3D Save Target";
+    QString filter;
+    QString fname = QFileDialog::getSaveFileName(nullptr, "Save Target Trajectory", QDir::currentPath(), "CSV (*.csv)", &filter);
+    QFile file(fname + ".csv");
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)){
+        QTextStream file_stream(&file);
+        file_stream << "X;Y;Z\n";
+        for (int32_t iter = 0; iter < this->plot->seriesList().at(0)->dataProxy()->itemCount(); iter++){
+            float x = this->plot->seriesList().at(0)->dataProxy()->itemAt(iter)->x();
+            float y = this->plot->seriesList().at(0)->dataProxy()->itemAt(iter)->y();
+            float z = this->plot->seriesList().at(0)->dataProxy()->itemAt(iter)->z();
+            file_stream << QString::asprintf("%.2f", x) << ";" <<
+                           QString::asprintf("%.2f", y) << ";" <<
+                           QString::asprintf("%.2f", z) << "\n";
+        }
+        file.close();
+    }
 }
 void Plot3D::slUploadTarget(uint8_t format){
     qDebug() << "Plot3D Upload Target " << format;
