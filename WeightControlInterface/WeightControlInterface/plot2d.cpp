@@ -390,6 +390,7 @@ void Plot2D::slReceiveActualPosition(float fb_rads, float sp_rads){
 void Plot2D::slSetPos(void){
     QWidget * set_pos_window = new QWidget();
     set_pos_window->setWindowModality(Qt::ApplicationModal);
+    set_pos_window->setWindowTitle("Calibration");
     QBoxLayout * layout = new QBoxLayout(QBoxLayout::TopToBottom);
     QPushButton * set_button = new QPushButton("Set Position");
     this->lineedit_setpos = new QLineEdit();
@@ -402,7 +403,7 @@ void Plot2D::slSetPos(void){
     layout->addWidget(set_button);
 
     set_pos_window->setLayout(layout);
-
+    set_pos_window->move(QCursor::pos());
     connect(set_pos_window, &QWidget::destroyed, set_pos_window, &QWidget::deleteLater);
     connect(set_button, &QPushButton::released, this, &Plot2D::slSendSetPos);
     connect(this, &Plot2D::siSendSetPos, set_pos_window, &QWidget::deleteLater);
