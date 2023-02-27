@@ -9,6 +9,7 @@
 
 namespace MathOperators{
     class AbstractOperator;
+    class MathOperatorAssign;
     class MathOperatorSum;
     class MathOperatorSubtract;
     class MathOperatorMultiply;
@@ -23,6 +24,14 @@ public:
 
 protected:
     AbstractOperator(void) {}
+};
+
+class MathOperators::MathOperatorAssign : public AbstractOperator {
+public:
+    MathOperatorAssign(void) {}
+
+    MathTypes::AbstractType & Execute(MathTypes::AbstractType & arg_l, MathTypes::AbstractType & arg_r) override;
+    ~MathOperatorAssign(void) override {}
 };
 
 class MathOperators::MathOperatorSum : public AbstractOperator {
@@ -74,6 +83,7 @@ namespace MathFunctions{
     class MathFunctionAbs;
     class MathFunctionLog;
     class MathFunctionExp;
+    class MathFunctionRange;
 }
 
 class MathFunctions::AbstractFunction{
@@ -83,13 +93,14 @@ public:
 
 protected:
     enum FunctionArgsAmount{
-        SIN_ARG_AM = 1,
-        COS_ARG_AM = 1,
-        TAN_ARG_AM = 1,
-        CTG_ARG_AM = 1,
-        ABS_ARG_AM = 1,
-        LOG_ARG_AM = 1,
-        EXP_ARG_AM = 1
+        SIN_ARG_AM      = 1,
+        COS_ARG_AM      = 1,
+        TAN_ARG_AM      = 1,
+        CTG_ARG_AM      = 1,
+        ABS_ARG_AM      = 1,
+        LOG_ARG_AM      = 1,
+        EXP_ARG_AM      = 1,
+        RANGE_ARG_AM    = 3
     };
     int ArgumentsAmount;
     AbstractFunction(void) {}
@@ -149,6 +160,14 @@ public:
 
     MathTypes::AbstractType & Execute(QVector<MathTypes::AbstractType *> & args) override;
     ~MathFunctionExp(void) override {}
+};
+
+class MathFunctions::MathFunctionRange : public AbstractFunction {
+public:
+    MathFunctionRange(void) { this->ArgumentsAmount = RANGE_ARG_AM; }
+
+    MathTypes::AbstractType & Execute(QVector<MathTypes::AbstractType *> & args) override;
+    ~MathFunctionRange(void) override {}
 };
 
 #endif // MATHFUNCTIONS_H

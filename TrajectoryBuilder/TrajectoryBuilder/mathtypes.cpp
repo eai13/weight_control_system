@@ -8,6 +8,19 @@
  * DOUBLE Type
  */
 
+MathTypes::AbstractType & MathTypes::TypeDouble::assign(AbstractType const & r_value) {
+    if (r_value.GetType() == MATH_VAR_TYPE_DOUBLE){
+        TypeDouble * ret_val = new TypeDouble();
+        TypeDouble const * r_v = dynamic_cast<TypeDouble const *>(&r_value);
+        ret_val->SetValue(r_v->GetValue());
+        this->Value = r_v->GetValue();
+        return *(ret_val);
+    }
+    else{
+        return *(new TypeDouble(this->Value));
+    }
+}
+
 MathTypes::AbstractType & MathTypes::TypeDouble::sum(AbstractType const & r_value) const {
     switch(r_value.GetType()){
     case(MATH_VAR_TYPE_DOUBLE):{
@@ -156,6 +169,18 @@ MathTypes::AbstractType & MathTypes::TypeDouble::exp(void) const {
 /***
  * VECTOR OF DOUBLES Type
  */
+
+MathTypes::AbstractType & MathTypes::TypeVector::assign(AbstractType const & r_value) {
+    if (r_value.GetType() == MATH_VAR_TYPE_VECTOR){
+        TypeVector const * r_v = dynamic_cast<TypeVector const *>(&r_value);
+        TypeVector * ret_vec = new TypeVector(r_v->GetRawCopy());
+        this->Vector = r_v->GetRawCopy();
+        return *(ret_vec);
+    }
+    else{
+        return *(new TypeVector(this->GetRawCopy()));
+    }
+}
 
 MathTypes::AbstractType & MathTypes::TypeVector::sum(AbstractType const & r_value) const {
     switch(r_value.GetType()){

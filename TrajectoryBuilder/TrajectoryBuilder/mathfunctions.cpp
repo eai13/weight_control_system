@@ -2,6 +2,10 @@
 #include <QVector>
 
 
+MathTypes::AbstractType &MathOperators::MathOperatorAssign::Execute(MathTypes::AbstractType &arg_l, MathTypes::AbstractType &arg_r){
+    return arg_l.assign(arg_r);
+}
+
 MathTypes::AbstractType &MathOperators::MathOperatorSum::Execute(MathTypes::AbstractType &arg_l, MathTypes::AbstractType &arg_r){
     return arg_l.sum(arg_r);
 }
@@ -69,4 +73,21 @@ MathTypes::AbstractType &MathFunctions::MathFunctionExp::Execute(QVector<MathTyp
         return *(new MathTypes::TypeDouble(0));
     else
         return args[0]->exp();
+}
+
+MathTypes::AbstractType & MathFunctions::MathFunctionRange::Execute(QVector<MathTypes::AbstractType *> &args){
+    if ((&args)->size() < this->ArgumentsAmount)
+        return *(new MathTypes::TypeVector(QVector<qreal>(0)));
+    else{
+        qreal start = dynamic_cast<MathTypes::TypeDouble *>(args[0])->GetValue();
+        qreal end = dynamic_cast<MathTypes::TypeDouble *>(args[1])->GetValue();
+        qreal step = dynamic_cast<MathTypes::TypeDouble *>(args[2])->GetValue();
+
+        QVector<qreal> r_vec;
+        for (; start < end; start += step)
+            r_vec.push_back(start);
+
+        MathTypes::TypeVector * ret_vec = new MathTypes::TypeVector(r_vec);
+        return *(ret_vec);
+    }
 }

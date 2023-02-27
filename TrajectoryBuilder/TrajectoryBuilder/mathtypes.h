@@ -12,6 +12,10 @@ namespace MathTypes{
     class TypeDouble;
 };
 
+/***
+ *  ABSTRACT Type
+ */
+
 class MathTypes::AbstractType{
 public:
     enum VarTypes{
@@ -28,6 +32,7 @@ public:
     /***
      * @brief Operators
      */
+    virtual AbstractType & assign(AbstractType const & r_value) = 0;
     virtual AbstractType & sum(AbstractType const & r_value) const = 0;
     virtual AbstractType & subtract(AbstractType const & r_value) const = 0;
     virtual AbstractType & divide(AbstractType const & r_value) const = 0;
@@ -50,6 +55,10 @@ protected:
 
     AbstractType(void){}
 };
+
+/***
+ * DOUBLE Type
+ */
 
 class MathTypes::TypeDouble : public AbstractType{
 public:
@@ -74,6 +83,7 @@ public:
     /***
      * @brief Operators
      */
+    AbstractType & assign(AbstractType const & r_value) override;
     AbstractType & sum(AbstractType const & r_value) const override;
     AbstractType & subtract(AbstractType const & r_value) const override;
     AbstractType & divide(AbstractType const & r_value) const override;
@@ -98,6 +108,9 @@ private:
     qreal Value;
 };
 
+/***
+ * VECTOR Type
+ */
 
 class MathTypes::TypeVector : public AbstractType{
 public:
@@ -143,6 +156,7 @@ public:
     /***
      * @brief Operators
      */
+    AbstractType & assign(AbstractType const & r_value) override;
     AbstractType & sum(AbstractType const & r_value) const override;
     AbstractType & subtract(AbstractType const & r_value) const override;
     AbstractType & divide(AbstractType const & r_value) const override;
