@@ -290,7 +290,28 @@ void Plot3D::slSaveTarget(void){
     }
 }
 void Plot3D::slUploadTarget(uint8_t format){
-    qDebug() << "Plot3D Upload Target " << format;
+    qDebug() << "Plot3D Upload Target";
+    QString HeaderString;
+    QStringList CurrentLine;
+    QString filter;
+    QString fname = QFileDialog::getOpenFileName(nullptr, "Upload Target Trajectory", QDir::currentPath(), "CSV (*.csv)", &filter);
+    QFile file(fname);
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)){
+        QTextStream file_stream(&file);
+        file_stream >> HeaderString;
+        if (HeaderString == "X;Y;Z"){
+            file_stream >> HeaderString;
+            while(HeaderString.size() != 0){
+                CurrentLine = HeaderString.split(";");
+                if (CurrentLine.size() == 3)
+                    this->slTargetAdd(QVector3D(CurrentLine[0].toDouble(), CurrentLine[1].toDouble(), CurrentLine[2].toDouble()));
+                else
+                    break;
+                file_stream >> HeaderString;
+            }
+        }
+        file.close();
+    }
 }
 
 void Plot3D::slReceiveObjectStep(QVector3D step){
