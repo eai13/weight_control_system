@@ -32,23 +32,23 @@ public:
     /***
      * @brief Operators
      */
-    virtual AbstractType & assign(AbstractType const & r_value) = 0;
-    virtual AbstractType & sum(AbstractType const & r_value) const = 0;
-    virtual AbstractType & subtract(AbstractType const & r_value) const = 0;
-    virtual AbstractType & divide(AbstractType const & r_value) const = 0;
-    virtual AbstractType & multiply(AbstractType const & r_value) const = 0;
-    virtual AbstractType & to_power(AbstractType const & r_value) const = 0;
+    virtual AbstractType * assign(AbstractType const * r_value) = 0;
+    virtual AbstractType * sum(AbstractType const * r_value) const = 0;
+    virtual AbstractType * subtract(AbstractType const * r_value) const = 0;
+    virtual AbstractType * divide(AbstractType const * r_value) const = 0;
+    virtual AbstractType * multiply(AbstractType const * r_value) const = 0;
+    virtual AbstractType * to_power(AbstractType const * r_value) const = 0;
 
     /***
      * @brief Functions
      */
-    virtual AbstractType & sin(void) const = 0;
-    virtual AbstractType & cos(void) const = 0;
-    virtual AbstractType & tg(void) const = 0;
-    virtual AbstractType & ctg(void) const = 0;
-    virtual AbstractType & abs(void) const = 0;
-    virtual AbstractType & log(void) const = 0;
-    virtual AbstractType & exp(void) const = 0;
+    virtual AbstractType * sin(void) const = 0;
+    virtual AbstractType * cos(void) const = 0;
+    virtual AbstractType * tg(void) const = 0;
+    virtual AbstractType * ctg(void) const = 0;
+    virtual AbstractType * abs(void) const = 0;
+    virtual AbstractType * log(void) const = 0;
+    virtual AbstractType * exp(void) const = 0;
 
 protected:
     VarTypes Type;
@@ -83,24 +83,24 @@ public:
     /***
      * @brief Operators
      */
-    AbstractType & assign(AbstractType const & r_value) override;
-    AbstractType & sum(AbstractType const & r_value) const override;
-    AbstractType & subtract(AbstractType const & r_value) const override;
-    AbstractType & divide(AbstractType const & r_value) const override;
-    AbstractType & multiply(AbstractType const & r_value) const override;
-    AbstractType & to_power(AbstractType const & r_value) const override;
+    AbstractType * assign(AbstractType const * r_value) override;
+    AbstractType * sum(AbstractType const * r_value) const override;
+    AbstractType * subtract(AbstractType const * r_value) const override;
+    AbstractType * divide(AbstractType const * r_value) const override;
+    AbstractType * multiply(AbstractType const * r_value) const override;
+    AbstractType * to_power(AbstractType const * r_value) const override;
 
     /***
      * @brief Functions
      */
 
-    AbstractType & sin(void) const override;
-    AbstractType & cos(void) const override;
-    AbstractType & tg(void) const override;
-    AbstractType & ctg(void) const override;
-    AbstractType & abs(void) const override;
-    AbstractType & log(void) const override;
-    AbstractType & exp(void) const override;
+    AbstractType * sin(void) const override;
+    AbstractType * cos(void) const override;
+    AbstractType * tg(void) const override;
+    AbstractType * ctg(void) const override;
+    AbstractType * abs(void) const override;
+    AbstractType * log(void) const override;
+    AbstractType * exp(void) const override;
 
     ~TypeDouble(void) override {}
 
@@ -156,22 +156,22 @@ public:
     /***
      * @brief Operators
      */
-    AbstractType & assign(AbstractType const & r_value) override;
-    AbstractType & sum(AbstractType const & r_value) const override;
-    AbstractType & subtract(AbstractType const & r_value) const override;
-    AbstractType & divide(AbstractType const & r_value) const override;
-    AbstractType & multiply(AbstractType const & r_value) const override;
-    AbstractType & to_power(AbstractType const & r_value) const override;
+    AbstractType * assign(AbstractType const * r_value) override;
+    AbstractType * sum(AbstractType const * r_value) const override;
+    AbstractType * subtract(AbstractType const * r_value) const override;
+    AbstractType * divide(AbstractType const * r_value) const override;
+    AbstractType * multiply(AbstractType const * r_value) const override;
+    AbstractType * to_power(AbstractType const * r_value) const override;
     /***
      * @brief Functions
      */
-    AbstractType & sin(void) const override;
-    AbstractType & cos(void) const override;
-    AbstractType & tg(void) const override;
-    AbstractType & ctg(void) const override;
-    AbstractType & abs(void) const override;
-    AbstractType & log(void) const override;
-    AbstractType & exp(void) const override;
+    AbstractType * sin(void) const override;
+    AbstractType * cos(void) const override;
+    AbstractType * tg(void) const override;
+    AbstractType * ctg(void) const override;
+    AbstractType * abs(void) const override;
+    AbstractType * log(void) const override;
+    AbstractType * exp(void) const override;
 
     ~TypeVector(void) override {}
 

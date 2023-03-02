@@ -13,12 +13,14 @@ SOURCES += \
     mainwindow.cpp \
     mathfunctions.cpp \
     mathinterpreter.cpp \
+    mathtreeprocessor.cpp \
     mathtypes.cpp
 
 HEADERS += \
     mainwindow.h \
     mathfunctions.h \
     mathinterpreter.h \
+    mathtreeprocessor.h \
     mathtypes.h
 
 FORMS += \

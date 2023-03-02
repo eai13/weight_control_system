@@ -4,6 +4,7 @@
 #include <QMap>
 #include <QString>
 #include <QVector>
+#include <QStack>
 #include "mathfunctions.h"
 #include "mathtypes.h"
 #include <QDebug>
@@ -17,6 +18,8 @@ public:
 
 
 private:
+    uint32_t CheckBraces(QString const & commString);
+
     QMap<QString, MathFunctions::AbstractFunction *> Functions;
     QMap<QString, MathOperators::AbstractOperator *> Operators;
     QMap<QString, MathTypes::AbstractType *> Variables;
