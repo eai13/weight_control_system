@@ -24,10 +24,23 @@ AbstractSubtree(MathTypes::AbstractType * AbsType, AbstractSubtree * parent){
     this->Parent = parent;
 }
 
-template<typename T>
 MathTreeProcessor::AbstractSubtree * MathTreeProcessor::AbstractSubtree::
-AddSubtree(T * AbsFunc){
+AddSubtree(MathTypes::AbstractType * AbsType){
+    AbstractSubtree * NewSubtree = new AbstractSubtree(AbsType, this);
+    this->Subtrees.push_back(NewSubtree);
+    return NewSubtree;
+}
+
+MathTreeProcessor::AbstractSubtree * MathTreeProcessor::AbstractSubtree::
+AddSubtree(MathFunctions::AbstractFunction * AbsFunc){
     AbstractSubtree * NewSubtree = new AbstractSubtree(AbsFunc, this);
+    this->Subtrees.push_back(NewSubtree);
+    return NewSubtree;
+}
+
+MathTreeProcessor::AbstractSubtree * MathTreeProcessor::AbstractSubtree::
+AddSubtree(MathOperators::AbstractOperator * AbsOper){
+    AbstractSubtree * NewSubtree = new AbstractSubtree(AbsOper, this);
     this->Subtrees.push_back(NewSubtree);
     return NewSubtree;
 }
@@ -39,6 +52,14 @@ void MathTreeProcessor::AbstractSubtree::SetParent(AbstractSubtree * parent){
 MathTreeProcessor::AbstractSubtree * MathTreeProcessor::AbstractSubtree::
 GetParent(void){
     return this->Parent;
+}
+
+MathTreeProcessor::AbstractSubtree *MathTreeProcessor::AbstractSubtree::\
+GetRoot(void){
+    if (this->Parent == nullptr)
+        return this;
+    else
+        return this->Parent->GetRoot();
 }
 
 MathTreeProcessor::AbstractSubtree * MathTreeProcessor::AbstractSubtree::
@@ -98,7 +119,18 @@ Compute(void){
     }
 
     if (this->Operator != nullptr){
-        return this->Operator->Execute(Arguments.at(0), Arguments.at(1));
+        this->Value = this->Operator->Execute(Arguments.at(0), Arguments.at(1));
     }
+    else if (this->Function != nullptr){
+        this->Value = this->Function->Execute(&Arguments);
+    }
+    else if (this->Value != nullptr){
+
+    }
+    else{
+        this->Value = new MathTypes::TypeDouble(0);
+    }
+
+    return this->Value;
 }
 

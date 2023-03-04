@@ -7,6 +7,7 @@
 #include <QStack>
 #include "mathfunctions.h"
 #include "mathtypes.h"
+#include "mathtreeprocessor.h"
 #include <QDebug>
 
 class MathInterpreter

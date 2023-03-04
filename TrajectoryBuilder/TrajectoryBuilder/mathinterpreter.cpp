@@ -17,7 +17,13 @@ MathInterpreter::MathInterpreter(){
     this->Operators["/"] = new MathOperators::MathOperatorDivision();
     this->Operators["^"] = new MathOperators::MathOperatorPower();
 
+    MathTreeProcessor::AbstractSubtree * Result = new MathTreeProcessor::AbstractSubtree(this->Functions["RANGE"]);
+    Result->AddSubtree(new MathTypes::TypeDouble(0));
+    Result->AddSubtree(new MathTypes::TypeDouble(1));
+    Result->AddSubtree(new MathTypes::TypeDouble(0.1));
 
+    MathTypes::TypeVector * end = dynamic_cast<MathTypes::TypeVector *>(Result->Compute());
+    qDebug() << end->GetRawCopy();
 }
 
 void MathInterpreter::InterpretString(QString commString){

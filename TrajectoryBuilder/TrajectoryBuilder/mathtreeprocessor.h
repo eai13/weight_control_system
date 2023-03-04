@@ -17,11 +17,14 @@ public:
     AbstractSubtree(MathOperators::AbstractOperator * AbsOper, AbstractSubtree * parent = nullptr);
     AbstractSubtree(MathTypes::AbstractType         * AbsType, AbstractSubtree * parent = nullptr);
 
-    template<typename T>
-    AbstractSubtree * AddSubtree(T * AbsFunc);
+    AbstractSubtree * AddSubtree(MathTypes::AbstractType * AbsType);
+    AbstractSubtree * AddSubtree(MathFunctions::AbstractFunction * AbsFunc);
+    AbstractSubtree * AddSubtree(MathOperators::AbstractOperator * AbsOper);
 
     void SetParent(AbstractSubtree * parent);
     AbstractSubtree * GetParent(void);
+
+    AbstractSubtree * GetRoot(void);
 
     AbstractSubtree * GetChild(uint8_t index);
 
