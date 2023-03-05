@@ -1,47 +1,86 @@
 #include "mathtreeprocessor.h"
 
 MathTreeProcessor::AbstractSubtree::
-AbstractSubtree(MathFunctions::AbstractFunction * AbsFunc, AbstractSubtree * parent){
+AbstractSubtree(MathFunctions::AbstractFunction * AbsFunc, QString Name, AbstractSubtree * parent){
     this->Function = AbsFunc;
     this->Operator = nullptr;
     this->Value = nullptr;
     this->Parent = parent;
+
+    this->Name = Name;
+
+    this->MaxChildren = AbsFunc->GetArgumentsExpected();
 }
 
 MathTreeProcessor::AbstractSubtree::
-AbstractSubtree(MathOperators::AbstractOperator * AbsOper, AbstractSubtree * parent){
+AbstractSubtree(MathOperators::AbstractOperator * AbsOper, QString Name, AbstractSubtree * parent){
     this->Function = nullptr;
     this->Operator = AbsOper;
     this->Value = nullptr;
     this->Parent = parent;
+
+    this->Name = Name;
+
+    this->MaxChildren = 2;
 }
 
 MathTreeProcessor::AbstractSubtree::
-AbstractSubtree(MathTypes::AbstractType * AbsType, AbstractSubtree * parent){
+AbstractSubtree(MathTypes::AbstractType * AbsType, QString Name, AbstractSubtree * parent){
     this->Function = nullptr;
     this->Operator = nullptr;
     this->Value = AbsType;
     this->Parent = parent;
+
+    this->Name = Name;
+
+    this->MaxChildren = 0;
 }
 
 MathTreeProcessor::AbstractSubtree * MathTreeProcessor::AbstractSubtree::
-AddSubtree(MathTypes::AbstractType * AbsType){
-    AbstractSubtree * NewSubtree = new AbstractSubtree(AbsType, this);
+PushBackSubtree(MathTypes::AbstractType * AbsType, QString Name){
+    if (this->MaxChildren <= this->Subtrees.size()) return nullptr;
+    AbstractSubtree * NewSubtree = new AbstractSubtree(AbsType, Name, this);
     this->Subtrees.push_back(NewSubtree);
     return NewSubtree;
 }
 
 MathTreeProcessor::AbstractSubtree * MathTreeProcessor::AbstractSubtree::
-AddSubtree(MathFunctions::AbstractFunction * AbsFunc){
-    AbstractSubtree * NewSubtree = new AbstractSubtree(AbsFunc, this);
+PushBackSubtree(MathFunctions::AbstractFunction * AbsFunc, QString Name){
+    if (this->MaxChildren <= this->Subtrees.size()) return nullptr;
+    AbstractSubtree * NewSubtree = new AbstractSubtree(AbsFunc, Name, this);
     this->Subtrees.push_back(NewSubtree);
     return NewSubtree;
 }
 
 MathTreeProcessor::AbstractSubtree * MathTreeProcessor::AbstractSubtree::
-AddSubtree(MathOperators::AbstractOperator * AbsOper){
-    AbstractSubtree * NewSubtree = new AbstractSubtree(AbsOper, this);
+PushBackSubtree(MathOperators::AbstractOperator * AbsOper, QString Name){
+    if (this->MaxChildren <= this->Subtrees.size()) return nullptr;
+    AbstractSubtree * NewSubtree = new AbstractSubtree(AbsOper, Name, this);
     this->Subtrees.push_back(NewSubtree);
+    return NewSubtree;
+}
+
+MathTreeProcessor::AbstractSubtree * MathTreeProcessor::AbstractSubtree::
+PushFrontSubtree(MathTypes::AbstractType * AbsType, QString Name){
+    if (this->MaxChildren <= this->Subtrees.size()) return nullptr;
+    AbstractSubtree * NewSubtree = new AbstractSubtree(AbsType, Name, this);
+    this->Subtrees.push_front(NewSubtree);
+    return NewSubtree;
+}
+
+MathTreeProcessor::AbstractSubtree * MathTreeProcessor::AbstractSubtree::
+PushFrontSubtree(MathOperators::AbstractOperator * AbsOper, QString Name){
+    if (this->MaxChildren <= this->Subtrees.size()) return nullptr;
+    AbstractSubtree * NewSubtree = new AbstractSubtree(AbsOper, Name, this);
+    this->Subtrees.push_front(NewSubtree);
+    return NewSubtree;
+}
+
+MathTreeProcessor::AbstractSubtree * MathTreeProcessor::AbstractSubtree::
+PushFrontSubtree(MathFunctions::AbstractFunction * AbsFunc, QString Name){
+    if (this->MaxChildren <= this->Subtrees.size()) return nullptr;
+    AbstractSubtree * NewSubtree = new AbstractSubtree(AbsFunc, Name, this);
+    this->Subtrees.push_front(NewSubtree);
     return NewSubtree;
 }
 

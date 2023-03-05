@@ -30,10 +30,10 @@ MathInterpreter::MathInterpreter(void){
     this->Operators["/"] = new MathOperators::MathOperatorDivision();
     this->Operators["^"] = new MathOperators::MathOperatorPower();
 
-    MathTreeProcessor::AbstractSubtree * Result = new MathTreeProcessor::AbstractSubtree(this->Functions["ABS"]);
-    Result = Result->AddSubtree(this->Operators["-"]);
-    Result->AddSubtree(new MathTypes::TypeDouble(1));
-    Result->AddSubtree(new MathTypes::TypeDouble(5));
+    MathTreeProcessor::AbstractSubtree * Result = new MathTreeProcessor::AbstractSubtree(this->Functions["ABS"], "ABS");
+    Result = Result->PushBackSubtree(this->Operators["-"], "-");
+    Result->PushBackSubtree(new MathTypes::TypeDouble(1), "1");
+    Result->PushBackSubtree(new MathTypes::TypeDouble(5), "5");
 
     Result = Result->GetRoot();
     MathTypes::TypeDouble * end = dynamic_cast<MathTypes::TypeDouble *>(Result->Compute());
@@ -106,6 +106,119 @@ void MathInterpreter::InterpretString(QString commString){
     QStringList TreeList = this->InterpretSubstring(FunctionalList);
     qDebug() << TreeList;
 
+    MathTreeProcessor::AbstractSubtree * Tree;
+    if (TreeList.isEmpty()) return;
+    QString CurrentValue = TreeList.takeLast();
+    if (this->Operators.contains(CurrentValue)){
+        Tree = new MathTreeProcessor::AbstractSubtree(this->Operators[CurrentValue], CurrentValue);
+    }
+    else if (this->Functions.contains(CurrentValue)){
+        Tree = new MathTreeProcessor::AbstractSubtree(this->Functions[CurrentValue], CurrentValue);
+    }
+    else if (this->Variables.contains(CurrentValue)){
+        Tree = new MathTreeProcessor::AbstractSubtree(this->Variables[CurrentValue], CurrentValue);
+    }
+    else{
+        qDebug() << "Something wrong, quit";
+        return;
+    }
+
+    for (auto iter = TreeList.rbegin(); iter != TreeList.rend(); iter++){
+        if (this->Operators.contains(*iter)){
+            MathTreeProcessor::AbstractSubtree * NewSubtree = Tree->PushFrontSubtree(this->Operators[*iter], *iter);
+            while(NewSubtree == nullptr){
+                Tree = Tree->GetParent();
+                if (Tree == nullptr){
+                    qDebug() << "Error, no place for an Operator";
+                    return;
+                }
+                NewSubtree = Tree->PushFrontSubtree(this->Operators[*iter], *iter);
+            }
+            Tree = NewSubtree;
+        }
+        else if (this->Functions.contains(*iter)){
+            MathTreeProcessor::AbstractSubtree * NewSubtree = Tree->PushFrontSubtree(this->Functions[*iter], *iter);
+            while(NewSubtree == nullptr){
+                Tree = Tree->GetParent();
+                if (Tree == nullptr){
+                    qDebug() << "Error, no place for a Function";
+                    return;
+                }
+                NewSubtree = Tree->PushFrontSubtree(this->Functions[*iter], *iter);
+            }
+            Tree = NewSubtree;
+        }
+        else if (this->Variables.contains(*iter)){
+            MathTreeProcessor::AbstractSubtree * NewSubtree = Tree->PushFrontSubtree(this->Variables[*iter], *iter);
+            while(NewSubtree == nullptr){
+                Tree = Tree->GetParent();
+                if (Tree == nullptr){
+                    qDebug() << "Error, no place for a Variable";
+                    return;
+                }
+                NewSubtree = Tree->PushFrontSubtree(this->Variables[*iter], *iter);
+            }
+            Tree = NewSubtree;
+        }
+        else{
+            bool isNumber;
+            iter->toDouble(&isNumber);
+            if (isNumber){
+                MathTypes::AbstractType * NewNumber = new MathTypes::TypeDouble(iter->toDouble());
+                MathTreeProcessor::AbstractSubtree * NewSubtree = Tree->PushFrontSubtree(NewNumber, *iter);
+                while(NewSubtree == nullptr){
+                    Tree = Tree->GetParent();
+                    if (Tree == nullptr){
+                        qDebug() << "Error, no place for a Number";
+                        return;
+                    }
+                    NewSubtree = Tree->PushFrontSubtree(NewNumber, *iter);
+                }
+                Tree = NewSubtree;
+            }
+            else{
+                while(Tree->GetChildSpaceAvailable() == 0){
+                    Tree = Tree->GetParent();
+                    if (Tree == nullptr){
+                        qDebug() << "Error, no place for an unknown variable";
+                        return;
+                    }
+                }
+                if (Tree->GetName() == "="){
+                    this->Variables[*iter] = new MathTypes::TypeDouble(0);
+                    Tree = Tree->PushFrontSubtree(this->Variables[*iter], *iter);
+                }
+                else{
+                    qDebug() << "Unknown variable " << *iter;
+                    return;
+                }
+            }
+        }
+    }
+
+    Tree->GetRoot()->Compute();
+
+    qDebug() << "Actual variables :";
+    for (auto iter = this->Variables.begin(); iter != Variables.end(); iter++){
+        switch(iter.value()->GetType()){
+        case(MathTypes::AbstractType::MATH_VAR_TYPE_DOUBLE):{
+            qDebug() << "\t" << iter.key() << " : " << dynamic_cast<MathTypes::TypeDouble *>(iter.value())->GetValue();
+            break;
+        }
+        case(MathTypes::AbstractType::MATH_VAR_TYPE_VECTOR):{
+            qDebug() << "\t" << iter.key() << " : " << dynamic_cast<MathTypes::TypeVector *>(iter.value())->GetRawCopy();
+            break;
+        }
+        case(MathTypes::AbstractType::MATH_VAR_TYPE_NONE):{
+            //NONE
+            break;
+        }
+        default:{
+            //NONE
+            break;
+        }
+        }
+    }
 }
 
 
