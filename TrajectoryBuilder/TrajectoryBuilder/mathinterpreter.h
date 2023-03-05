@@ -19,7 +19,8 @@ public:
 
 
 private:
-    uint32_t CheckBraces(QString const & commString);
+    bool CheckBraces(QString const & commString);
+    QList<QStringList> InterpretSubstring(QStringList Input);
 
     QMap<QString, MathFunctions::AbstractFunction *> Functions;
     QMap<QString, MathOperators::AbstractOperator *> Operators;

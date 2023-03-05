@@ -54,7 +54,7 @@ GetParent(void){
     return this->Parent;
 }
 
-MathTreeProcessor::AbstractSubtree *MathTreeProcessor::AbstractSubtree::\
+MathTreeProcessor::AbstractSubtree * MathTreeProcessor::AbstractSubtree::
 GetRoot(void){
     if (this->Parent == nullptr)
         return this;

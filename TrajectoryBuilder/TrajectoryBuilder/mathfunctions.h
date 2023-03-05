@@ -15,6 +15,16 @@ namespace MathOperators{
     class MathOperatorMultiply;
     class MathOperatorDivision;
     class MathOperatorPower;
+
+    enum OperatorPriority{
+        ASSIGN_PRIO     = 0x00,
+        SUM_PRIO        = 0x01,
+        SUBTRACT_PRIO   = 0x01,
+        MULTIPLY_PRIO   = 0x02,
+        DIVISION_PRIO   = 0x02,
+        POWER_PRIO      = 0x03,
+        FUNCTION_PRIO   = 0xFF
+    };
 }
 
 class MathOperators::AbstractOperator{
@@ -22,13 +32,18 @@ public:
     virtual ~AbstractOperator(void) {}
     virtual MathTypes::AbstractType * Execute(MathTypes::AbstractType * arg_l, MathTypes::AbstractType * arg_r) = 0;
 
+    OperatorPriority GetPrio(void){
+        return this->Priority;
+    }
+
 protected:
     AbstractOperator(void) {}
+    OperatorPriority Priority;
 };
 
 class MathOperators::MathOperatorAssign : public AbstractOperator {
 public:
-    MathOperatorAssign(void) {}
+    MathOperatorAssign(void) { this->Priority = ASSIGN_PRIO; }
 
     MathTypes::AbstractType * Execute(MathTypes::AbstractType * arg_l, MathTypes::AbstractType * arg_r) override;
     ~MathOperatorAssign(void) override {}
@@ -36,7 +51,7 @@ public:
 
 class MathOperators::MathOperatorSum : public AbstractOperator {
 public:
-    MathOperatorSum(void) {}
+    MathOperatorSum(void) { this->Priority = SUM_PRIO; }
 
     MathTypes::AbstractType * Execute(MathTypes::AbstractType * arg_l, MathTypes::AbstractType * arg_r) override;
     ~MathOperatorSum(void) override {}
@@ -44,7 +59,7 @@ public:
 
 class MathOperators::MathOperatorSubtract : public AbstractOperator {
 public:
-    MathOperatorSubtract(void) {}
+    MathOperatorSubtract(void) { this->Priority = SUBTRACT_PRIO; }
 
     MathTypes::AbstractType * Execute(MathTypes::AbstractType * arg_l, MathTypes::AbstractType * arg_r) override;
     ~MathOperatorSubtract(void) override {}
@@ -52,7 +67,7 @@ public:
 
 class MathOperators::MathOperatorDivision : public AbstractOperator {
 public:
-    MathOperatorDivision(void) {}
+    MathOperatorDivision(void) { this->Priority = DIVISION_PRIO; }
 
     MathTypes::AbstractType * Execute(MathTypes::AbstractType * arg_l, MathTypes::AbstractType * arg_r) override;
     ~MathOperatorDivision(void) override {}
@@ -60,7 +75,7 @@ public:
 
 class MathOperators::MathOperatorMultiply : public AbstractOperator {
 public:
-    MathOperatorMultiply(void) {}
+    MathOperatorMultiply(void) { this->Priority = MULTIPLY_PRIO; }
 
     MathTypes::AbstractType * Execute(MathTypes::AbstractType * arg_l, MathTypes::AbstractType * arg_r) override;
     ~MathOperatorMultiply(void) override {}
@@ -68,7 +83,7 @@ public:
 
 class MathOperators::MathOperatorPower : public AbstractOperator {
 public:
-    MathOperatorPower(void) {}
+    MathOperatorPower(void) { this->Priority = POWER_PRIO; }
 
     MathTypes::AbstractType * Execute(MathTypes::AbstractType * arg_l, MathTypes::AbstractType * arg_r) override;
     ~MathOperatorPower(void) override {}

@@ -11,12 +11,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->pb_ClearCommandHistory, &QPushButton::released, this, &MainWindow::slClearCommandHistory);
     connect(ui->pb_ClearVariables,      &QPushButton::released, this, &MainWindow::slClearVariables);
     connect(ui->pb_Interpret,           &QPushButton::released, this, &MainWindow::slInterpret);
-
-    MathInterpreter interpreter;
 }
 
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow(){
     delete ui;
 }
 
@@ -47,5 +44,5 @@ void MainWindow::slClearVariables(void){
 }
 
 void MainWindow::slInterpret(void){
-    this->slLogWarning("WARNING");
+    this->Interpreter.InterpretString(ui->line_Interpreter->text());
 }

@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QString>
 
+#include "mathinterpreter.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -28,5 +30,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+
+    MathInterpreter Interpreter;
 };
 #endif // MAINWINDOW_H

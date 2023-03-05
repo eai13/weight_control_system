@@ -7,3 +7,5 @@ __pycache__*
 protocol_test*
 *user
 traj.csv
+Makefile*
+*.stash
