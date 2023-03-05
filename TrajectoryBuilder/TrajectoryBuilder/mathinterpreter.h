@@ -20,7 +20,7 @@ public:
 
 private:
     bool CheckBraces(QString const & commString);
-    QList<QStringList> InterpretSubstring(QStringList Input);
+    QStringList InterpretSubstring(QStringList Input);
 
     QMap<QString, MathFunctions::AbstractFunction *> Functions;
     QMap<QString, MathOperators::AbstractOperator *> Operators;

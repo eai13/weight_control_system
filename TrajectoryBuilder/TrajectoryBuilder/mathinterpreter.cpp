@@ -103,17 +103,19 @@ void MathInterpreter::InterpretString(QString commString){
     }
     qDebug() << FunctionalList;
 
-    qDebug() << this->InterpretSubstring(FunctionalList);
+    QStringList TreeList = this->InterpretSubstring(FunctionalList);
+    qDebug() << TreeList;
 
 }
 
 
-QList<QStringList> MathInterpreter::InterpretSubstring(QStringList Input){
-    QList<QStringList> Output;
+QStringList MathInterpreter::InterpretSubstring(QStringList Input){
+    QStringList Output;
     QStack<QString> FunctionalStack;
     QStringList Accumulator;
 
     for (auto iter = Input.begin(); iter != Input.end(); iter++){
+        // If an Operator
         if (this->Operators.contains(*iter)){
             if (FunctionalStack.isEmpty()){
                 FunctionalStack.push(*iter);
@@ -122,13 +124,11 @@ QList<QStringList> MathInterpreter::InterpretSubstring(QStringList Input){
                 FunctionalStack.push(*iter);
             }
             else{
-                while(!(FunctionalStack.isEmpty())){
+                while(FunctionalStack.size()){
                     if (this->Operators.contains(FunctionalStack.top())){
                         if (this->Operators[FunctionalStack.top()]->GetPrio() > this->Operators[*iter]->GetPrio()){
-                            Accumulator.push_back(FunctionalStack.top());
+                            Output.push_back(FunctionalStack.top());
                             FunctionalStack.pop();
-                            Output.push_back(Accumulator);
-                            Accumulator.clear();
                         }
                         else{
                             FunctionalStack.push(*iter);
@@ -136,14 +136,16 @@ QList<QStringList> MathInterpreter::InterpretSubstring(QStringList Input){
                         }
                     }
                     else{
-                        Accumulator.push_back(FunctionalStack.top());
+                        Output.push_back(FunctionalStack.top());
                         FunctionalStack.pop();
-                        Output.push_back(Accumulator);
-                        Accumulator.clear();
                     }
+                }
+                if (FunctionalStack.isEmpty()){
+                    FunctionalStack.push(*iter);
                 }
             }
         }
+        // If a Function
         else if (this->Functions.contains(*iter)){
             QString CurrentFunction = *iter;
             QStack<QString> BracesStack;
@@ -170,10 +172,10 @@ QList<QStringList> MathInterpreter::InterpretSubstring(QStringList Input){
             else{
                 qDebug() << "Error Function Arguments";
             }
-            Accumulator.push_back(CurrentFunction);
-            Output.push_back(Accumulator);
+            Output.append(CurrentFunction);
             Accumulator.clear();
         }
+        // If in Round Braces
         else if (*iter == "("){
             QStack<QString> BracesStack;
             iter++;
@@ -194,6 +196,7 @@ QList<QStringList> MathInterpreter::InterpretSubstring(QStringList Input){
                 Accumulator.push_back(*iter);
             }
         }
+        // If in Square Braces
         else if (*iter == "["){
             QStack<QString> BracesStack;
             iter++;
@@ -215,17 +218,14 @@ QList<QStringList> MathInterpreter::InterpretSubstring(QStringList Input){
             }
         }
         else{
-            Accumulator.push_back(*iter);
-            Output.push_back(Accumulator);
+            Output.push_back(*iter);
             Accumulator.clear();
         }
     }
 
     while(!(FunctionalStack.isEmpty())){
-        Accumulator.push_back(FunctionalStack.top());
+        Output.append(FunctionalStack.top());
         FunctionalStack.pop();
-        Output.push_back(Accumulator);
-        Accumulator.clear();
     }
 
     return Output;
