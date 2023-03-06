@@ -31,6 +31,7 @@ class MathOperators::AbstractOperator{
 public:
     virtual ~AbstractOperator(void) {}
     virtual MathTypes::AbstractType * Execute(MathTypes::AbstractType * arg_l, MathTypes::AbstractType * arg_r) = 0;
+    virtual MathTypes::AbstractType::VarTypes GetReturnValue(MathTypes::AbstractType::VarTypes arg_type_l, MathTypes::AbstractType::VarTypes arg_type_r) = 0;
 
     OperatorPriority GetPrio(void){
         return this->Priority;
@@ -46,6 +47,7 @@ public:
     MathOperatorAssign(void) { this->Priority = ASSIGN_PRIO; }
 
     MathTypes::AbstractType * Execute(MathTypes::AbstractType * arg_l, MathTypes::AbstractType * arg_r) override;
+    MathTypes::AbstractType::VarTypes GetReturnValue(MathTypes::AbstractType::VarTypes arg_type_l, MathTypes::AbstractType::VarTypes arg_type_r) override;
     ~MathOperatorAssign(void) override {}
 };
 
@@ -54,6 +56,7 @@ public:
     MathOperatorSum(void) { this->Priority = SUM_PRIO; }
 
     MathTypes::AbstractType * Execute(MathTypes::AbstractType * arg_l, MathTypes::AbstractType * arg_r) override;
+    MathTypes::AbstractType::VarTypes GetReturnValue(MathTypes::AbstractType::VarTypes arg_type_l, MathTypes::AbstractType::VarTypes arg_type_r) override;
     ~MathOperatorSum(void) override {}
 };
 
@@ -62,6 +65,7 @@ public:
     MathOperatorSubtract(void) { this->Priority = SUBTRACT_PRIO; }
 
     MathTypes::AbstractType * Execute(MathTypes::AbstractType * arg_l, MathTypes::AbstractType * arg_r) override;
+    MathTypes::AbstractType::VarTypes GetReturnValue(MathTypes::AbstractType::VarTypes arg_type_l, MathTypes::AbstractType::VarTypes arg_type_r) override;
     ~MathOperatorSubtract(void) override {}
 };
 
@@ -70,6 +74,7 @@ public:
     MathOperatorDivision(void) { this->Priority = DIVISION_PRIO; }
 
     MathTypes::AbstractType * Execute(MathTypes::AbstractType * arg_l, MathTypes::AbstractType * arg_r) override;
+    MathTypes::AbstractType::VarTypes GetReturnValue(MathTypes::AbstractType::VarTypes arg_type_l, MathTypes::AbstractType::VarTypes arg_type_r) override;
     ~MathOperatorDivision(void) override {}
 };
 
@@ -78,6 +83,7 @@ public:
     MathOperatorMultiply(void) { this->Priority = MULTIPLY_PRIO; }
 
     MathTypes::AbstractType * Execute(MathTypes::AbstractType * arg_l, MathTypes::AbstractType * arg_r) override;
+    MathTypes::AbstractType::VarTypes GetReturnValue(MathTypes::AbstractType::VarTypes arg_type_l, MathTypes::AbstractType::VarTypes arg_type_r) override;
     ~MathOperatorMultiply(void) override {}
 };
 
@@ -86,6 +92,7 @@ public:
     MathOperatorPower(void) { this->Priority = POWER_PRIO; }
 
     MathTypes::AbstractType * Execute(MathTypes::AbstractType * arg_l, MathTypes::AbstractType * arg_r) override;
+    MathTypes::AbstractType::VarTypes GetReturnValue(MathTypes::AbstractType::VarTypes arg_type_l, MathTypes::AbstractType::VarTypes arg_type_r) override;
     ~MathOperatorPower(void) override {}
 };
 
@@ -105,6 +112,7 @@ class MathFunctions::AbstractFunction{
 public:
     virtual ~AbstractFunction(void) {}
     virtual MathTypes::AbstractType * Execute(QVector<MathTypes::AbstractType *> * args) = 0;
+    virtual MathTypes::AbstractType::VarTypes GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args) = 0;
 
     uint8_t GetArgumentsExpected(void);
 
@@ -128,6 +136,7 @@ public:
     MathFunctionSin(void) { this->ArgumentsAmount = SIN_ARG_AM; }
 
     MathTypes::AbstractType * Execute(QVector<MathTypes::AbstractType *> * args) override;
+    MathTypes::AbstractType::VarTypes GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args) override;
     ~MathFunctionSin(void) override {}
 };
 
@@ -136,6 +145,7 @@ public:
     MathFunctionCos(void) { this->ArgumentsAmount = COS_ARG_AM; }
 
     MathTypes::AbstractType * Execute(QVector<MathTypes::AbstractType *> * args) override;
+    MathTypes::AbstractType::VarTypes GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args) override;
     ~MathFunctionCos(void) override {}
 };
 
@@ -144,6 +154,7 @@ public:
     MathFunctionTan(void) { this->ArgumentsAmount = TAN_ARG_AM; }
 
     MathTypes::AbstractType * Execute(QVector<MathTypes::AbstractType *> * args) override;
+    MathTypes::AbstractType::VarTypes GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args) override;
     ~MathFunctionTan(void) override {}
 };
 
@@ -152,6 +163,7 @@ public:
     MathFunctionCtg(void) { this->ArgumentsAmount = CTG_ARG_AM; }
 
     MathTypes::AbstractType * Execute(QVector<MathTypes::AbstractType *> * args) override;
+    MathTypes::AbstractType::VarTypes GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args) override;
     ~MathFunctionCtg(void) override {}
 };
 
@@ -160,6 +172,7 @@ public:
     MathFunctionAbs(void) { this->ArgumentsAmount = ABS_ARG_AM; }
 
     MathTypes::AbstractType * Execute(QVector<MathTypes::AbstractType *> * args) override;
+    MathTypes::AbstractType::VarTypes GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args) override;
     ~MathFunctionAbs(void) override {}
 };
 
@@ -168,6 +181,7 @@ public:
     MathFunctionLog(void) { this->ArgumentsAmount = LOG_ARG_AM; }
 
     MathTypes::AbstractType * Execute(QVector<MathTypes::AbstractType *> * args) override;
+    MathTypes::AbstractType::VarTypes GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args) override;
     ~MathFunctionLog(void) override {}
 };
 
@@ -176,6 +190,7 @@ public:
     MathFunctionExp(void) { this->ArgumentsAmount = EXP_ARG_AM; }
 
     MathTypes::AbstractType * Execute(QVector<MathTypes::AbstractType *> * args) override;
+    MathTypes::AbstractType::VarTypes GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args) override;
     ~MathFunctionExp(void) override {}
 };
 
@@ -184,6 +199,7 @@ public:
     MathFunctionRange(void) { this->ArgumentsAmount = RANGE_ARG_AM; }
 
     MathTypes::AbstractType * Execute(QVector<MathTypes::AbstractType *> * args) override;
+    MathTypes::AbstractType::VarTypes GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args) override;
     ~MathFunctionRange(void) override {}
 };
 

@@ -1,4 +1,17 @@
 #include "mathtreeprocessor.h"
+#include <QDebug>
+
+MathTreeProcessor::AbstractSubtree::
+AbstractSubtree(QString Name, AbstractSubtree * parent){
+    this->Function = nullptr;
+    this->Operator = nullptr;
+    this->Value = nullptr;
+    this->Parent = parent;
+
+    this->Name = Name;
+
+    this->MaxChildren = 0;
+}
 
 MathTreeProcessor::AbstractSubtree::
 AbstractSubtree(MathFunctions::AbstractFunction * AbsFunc, QString Name, AbstractSubtree * parent){
@@ -37,6 +50,14 @@ AbstractSubtree(MathTypes::AbstractType * AbsType, QString Name, AbstractSubtree
 }
 
 MathTreeProcessor::AbstractSubtree * MathTreeProcessor::AbstractSubtree::
+PushBackSubtree(QString Name){
+    if (this->MaxChildren <= this->Subtrees.size()) return nullptr;
+    AbstractSubtree * NewSubtree = new AbstractSubtree(Name, this);
+    this->Subtrees.push_back(NewSubtree);
+    return NewSubtree;
+}
+
+MathTreeProcessor::AbstractSubtree * MathTreeProcessor::AbstractSubtree::
 PushBackSubtree(MathTypes::AbstractType * AbsType, QString Name){
     if (this->MaxChildren <= this->Subtrees.size()) return nullptr;
     AbstractSubtree * NewSubtree = new AbstractSubtree(AbsType, Name, this);
@@ -57,6 +78,14 @@ PushBackSubtree(MathOperators::AbstractOperator * AbsOper, QString Name){
     if (this->MaxChildren <= this->Subtrees.size()) return nullptr;
     AbstractSubtree * NewSubtree = new AbstractSubtree(AbsOper, Name, this);
     this->Subtrees.push_back(NewSubtree);
+    return NewSubtree;
+}
+
+MathTreeProcessor::AbstractSubtree * MathTreeProcessor::AbstractSubtree::
+PushFrontSubtree(QString Name){
+    if (this->MaxChildren <= this->Subtrees.size()) return nullptr;
+    AbstractSubtree * NewSubtree = new AbstractSubtree(Name, this);
+    this->Subtrees.push_front(NewSubtree);
     return NewSubtree;
 }
 
@@ -171,5 +200,35 @@ Compute(void){
     }
 
     return this->Value;
+}
+
+MathTypes::AbstractType::VarTypes MathTreeProcessor::AbstractSubtree::
+GetReturnType(void){
+    if (this->ReturnType != MathTypes::AbstractType::MATH_VAR_TYPE_NONE){
+        return this->ReturnType;
+    }
+
+    QVector<MathTypes::AbstractType::VarTypes> Arguments;
+    if (this->Function != nullptr){
+        for (auto iter = this->ChildBegin(); iter != this->ChildEnd(); iter++){
+            Arguments.push_back((*iter)->GetReturnType());
+        }
+        this->ReturnType = this->Function->GetReturnValue(Arguments);
+        return this->ReturnType;
+    }
+    else if (this->Operator != nullptr){
+        for (auto iter = this->ChildBegin(); iter != this->ChildEnd(); iter++){
+            Arguments.push_back((*iter)->GetReturnType());
+        }
+        this->ReturnType = this->Operator->GetReturnValue(Arguments[0], Arguments[1]);
+        return this->ReturnType;
+    }
+    else if (this->Value != nullptr){
+        this->ReturnType = this->Value->GetType();
+        return this->ReturnType;
+    }
+    else{
+        return MathTypes::AbstractType::MATH_VAR_TYPE_NONE;
+    }
 }
 

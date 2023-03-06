@@ -185,7 +185,30 @@ void MathInterpreter::InterpretString(QString commString){
                     }
                 }
                 if (Tree->GetName() == "="){
-                    this->Variables[*iter] = new MathTypes::TypeDouble(0);
+                    MathTreeProcessor::AbstractSubtree * Subtree = Tree->GetChild();
+                    if (Subtree == nullptr){
+                        qDebug() << "Unable to detect new variable '" << *iter << "' expected type";
+                        return;
+                    }
+                    MathTypes::AbstractType * NewVariable;
+                    switch(Subtree->GetReturnType()){
+                    case(MathTypes::AbstractType::MATH_VAR_TYPE_DOUBLE):{
+                        NewVariable = new MathTypes::TypeDouble(0);
+                        qDebug() << "New variable '" << *iter << "' type is DOUBLE";
+                        break;
+                    }
+                    case(MathTypes::AbstractType::MATH_VAR_TYPE_VECTOR):{
+                        NewVariable = new MathTypes::TypeVector();
+                        qDebug() << "New variable '" << *iter << "' type is VECTOR";
+                        break;
+                    }
+                    default:{
+                        qDebug() << "Unable to detect new variable '" << *iter << "' expected type";
+                        return;
+                    }
+                    }
+
+                    this->Variables[*iter] = NewVariable;
                     Tree = Tree->PushFrontSubtree(this->Variables[*iter], *iter);
                 }
                 else{

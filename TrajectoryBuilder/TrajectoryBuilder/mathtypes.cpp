@@ -10,14 +10,12 @@
 
 MathTypes::AbstractType * MathTypes::TypeDouble::assign(AbstractType const * r_value) {
     if (r_value->GetType() == MATH_VAR_TYPE_DOUBLE){
-        TypeDouble * ret_val = new TypeDouble();
         TypeDouble const * r_v = dynamic_cast<TypeDouble const *>(r_value);
-        ret_val->SetValue(r_v->GetValue());
         this->Value = r_v->GetValue();
-        return ret_val;
+        return this;
     }
     else{
-        return new TypeDouble(this->Value);
+        return this;
     }
 }
 
