@@ -9,14 +9,23 @@
 #include "mathtypes.h"
 #include "mathtreeprocessor.h"
 #include <QDebug>
+#include <QWidget>
+#include <QObject>
 
-class MathInterpreter
+//QT_BEGIN_NAMESPACE
+//namespace Interpreter { class MathInterpreter; }
+//QT_END_NAMESPACE
+
+class MathInterpreter : public QObject
 {
+    Q_OBJECT
+
 public:
 
-    MathInterpreter();
-    void InterpretString(QString commString);
+    explicit MathInterpreter(QObject * parent = nullptr);
+    ~MathInterpreter();
 
+    void InterpretString(QString commString);
 
 private:
     bool CheckBraces(QString const & commString);
@@ -25,6 +34,15 @@ private:
     QMap<QString, MathFunctions::AbstractFunction *> Functions;
     QMap<QString, MathOperators::AbstractOperator *> Operators;
     QMap<QString, MathTypes::AbstractType *> Variables;
+
+public slots:
+    void slVariableRemoved(QString Name);
+    void slVariableChanged(QString Name, QString Value);
+
+signals:
+    void siVariableCreated(QString Name);
+    void siVariableRemoved(QString Name);
+    void siInterpreterDebugString(QString Name);
 
 };
 

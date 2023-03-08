@@ -15,7 +15,7 @@ MathTypes::AbstractType * MathTypes::TypeDouble::assign(AbstractType const * r_v
         return this;
     }
     else{
-        return this;
+        return nullptr;
     }
 }
 
@@ -35,8 +35,8 @@ MathTypes::AbstractType * MathTypes::TypeDouble::sum(AbstractType const * r_valu
         TypeVector * ret_vec = new TypeVector(ret_raw_vec);
         return ret_vec;
     }
-    case(MATH_VAR_TYPE_NONE):{
-        return new TypeDouble(0);
+    default:{
+        return nullptr;
     }
     }
 }
@@ -59,8 +59,8 @@ MathTypes::AbstractType * MathTypes::TypeDouble::subtract(AbstractType const * r
         return ret_vec;
         break;
     }
-    case(MATH_VAR_TYPE_NONE):{
-        return new TypeDouble(0);
+    default:{
+        return nullptr;
     }
     }
 }
@@ -82,8 +82,8 @@ MathTypes::AbstractType * MathTypes::TypeDouble::divide(AbstractType const * r_v
         return ret_vec;
         break;
     }
-    case(MATH_VAR_TYPE_NONE):{
-        return new TypeDouble(0);
+    default:{
+        return nullptr;
     }
     }
 }
@@ -105,8 +105,8 @@ MathTypes::AbstractType * MathTypes::TypeDouble::multiply(AbstractType const * r
         return ret_vec;
         break;
     }
-    case(MATH_VAR_TYPE_NONE):{
-        return new TypeDouble(0);
+    default:{
+        return nullptr;
     }
     }
 }
@@ -129,7 +129,7 @@ MathTypes::AbstractType * MathTypes::TypeDouble::to_power(AbstractType const * r
         break;
     }
     default:{
-        return new TypeDouble(0);
+        return nullptr;
     }
     }
 }
@@ -163,7 +163,6 @@ MathTypes::AbstractType * MathTypes::TypeDouble::exp(void) const {
     return ret_val;
 }
 
-
 /***
  * VECTOR OF DOUBLES Type
  */
@@ -176,7 +175,7 @@ MathTypes::AbstractType * MathTypes::TypeVector::assign(AbstractType const * r_v
         return ret_vec;
     }
     else{
-        return new TypeVector(this->GetRawCopy());
+        return nullptr;
     }
 }
 
@@ -193,7 +192,7 @@ MathTypes::AbstractType * MathTypes::TypeVector::sum(AbstractType const * r_valu
     case(MATH_VAR_TYPE_VECTOR):{
         TypeVector const * r_v = dynamic_cast<TypeVector const *>(r_value);
         if (this->Vector.size() != r_v->Size()){
-            return new TypeDouble(0);
+            return nullptr;
         }
         QVector<qreal> l_value_vec = this->GetRawCopy();
         QVector<qreal> r_value_vec = r_v->GetRawCopy();
@@ -204,8 +203,8 @@ MathTypes::AbstractType * MathTypes::TypeVector::sum(AbstractType const * r_valu
         TypeVector * ret_vec = new TypeVector(l_value_vec);
         return ret_vec;
     }
-    case(MATH_VAR_TYPE_NONE):{
-        return new TypeDouble(0);
+    default:{
+        return nullptr;
     }
     }
 }
@@ -222,7 +221,7 @@ MathTypes::AbstractType * MathTypes::TypeVector::subtract(AbstractType const * r
     case(MATH_VAR_TYPE_VECTOR):{
         TypeVector const * r_v = dynamic_cast<TypeVector const *>(r_value);
         if (this->Vector.size() != r_v->Size()){
-            return new TypeDouble(0);
+            return nullptr;
         }
         QVector<qreal> l_value_vec = this->GetRawCopy();
         QVector<qreal> r_value_vec = r_v->GetRawCopy();
@@ -233,8 +232,8 @@ MathTypes::AbstractType * MathTypes::TypeVector::subtract(AbstractType const * r
         TypeVector * ret_vec = new TypeVector(l_value_vec);
         return ret_vec;
     }
-    case(MATH_VAR_TYPE_NONE):{
-        return new TypeDouble(0);
+    default:{
+        return nullptr;
     }
     }
 }
@@ -251,7 +250,7 @@ MathTypes::AbstractType * MathTypes::TypeVector::divide(AbstractType const * r_v
     case(MATH_VAR_TYPE_VECTOR):{
         TypeVector const * r_v = dynamic_cast<TypeVector const *>(r_value);
         if (this->Vector.size() != r_v->Size()){
-            return new TypeDouble(0);
+            return nullptr;
         }
         QVector<qreal> l_value_vec = this->GetRawCopy();
         QVector<qreal> r_value_vec = r_v->GetRawCopy();
@@ -262,8 +261,8 @@ MathTypes::AbstractType * MathTypes::TypeVector::divide(AbstractType const * r_v
         TypeVector * ret_vec = new TypeVector(l_value_vec);
         return ret_vec;
     }
-    case(MATH_VAR_TYPE_NONE):{
-        return new TypeDouble(0);
+    default:{
+        return nullptr;
     }
     }
 }
@@ -280,7 +279,7 @@ MathTypes::AbstractType * MathTypes::TypeVector::multiply(AbstractType const * r
     case(MATH_VAR_TYPE_VECTOR):{
         TypeVector const * r_v = dynamic_cast<TypeVector const *>(r_value);
         if (this->Vector.size() != r_v->Size()){
-            return new TypeDouble(0);
+            return nullptr;
         }
         QVector<qreal> l_value_vec = this->GetRawCopy();
         QVector<qreal> r_value_vec = r_v->GetRawCopy();
@@ -291,8 +290,8 @@ MathTypes::AbstractType * MathTypes::TypeVector::multiply(AbstractType const * r
         TypeVector * ret_vec = new TypeVector(l_value_vec);
         return ret_vec;
     }
-    case(MATH_VAR_TYPE_NONE):{
-        return new TypeDouble(0);
+    default:{
+        return nullptr;
     }
     }
 }
@@ -309,7 +308,7 @@ MathTypes::AbstractType * MathTypes::TypeVector::to_power(AbstractType const * r
     case(MATH_VAR_TYPE_VECTOR):{
         TypeVector const * r_v = dynamic_cast<TypeVector const *>(r_value);
         if (this->Vector.size() != r_v->Size()){
-            return new TypeDouble(0);
+            return nullptr;
         }
         QVector<qreal> l_value_vec = this->GetRawCopy();
         QVector<qreal> r_value_vec = r_v->GetRawCopy();
@@ -321,7 +320,7 @@ MathTypes::AbstractType * MathTypes::TypeVector::to_power(AbstractType const * r
         return ret_vec;
     }
     case(MATH_VAR_TYPE_NONE):{
-        return new TypeDouble(0);
+        return nullptr;
     }
     }
 }

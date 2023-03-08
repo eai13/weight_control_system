@@ -13,7 +13,7 @@
 #define IS_BRACE(ch) \
     (((ch) == ')') || ((ch) == '(') || ((ch) == '[') || ((ch) == ']'))
 
-MathInterpreter::MathInterpreter(void){
+MathInterpreter::MathInterpreter(QObject * parent) : QObject(parent){
     this->Functions["SIN"]      = new MathFunctions::MathFunctionSin();
     this->Functions["COS"]      = new MathFunctions::MathFunctionCos();
     this->Functions["TAN"]      = new MathFunctions::MathFunctionTan();
@@ -29,22 +29,17 @@ MathInterpreter::MathInterpreter(void){
     this->Operators["*"] = new MathOperators::MathOperatorMultiply();
     this->Operators["/"] = new MathOperators::MathOperatorDivision();
     this->Operators["^"] = new MathOperators::MathOperatorPower();
-
-    MathTreeProcessor::AbstractSubtree * Result = new MathTreeProcessor::AbstractSubtree(this->Functions["ABS"], "ABS");
-    Result = Result->PushBackSubtree(this->Operators["-"], "-");
-    Result->PushBackSubtree(new MathTypes::TypeDouble(1), "1");
-    Result->PushBackSubtree(new MathTypes::TypeDouble(5), "5");
-
-    Result = Result->GetRoot();
-    MathTypes::TypeDouble * end = dynamic_cast<MathTypes::TypeDouble *>(Result->Compute());
-    qDebug() << end->GetValue();
 }
 
 void MathInterpreter::InterpretString(QString commString){
-    if (this->CheckBraces(commString) == false) return;
+    if (this->CheckBraces(commString) == false){
+        emit this->siInterpreterDebugString("String preprocessor : Check braces");
+        return;
+    }
 
     QStringList FunctionalList;
     QString Accumulator;
+    emit this->siInterpreterDebugString("String preprocessor started");
     for (auto iter = commString.begin(); iter != commString.end(); iter++){
         if (this->Operators.contains(QString(*iter))){
             if (!(Accumulator.isEmpty())){
@@ -101,13 +96,28 @@ void MathInterpreter::InterpretString(QString commString){
     if (Accumulator.size()){
         FunctionalList.push_back(Accumulator);
     }
-    qDebug() << FunctionalList;
+    QString DebugString;
+    for (auto iter = FunctionalList.begin(); iter != FunctionalList.end(); iter++){
+        DebugString.append(*iter + " ");
+    }
+    emit this->siInterpreterDebugString("String preprocessor : " + DebugString);
 
+    emit this->siInterpreterDebugString("String interpreter started");
     QStringList TreeList = this->InterpretSubstring(FunctionalList);
-    qDebug() << TreeList;
+
+    DebugString.clear();
+    for (auto iter = TreeList.begin(); iter != TreeList.end(); iter++){
+        DebugString.append(*iter + " ");
+    }
+    emit this->siInterpreterDebugString("String interpreter : " + DebugString);
 
     MathTreeProcessor::AbstractSubtree * Tree;
-    if (TreeList.isEmpty()) return;
+    if (TreeList.isEmpty()){
+        emit this->siInterpreterDebugString("String interpretation error");
+        return;
+    }
+
+    emit this->siInterpreterDebugString("Tree preprocessor started");
     QString CurrentValue = TreeList.takeLast();
     if (this->Operators.contains(CurrentValue)){
         Tree = new MathTreeProcessor::AbstractSubtree(this->Operators[CurrentValue], CurrentValue);
@@ -119,7 +129,7 @@ void MathInterpreter::InterpretString(QString commString){
         Tree = new MathTreeProcessor::AbstractSubtree(this->Variables[CurrentValue], CurrentValue);
     }
     else{
-        qDebug() << "Something wrong, quit";
+        emit this->siInterpreterDebugString("Tree preprocessor : Unknown '" + CurrentValue + "'");
         return;
     }
 
@@ -129,7 +139,7 @@ void MathInterpreter::InterpretString(QString commString){
             while(NewSubtree == nullptr){
                 Tree = Tree->GetParent();
                 if (Tree == nullptr){
-                    qDebug() << "Error, no place for an Operator";
+                    emit this->siInterpreterDebugString("Tree preprocessor : No place in Tree for operator '" + *iter + "'");
                     return;
                 }
                 NewSubtree = Tree->PushFrontSubtree(this->Operators[*iter], *iter);
@@ -141,7 +151,7 @@ void MathInterpreter::InterpretString(QString commString){
             while(NewSubtree == nullptr){
                 Tree = Tree->GetParent();
                 if (Tree == nullptr){
-                    qDebug() << "Error, no place for a Function";
+                    emit this->siInterpreterDebugString("Tree preprocessor : No place in Tree for function '" + *iter + "'");
                     return;
                 }
                 NewSubtree = Tree->PushFrontSubtree(this->Functions[*iter], *iter);
@@ -153,7 +163,7 @@ void MathInterpreter::InterpretString(QString commString){
             while(NewSubtree == nullptr){
                 Tree = Tree->GetParent();
                 if (Tree == nullptr){
-                    qDebug() << "Error, no place for a Variable";
+                    emit this->siInterpreterDebugString("Tree preprocessor : No place in Tree for variable '" + *iter + "'");
                     return;
                 }
                 NewSubtree = Tree->PushFrontSubtree(this->Variables[*iter], *iter);
@@ -169,7 +179,7 @@ void MathInterpreter::InterpretString(QString commString){
                 while(NewSubtree == nullptr){
                     Tree = Tree->GetParent();
                     if (Tree == nullptr){
-                        qDebug() << "Error, no place for a Number";
+                        emit this->siInterpreterDebugString("Tree preprocessor : No place in Tree for tmp-variable '" + *iter + "'");
                         return;
                     }
                     NewSubtree = Tree->PushFrontSubtree(NewNumber, *iter);
@@ -180,30 +190,32 @@ void MathInterpreter::InterpretString(QString commString){
                 while(Tree->GetChildSpaceAvailable() == 0){
                     Tree = Tree->GetParent();
                     if (Tree == nullptr){
-                        qDebug() << "Error, no place for an unknown variable";
+                        emit this->siInterpreterDebugString("Tree preprocessor : No place for new-variable '" + *iter + "'");
                         return;
                     }
                 }
                 if (Tree->GetName() == "="){
                     MathTreeProcessor::AbstractSubtree * Subtree = Tree->GetChild();
                     if (Subtree == nullptr){
-                        qDebug() << "Unable to detect new variable '" << *iter << "' expected type";
+                        emit this->siInterpreterDebugString("Tree preprocessor : Unable to obtain '" + *iter + "' expected type");
                         return;
                     }
                     MathTypes::AbstractType * NewVariable;
                     switch(Subtree->GetReturnType()){
                     case(MathTypes::AbstractType::MATH_VAR_TYPE_DOUBLE):{
                         NewVariable = new MathTypes::TypeDouble(0);
-                        qDebug() << "New variable '" << *iter << "' type is DOUBLE";
+                        emit this->siVariableCreated(*iter + " : DOUBLE");
+                        emit this->siInterpreterDebugString("Tree preprocessor : Type of new-variable '" + *iter + "' is DOUBLE");
                         break;
                     }
                     case(MathTypes::AbstractType::MATH_VAR_TYPE_VECTOR):{
                         NewVariable = new MathTypes::TypeVector();
-                        qDebug() << "New variable '" << *iter << "' type is VECTOR";
+                        emit this->siVariableCreated(*iter + " : VECTOR");
+                        emit this->siInterpreterDebugString("Tree preprocessor : Type of new-variable '" + *iter + "' is VECTOR");
                         break;
                     }
                     default:{
-                        qDebug() << "Unable to detect new variable '" << *iter << "' expected type";
+                        emit this->siInterpreterDebugString("Tree preprocessor : Unable to obtain '" + *iter + "' expected type");
                         return;
                     }
                     }
@@ -212,14 +224,20 @@ void MathInterpreter::InterpretString(QString commString){
                     Tree = Tree->PushFrontSubtree(this->Variables[*iter], *iter);
                 }
                 else{
-                    qDebug() << "Unknown variable " << *iter;
+                    emit this->siInterpreterDebugString("Tree preprocessor : Unknown instance '" + *iter + "'");
                     return;
                 }
             }
         }
     }
 
-    Tree->GetRoot()->Compute();
+    emit this->siInterpreterDebugString("Tree interpreter started");
+    if (Tree->GetRoot()->Compute() == nullptr){
+        emit this->siInterpreterDebugString("Tree interpreter : Failure");
+        return;
+    }
+    emit this->siInterpreterDebugString("Tree interpreter finished");
+
 
     qDebug() << "Actual variables :";
     for (auto iter = this->Variables.begin(); iter != Variables.end(); iter++){
@@ -242,6 +260,11 @@ void MathInterpreter::InterpretString(QString commString){
         }
         }
     }
+}
+
+MathInterpreter::~MathInterpreter()
+{
+
 }
 
 
@@ -365,6 +388,33 @@ QStringList MathInterpreter::InterpretSubstring(QStringList Input){
     }
 
     return Output;
+}
+
+void MathInterpreter::slVariableRemoved(QString Name){
+    QStringList NameParts = Name.split(" : ");
+    if (NameParts.size() != 2) return;
+    if (this->Variables.contains(NameParts[0])){
+        this->Variables.remove(NameParts[0]);
+        emit this->siVariableRemoved(Name);
+    }
+}
+
+void MathInterpreter::slVariableChanged(QString Name, QString Value){
+    QStringList NameParts = Name.split(" : ");
+    if (NameParts.size() != 2) return;
+    if (!(this->Variables.contains(NameParts[0]))) return;
+    if (NameParts[1] == "DOUBLE"){
+        double d_val = Value.toDouble();
+        dynamic_cast<MathTypes::TypeDouble *>(this->Variables[NameParts[0]])->SetValue(d_val);
+    }
+    else if (NameParts[1] == "VECTOR"){
+        QVector<qreal> vec;
+        QStringList s_values = Value.split(";");
+        for (auto iter = s_values.begin(); iter != s_values.end(); iter++){
+            vec.push_back(iter->toDouble());
+        }
+        dynamic_cast<MathTypes::TypeVector *>(this->Variables[NameParts[0]])->SetValue(vec);
+    }
 }
 
 bool MathInterpreter::CheckBraces(const QString & commString){

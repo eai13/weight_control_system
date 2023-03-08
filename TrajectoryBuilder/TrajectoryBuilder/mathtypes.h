@@ -152,7 +152,9 @@ public:
     QVector<qreal> GetRawCopy(void) const {
         return this->Vector;
     }
-
+    void SetValue(QVector<qreal> NewData){
+        this->Vector = NewData;
+    }
     /***
      * @brief Operators
      */

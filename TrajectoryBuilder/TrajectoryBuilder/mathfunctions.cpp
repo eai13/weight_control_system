@@ -4,6 +4,7 @@
 
 MathTypes::AbstractType * MathOperators::MathOperatorAssign::
 Execute(MathTypes::AbstractType * arg_l, MathTypes::AbstractType * arg_r){
+    if ((arg_l == nullptr) || (arg_r == nullptr)) return nullptr;
     return arg_l->assign(arg_r);
 }
 
@@ -15,6 +16,7 @@ GetReturnValue(MathTypes::AbstractType::VarTypes arg_type_l, MathTypes::Abstract
 
 MathTypes::AbstractType * MathOperators::MathOperatorSum::
 Execute(MathTypes::AbstractType * arg_l, MathTypes::AbstractType * arg_r){
+    if ((arg_l == nullptr) || (arg_r == nullptr)) return nullptr;
     return arg_l->sum(arg_r);
 }
 
@@ -35,6 +37,7 @@ GetReturnValue(MathTypes::AbstractType::VarTypes arg_type_l, MathTypes::Abstract
 
 MathTypes::AbstractType * MathOperators::MathOperatorSubtract::
 Execute(MathTypes::AbstractType * arg_l, MathTypes::AbstractType * arg_r){
+    if ((arg_l == nullptr) || (arg_r == nullptr)) return nullptr;
     return arg_l->subtract(arg_r);
 }
 
@@ -55,6 +58,7 @@ GetReturnValue(MathTypes::AbstractType::VarTypes arg_type_l, MathTypes::Abstract
 
 MathTypes::AbstractType * MathOperators::MathOperatorDivision::
 Execute(MathTypes::AbstractType * arg_l, MathTypes::AbstractType * arg_r){
+    if ((arg_l == nullptr) || (arg_r == nullptr)) return nullptr;
     return arg_l->divide(arg_r);
 }
 
@@ -75,6 +79,7 @@ GetReturnValue(MathTypes::AbstractType::VarTypes arg_type_l, MathTypes::Abstract
 
 MathTypes::AbstractType * MathOperators::MathOperatorMultiply::
 Execute(MathTypes::AbstractType * arg_l, MathTypes::AbstractType * arg_r){
+    if ((arg_l == nullptr) || (arg_r == nullptr)) return nullptr;
     return arg_l->multiply(arg_r);
 }
 
@@ -95,6 +100,7 @@ GetReturnValue(MathTypes::AbstractType::VarTypes arg_type_l, MathTypes::Abstract
 
 MathTypes::AbstractType * MathOperators::MathOperatorPower::
 Execute(MathTypes::AbstractType * arg_l, MathTypes::AbstractType * arg_r){
+    if ((arg_l == nullptr) || (arg_r == nullptr)) return nullptr;
     return arg_l->to_power(arg_r);
 }
 
@@ -115,8 +121,11 @@ GetReturnValue(MathTypes::AbstractType::VarTypes arg_type_l, MathTypes::Abstract
 
 MathTypes::AbstractType * MathFunctions::MathFunctionSin::
 Execute(QVector<MathTypes::AbstractType *> * args){
+    for (auto iter = args->begin(); iter != args->end(); iter++){
+        if (*iter == nullptr) return nullptr;
+    }
     if (args->size() < this->ArgumentsAmount)
-        return new MathTypes::TypeDouble(0);
+        return nullptr;
     else
         return args->at(0)->sin();
 }
@@ -132,8 +141,11 @@ GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args){
 }
 
 MathTypes::AbstractType * MathFunctions::MathFunctionCos::Execute(QVector<MathTypes::AbstractType *> * args){
+    for (auto iter = args->begin(); iter != args->end(); iter++){
+        if (*iter == nullptr) return nullptr;
+    }
     if (args->size() < this->ArgumentsAmount)
-        return new MathTypes::TypeDouble(0);
+        return nullptr;
     else
         return args->at(0)->cos();
 }
@@ -150,8 +162,11 @@ GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args){
 
 MathTypes::AbstractType * MathFunctions::MathFunctionTan::
 Execute(QVector<MathTypes::AbstractType *> * args){
+    for (auto iter = args->begin(); iter != args->end(); iter++){
+        if (*iter == nullptr) return nullptr;
+    }
     if (args->size() < this->ArgumentsAmount)
-        return new MathTypes::TypeDouble(0);
+        return nullptr;
     else
         return args->at(0)->tg();
 }
@@ -168,8 +183,11 @@ GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args){
 
 MathTypes::AbstractType * MathFunctions::MathFunctionCtg::
 Execute(QVector<MathTypes::AbstractType *> * args){
+    for (auto iter = args->begin(); iter != args->end(); iter++){
+        if (*iter == nullptr) return nullptr;
+    }
     if (args->size() < this->ArgumentsAmount)
-        return new MathTypes::TypeDouble(0);
+        return nullptr;
     else
         return args->at(0)->ctg();
 }
@@ -186,8 +204,11 @@ GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args){
 
 MathTypes::AbstractType * MathFunctions::MathFunctionAbs::
 Execute(QVector<MathTypes::AbstractType *> * args){
+    for (auto iter = args->begin(); iter != args->end(); iter++){
+        if (*iter == nullptr) return nullptr;
+    }
     if (args->size() < this->ArgumentsAmount)
-        return new MathTypes::TypeDouble(0);
+        return nullptr;
     else
         return args->at(0)->abs();
 }
@@ -204,8 +225,11 @@ GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args){
 
 MathTypes::AbstractType * MathFunctions::MathFunctionLog::
 Execute(QVector<MathTypes::AbstractType *> * args){
+    for (auto iter = args->begin(); iter != args->end(); iter++){
+        if (*iter == nullptr) return nullptr;
+    }
     if (args->size() < this->ArgumentsAmount)
-        return new MathTypes::TypeDouble(0);
+        return nullptr;
     else
         return args->at(0)->log();
 }
@@ -222,8 +246,11 @@ GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args){
 
 MathTypes::AbstractType * MathFunctions::MathFunctionExp::
 Execute(QVector<MathTypes::AbstractType *> * args){
+    for (auto iter = args->begin(); iter != args->end(); iter++){
+        if (*iter == nullptr) return nullptr;
+    }
     if (args->size() < this->ArgumentsAmount)
-        return new MathTypes::TypeDouble(0);
+        return nullptr;
     else
         return args->at(0)->exp();
 }
@@ -240,8 +267,11 @@ GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args){
 
 MathTypes::AbstractType * MathFunctions::MathFunctionRange::
 Execute(QVector<MathTypes::AbstractType *> * args){
+    for (auto iter = args->begin(); iter != args->end(); iter++){
+        if (*iter == nullptr) return nullptr;
+    }
     if (args->size() < this->ArgumentsAmount)
-        return new MathTypes::TypeVector(QVector<qreal>(0));
+        return nullptr;
     else{
         qreal start = (dynamic_cast<MathTypes::TypeDouble *>(args->at(0))->GetValue());
         qreal end = (dynamic_cast<MathTypes::TypeDouble *>(args->at(1))->GetValue());

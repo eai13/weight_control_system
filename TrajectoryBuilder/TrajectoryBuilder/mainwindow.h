@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QString>
+#include <QListWidgetItem>
 
 #include "mathinterpreter.h"
 
@@ -23,6 +24,11 @@ public slots:
     void slLogError(QString log);
     void slLogDebug(QString log);
 
+    void slVariableCreated(QString Name);
+    void slVariableRemoved(QString Name);
+
+    void slAddCommandToHistory(QString Command);
+
 private slots:
     void slClearCommandHistory(void);
     void slClearVariables(void);
@@ -31,6 +37,13 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
+    QListWidgetItem *  CheckVariableExists(QString Name);
+
     MathInterpreter Interpreter;
+
+signals:
+
+    void siVariableRemoved(QString Name);
+    void siVariableChanged(QString Name, QString Value);
 };
 #endif // MAINWINDOW_H
