@@ -4,6 +4,9 @@
 #include <QMainWindow>
 #include <QString>
 #include <QListWidgetItem>
+#include <QCompleter>
+#include <QStringListModel>
+#include "qcustomplot.h"
 
 #include "mathinterpreter.h"
 
@@ -29,10 +32,13 @@ public slots:
 
     void slAddCommandToHistory(QString Command);
 
+    void slGetSimilarInstances(QStringList Instances);
+
 private slots:
     void slClearCommandHistory(void);
     void slClearVariables(void);
     void slInterpret(void);
+    void slTextEdited(QString const & Value);
 
 private:
     Ui::MainWindow *ui;
@@ -41,8 +47,10 @@ private:
 
     MathInterpreter Interpreter;
 
-signals:
+    QStringList Instances;
 
+signals:
+    void siLookForSimilarInstances(QString Instance);
     void siVariableRemoved(QString Name);
     void siVariableChanged(QString Name, QString Value);
 };

@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->pb_ClearVariables,      &QPushButton::released, this, &MainWindow::slClearVariables);
     connect(ui->pb_Interpret,           &QPushButton::released, this, &MainWindow::slInterpret);
     connect(ui->line_Interpreter,       &QLineEdit::returnPressed, this, &MainWindow::slInterpret);
+    connect(ui->line_Interpreter,       &QLineEdit::textEdited, this, &MainWindow::slTextEdited);
 
     connect(&(this->Interpreter), &MathInterpreter::siInterpreterDebugString, this, &MainWindow::slLogDebug);
     connect(&(this->Interpreter), &MathInterpreter::siVariableCreated, this, &MainWindow::slVariableCreated);
@@ -57,6 +58,12 @@ void MainWindow::slAddCommandToHistory(QString Command){
     ui->list_CommandHistory->addItem(Command);
 }
 
+void MainWindow::slGetSimilarInstances(QStringList Instances){
+    QPoint HelpMenuPos = QWidget::mapToGlobal(ui->line_Interpreter->pos()) + QPoint(0, ui->line_Interpreter->height());
+
+
+}
+
 void MainWindow::slClearCommandHistory(void){
     ui->list_CommandHistory->clear();
 }
@@ -75,6 +82,10 @@ void MainWindow::slInterpret(void){
     this->Interpreter.InterpretString(ui->line_Interpreter->text());
     this->slLogDebug("ENDED");
     ui->line_Interpreter->clear();
+}
+
+void MainWindow::slTextEdited(QString const & Value){
+    QString CurrentInstance;
 }
 
 QListWidgetItem * MainWindow::CheckVariableExists(QString Name){

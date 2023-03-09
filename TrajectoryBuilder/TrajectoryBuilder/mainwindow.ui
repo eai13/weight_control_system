@@ -79,7 +79,11 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="line_Interpreter"/>
+       <widget class="QLineEdit" name="line_Interpreter">
+        <property name="placeholderText">
+         <string/>
+        </property>
+       </widget>
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">

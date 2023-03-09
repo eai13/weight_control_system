@@ -22,6 +22,8 @@ MathInterpreter::MathInterpreter(QObject * parent) : QObject(parent){
     this->Functions["EXP"]      = new MathFunctions::MathFunctionExp();
     this->Functions["LOG"]      = new MathFunctions::MathFunctionLog();
     this->Functions["RANGE"]    = new MathFunctions::MathFunctionRange();
+    this->Functions["PLOT2D"]   = new MathFunctions::MathFunctionPlot2D();
+    this->Functions["PLOT3D"]   = new MathFunctions::MathFunctionPlot3D();
 
     this->Operators["="] = new MathOperators::MathOperatorAssign();
     this->Operators["+"] = new MathOperators::MathOperatorSum();
@@ -45,16 +47,26 @@ void MathInterpreter::InterpretString(QString commString){
             if (!(Accumulator.isEmpty())){
                 FunctionalList.push_back(Accumulator);
                 Accumulator.clear();
+                FunctionalList.push_back(QString(*iter));
             }
-            FunctionalList.push_back(QString(*iter));
+            else{
+                if (*iter == '-'){
+                    FunctionalList.push_back("-1");
+                    FunctionalList.push_back("*");
+                }
+                else{
+                    FunctionalList.push_back(QString(*iter));
+                }
+            }
+
         }
         else if (iter->isSpace()){
-            if (Accumulator.size()){
-                FunctionalList.push_back(Accumulator);
-                Accumulator.clear();
-            }
+//            if (Accumulator.size()){
+//                FunctionalList.push_back(Accumulator);
+//                Accumulator.clear();
+//            }
         }
-        else if (IS_BRACE(*iter)/* || IS_COMMA(*iter) || IS_SEMICOLON(*iter)*/){
+        else if (IS_BRACE(*iter)){
             if (!(Accumulator.isEmpty())){
                 FunctionalList.push_back(Accumulator);
                 Accumulator.clear();
@@ -65,7 +77,7 @@ void MathInterpreter::InterpretString(QString commString){
             if (Accumulator.isEmpty()){
                 Accumulator.push_back(*iter);
             }
-            else if (IS_CHAR(Accumulator.back())){
+            else if (IS_CHAR(Accumulator.back()) || IS_NUMBER(Accumulator.back())){
                 Accumulator.push_back(*iter);
             }
             else{

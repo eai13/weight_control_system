@@ -1,6 +1,6 @@
-QT       += core gui
+QT       += core gui printsupport datavisualization
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets datavisualization
 
 CONFIG += c++11
 
@@ -11,17 +11,19 @@ CONFIG += c++11
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
-    mathfunctions.cpp \
     mathinterpreter.cpp \
+    mathfunctions.cpp \
     mathtreeprocessor.cpp \
-    mathtypes.cpp
+    mathtypes.cpp \
+    qcustomplot.cpp
 
 HEADERS += \
     mainwindow.h \
-    mathfunctions.h \
     mathinterpreter.h \
+    mathfunctions.h \
     mathtreeprocessor.h \
-    mathtypes.h
+    mathtypes.h \
+    qcustomplot.h
 
 FORMS += \
     mainwindow.ui

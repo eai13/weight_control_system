@@ -6,6 +6,9 @@
 #include <QtMath>
 #include "mathtypes.h"
 #include <QVector>
+#include "qcustomplot.h"
+#include <QStringLiteral>
+#include <QtDataVisualization/q3dscatter.h>
 
 namespace MathOperators{
     class AbstractOperator;
@@ -106,6 +109,8 @@ namespace MathFunctions{
     class MathFunctionLog;
     class MathFunctionExp;
     class MathFunctionRange;
+    class MathFunctionPlot3D;
+    class MathFunctionPlot2D;
 }
 
 class MathFunctions::AbstractFunction{
@@ -125,7 +130,9 @@ protected:
         ABS_ARG_AM      = 1,
         LOG_ARG_AM      = 1,
         EXP_ARG_AM      = 1,
-        RANGE_ARG_AM    = 3
+        RANGE_ARG_AM    = 3,
+        PLOT3D_ARG_AM   = 3,
+        PLOT2D_ARG_AM   = 2
     };
     uint8_t ArgumentsAmount = 0;
     AbstractFunction(void) {}
@@ -201,6 +208,24 @@ public:
     MathTypes::AbstractType * Execute(QVector<MathTypes::AbstractType *> * args) override;
     MathTypes::AbstractType::VarTypes GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args) override;
     ~MathFunctionRange(void) override {}
+};
+
+class MathFunctions::MathFunctionPlot3D : public AbstractFunction {
+public:
+    MathFunctionPlot3D(void) { this->ArgumentsAmount = PLOT3D_ARG_AM; }
+
+    MathTypes::AbstractType * Execute(QVector<MathTypes::AbstractType *> * args) override;
+    MathTypes::AbstractType::VarTypes GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args) override;
+    ~MathFunctionPlot3D(void) override {}
+};
+
+class MathFunctions::MathFunctionPlot2D : public AbstractFunction {
+public:
+    MathFunctionPlot2D(void) { this->ArgumentsAmount = PLOT2D_ARG_AM; }
+
+    MathTypes::AbstractType * Execute(QVector<MathTypes::AbstractType *> * args) override;
+    MathTypes::AbstractType::VarTypes GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args) override;
+    ~MathFunctionPlot2D(void) override {}
 };
 
 #endif // MATHFUNCTIONS_H

@@ -275,11 +275,19 @@ Execute(QVector<MathTypes::AbstractType *> * args){
     else{
         qreal start = (dynamic_cast<MathTypes::TypeDouble *>(args->at(0))->GetValue());
         qreal end = (dynamic_cast<MathTypes::TypeDouble *>(args->at(1))->GetValue());
-        qreal step = (dynamic_cast<MathTypes::TypeDouble *>(args->at(2))->GetValue());
+        qreal step = std::abs(dynamic_cast<MathTypes::TypeDouble *>(args->at(2))->GetValue());
 
         QVector<qreal> r_vec;
-        for (; start < end; start += step)
-            r_vec.push_back(start);
+        if (start > end){
+            qreal eps = (start - end) * 0.001;
+            for (; start > (end - eps); start -= step)
+                r_vec.push_back(start);
+        }
+        else if (start < end){
+            qreal eps = (end - start) * 0.001;
+            for (; start < (end + eps); start += step)
+                r_vec.push_back(start);
+        }
 
         MathTypes::TypeVector * ret_vec = new MathTypes::TypeVector(r_vec);
         return ret_vec;
@@ -301,6 +309,85 @@ GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args){
     else{
         return MathTypes::AbstractType::MATH_VAR_TYPE_NONE;
     }
+}
+
+MathTypes::AbstractType * MathFunctions::MathFunctionPlot3D::
+Execute(QVector<MathTypes::AbstractType *> * args){
+    if (!args) return nullptr;
+    if (args->size() != this->ArgumentsAmount) return nullptr;
+    QVector<QVector<qreal>> data;
+    for (auto iter = args->begin(); iter != args->end(); iter++){
+        if ((*iter)->GetType() != MathTypes::AbstractType::MATH_VAR_TYPE_VECTOR){
+            return nullptr;
+        }
+        else{
+            data.push_back(dynamic_cast<MathTypes::TypeVector *>((*iter))->GetRawCopy());
+        }
+    }
+
+    QtDataVisualization::Q3DScatter * plot = new QtDataVisualization::Q3DScatter();
+    QWidget * plot_widget = QWidget::createWindowContainer(plot);
+    plot_widget->setAttribute(Qt::WA_DeleteOnClose);
+
+    plot->axisX()->setAutoAdjustRange(true);
+    plot->axisY()->setAutoAdjustRange(true);
+    plot->axisZ()->setAutoAdjustRange(true);
+
+    plot->activeTheme()->setType(QtDataVisualization::Q3DTheme::ThemePrimaryColors);
+    plot->activeTheme()->setFont(QFont("Sans Serif", 50, QFont::Weight::Normal));
+    plot->setShadowQuality(QtDataVisualization::QAbstract3DGraph::ShadowQualityNone);
+
+    QtDataVisualization::QScatterDataProxy * data_proxy = new QtDataVisualization::QScatterDataProxy;
+    QtDataVisualization::QScatter3DSeries * data_series = new QtDataVisualization::QScatter3DSeries(data_proxy);
+
+    data_series->setItemSize(0.1);
+    data_series->setItemLabelFormat(QStringLiteral("@xTitle: @xLabel @yTitle: @yLabel @zTitle: @zLabel"));
+    data_series->setMeshSmooth(true);
+    data_series->setBaseColor(QColor(255, 0, 0));
+    plot->addSeries(data_series);
+
+    for (uint32_t iter = 0; (iter < data[0].size()) && (iter < data[1].size()) && (iter < data[2].size()); iter++){
+        plot->seriesList().at(0)->dataProxy()->addItem(
+                    QtDataVisualization::QScatterDataItem(QVector3D(data[0][iter], data[1][iter], data[2][iter])));
+    }
+
+    plot_widget->show();
+
+    return nullptr;
+}
+
+MathTypes::AbstractType::VarTypes MathFunctions::MathFunctionPlot3D::
+GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args){
+    return MathTypes::AbstractType::MATH_VAR_TYPE_NONE;
+}
+
+MathTypes::AbstractType * MathFunctions::MathFunctionPlot2D::
+Execute(QVector<MathTypes::AbstractType *> * args){
+    if (!args) return nullptr;
+    if (args->size() != this->ArgumentsAmount) return nullptr;
+    QVector<QVector<qreal>> data;
+    for (auto iter = args->begin(); iter != args->end(); iter++){
+        if ((*iter)->GetType() != MathTypes::AbstractType::MATH_VAR_TYPE_VECTOR){
+            return nullptr;
+        }
+        else{
+            data.push_back(dynamic_cast<MathTypes::TypeVector *>((*iter))->GetRawCopy());
+        }
+    }
+    QCustomPlot * plot = new QCustomPlot();
+    plot->setAttribute(Qt::WA_DeleteOnClose);
+    plot->addGraph();
+    plot->graph(0)->setData(data[0], data[1]);
+    plot->rescaleAxes();
+    plot->setMinimumSize(QSize(400, 400));
+    plot->show();
+
+    return nullptr;
+}
+
+MathTypes::AbstractType::VarTypes MathFunctions::MathFunctionPlot2D::
+GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args){
+    return MathTypes::AbstractType::MATH_VAR_TYPE_NONE;
 }
 
 uint8_t MathFunctions::AbstractFunction::
