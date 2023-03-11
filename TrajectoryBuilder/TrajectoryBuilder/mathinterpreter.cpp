@@ -14,16 +14,17 @@
     (((ch) == ')') || ((ch) == '(') || ((ch) == '[') || ((ch) == ']'))
 
 MathInterpreter::MathInterpreter(QObject * parent) : QObject(parent){
-    this->Functions["SIN"]      = new MathFunctions::MathFunctionSin();
-    this->Functions["COS"]      = new MathFunctions::MathFunctionCos();
-    this->Functions["TAN"]      = new MathFunctions::MathFunctionTan();
-    this->Functions["CTG"]      = new MathFunctions::MathFunctionCtg();
-    this->Functions["ABS"]      = new MathFunctions::MathFunctionAbs();
-    this->Functions["EXP"]      = new MathFunctions::MathFunctionExp();
-    this->Functions["LOG"]      = new MathFunctions::MathFunctionLog();
-    this->Functions["RANGE"]    = new MathFunctions::MathFunctionRange();
-    this->Functions["PLOT2D"]   = new MathFunctions::MathFunctionPlot2D();
-    this->Functions["PLOT3D"]   = new MathFunctions::MathFunctionPlot3D();
+    this->Functions["SIN"]          = new MathFunctions::MathFunctionSin();
+    this->Functions["COS"]          = new MathFunctions::MathFunctionCos();
+    this->Functions["TAN"]          = new MathFunctions::MathFunctionTan();
+    this->Functions["CTG"]          = new MathFunctions::MathFunctionCtg();
+    this->Functions["ABS"]          = new MathFunctions::MathFunctionAbs();
+    this->Functions["EXP"]          = new MathFunctions::MathFunctionExp();
+    this->Functions["LOG"]          = new MathFunctions::MathFunctionLog();
+    this->Functions["RANGE"]        = new MathFunctions::MathFunctionRange();
+    this->Functions["PLOT2D"]       = new MathFunctions::MathFunctionPlot2D();
+    this->Functions["PLOT3D"]       = new MathFunctions::MathFunctionPlot3D();
+    this->Functions["EXPORT3DTRAJ"] = new MathFunctions::MathFunctionExport3DTrajectory();
 
     this->Operators["="] = new MathOperators::MathOperatorAssign();
     this->Operators["+"] = new MathOperators::MathOperatorSum();
@@ -31,6 +32,8 @@ MathInterpreter::MathInterpreter(QObject * parent) : QObject(parent){
     this->Operators["*"] = new MathOperators::MathOperatorMultiply();
     this->Operators["/"] = new MathOperators::MathOperatorDivision();
     this->Operators["^"] = new MathOperators::MathOperatorPower();
+
+    this->Variables["PI"] = new MathTypes::TypeDouble(3.1415);
 }
 
 void MathInterpreter::InterpretString(QString commString){
@@ -39,75 +42,9 @@ void MathInterpreter::InterpretString(QString commString){
         return;
     }
 
-    QStringList FunctionalList;
-    QString Accumulator;
-    emit this->siInterpreterDebugString("String preprocessor started");
-    for (auto iter = commString.begin(); iter != commString.end(); iter++){
-        if (this->Operators.contains(QString(*iter))){
-            if (!(Accumulator.isEmpty())){
-                FunctionalList.push_back(Accumulator);
-                Accumulator.clear();
-                FunctionalList.push_back(QString(*iter));
-            }
-            else{
-                if (*iter == '-'){
-                    FunctionalList.push_back("-1");
-                    FunctionalList.push_back("*");
-                }
-                else{
-                    FunctionalList.push_back(QString(*iter));
-                }
-            }
+    QStringList FunctionalList = this->StringPreprocessor(commString);
+    qDebug() << FunctionalList;
 
-        }
-        else if (iter->isSpace()){
-//            if (Accumulator.size()){
-//                FunctionalList.push_back(Accumulator);
-//                Accumulator.clear();
-//            }
-        }
-        else if (IS_BRACE(*iter)){
-            if (!(Accumulator.isEmpty())){
-                FunctionalList.push_back(Accumulator);
-                Accumulator.clear();
-            }
-            FunctionalList.push_back(QString(*iter));
-        }
-        else if (IS_CHAR(*iter)){
-            if (Accumulator.isEmpty()){
-                Accumulator.push_back(*iter);
-            }
-            else if (IS_CHAR(Accumulator.back()) || IS_NUMBER(Accumulator.back())){
-                Accumulator.push_back(*iter);
-            }
-            else{
-                Accumulator.clear();
-                Accumulator.push_back(*iter);
-            }
-        }
-        else if (IS_NUMBER(*iter)){
-            Accumulator.push_back(*iter);
-        }
-        else if (IS_DOT(*iter)){
-            if (!(Accumulator.isEmpty())){
-                if (IS_NUMBER(Accumulator.back())){
-                    Accumulator.push_back(*iter);
-                }
-                else{
-                    Accumulator.clear();
-                }
-            }
-        }
-        else{
-            if (Accumulator.size()){
-                FunctionalList.push_back(Accumulator);
-                Accumulator.clear();
-            }
-        }
-    }
-    if (Accumulator.size()){
-        FunctionalList.push_back(Accumulator);
-    }
     QString DebugString;
     for (auto iter = FunctionalList.begin(); iter != FunctionalList.end(); iter++){
         DebugString.append(*iter + " ");
@@ -116,6 +53,7 @@ void MathInterpreter::InterpretString(QString commString){
 
     emit this->siInterpreterDebugString("String interpreter started");
     QStringList TreeList = this->InterpretSubstring(FunctionalList);
+    qDebug() << TreeList;
 
     DebugString.clear();
     for (auto iter = TreeList.begin(); iter != TreeList.end(); iter++){
@@ -334,6 +272,11 @@ QStringList MathInterpreter::InterpretSubstring(QStringList Input){
                             BracesStack.pop();
                         }
                     }
+                    else if (*iter == ","){
+                        Output.append(this->InterpretSubstring(Accumulator));
+                        Accumulator.clear();
+                        continue;
+                    }
                     else if (*iter == "("){
                         BracesStack.push(*iter);
                     }
@@ -400,6 +343,100 @@ QStringList MathInterpreter::InterpretSubstring(QStringList Input){
     }
 
     return Output;
+}
+
+QStringList MathInterpreter::StringPreprocessor(QString input){
+    QStringList FunctionalList;
+    QString Accumulator;
+    emit this->siInterpreterDebugString("String preprocessor started");
+    for (auto iter = input.begin(); iter != input.end(); iter++){
+        if (this->Operators.contains(QString(*iter))){
+            if (!(Accumulator.isEmpty())){
+                FunctionalList.push_back(Accumulator);
+                Accumulator.clear();
+                FunctionalList.push_back(QString(*iter));
+            }
+            else{
+                if (*iter == '-'){
+                    FunctionalList.push_back("-1");
+                    FunctionalList.push_back("*");
+                }
+                else{
+                    FunctionalList.push_back(QString(*iter));
+                }
+            }
+
+        }
+        else if (*iter == '"'){
+            if (Accumulator.size()){
+                FunctionalList.push_back(Accumulator);
+                Accumulator.clear();
+            }
+            Accumulator.push_back(*iter);
+            iter++;
+            for(; iter != input.end(); iter++){
+                Accumulator.push_back(*iter);
+                if (*iter == '"'){
+                    FunctionalList.push_back(Accumulator);
+                    Accumulator.clear();
+                    break;
+                }
+            }
+        }
+        else if (iter->isSpace()){
+
+        }
+        else if (IS_BRACE(*iter)){
+            if (!(Accumulator.isEmpty())){
+                FunctionalList.push_back(Accumulator);
+                Accumulator.clear();
+            }
+            FunctionalList.push_back(QString(*iter));
+        }
+        else if (IS_CHAR(*iter)){
+            if (Accumulator.isEmpty()){
+                Accumulator.push_back(*iter);
+            }
+            else if (IS_CHAR(Accumulator.back()) || IS_NUMBER(Accumulator.back())){
+                Accumulator.push_back(*iter);
+            }
+            else{
+                Accumulator.clear();
+                Accumulator.push_back(*iter);
+            }
+        }
+        else if (IS_NUMBER(*iter)){
+            Accumulator.push_back(*iter);
+        }
+        else if (IS_DOT(*iter)){
+            if (!(Accumulator.isEmpty())){
+                if (IS_NUMBER(Accumulator.back())){
+                    Accumulator.push_back(*iter);
+                }
+                else{
+                    Accumulator.clear();
+                }
+            }
+        }
+        else if (*iter == ','){
+            if (Accumulator.size()){
+                FunctionalList.push_back(Accumulator);
+                Accumulator.clear();
+            }
+            FunctionalList.push_back(QString(*iter));
+        }
+        else{
+            if (Accumulator.size()){
+                FunctionalList.push_back(Accumulator);
+                Accumulator.clear();
+            }
+        }
+    }
+    if (Accumulator.size()){
+        FunctionalList.push_back(Accumulator);
+    }
+
+    return FunctionalList;
 }
 
 void MathInterpreter::slVariableRemoved(QString Name){

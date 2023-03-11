@@ -41,6 +41,7 @@ private slots:
     void slTextEdited(QString const & Value);
 
 private:
+
     Ui::MainWindow *ui;
 
     QListWidgetItem *  CheckVariableExists(QString Name);

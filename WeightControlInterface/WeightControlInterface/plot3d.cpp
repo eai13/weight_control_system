@@ -203,7 +203,7 @@ void Plot3D::slStartTrajectory(void){
     }
 
     if (this->control_timer == nullptr) this->control_timer = new QTimer;
-    this->control_timer->start(200);
+    this->control_timer->start(60);
 
     if (this->experiment_time == nullptr) this->experiment_time = new QTime;
     this->experiment_time->restart();

@@ -30,6 +30,7 @@ public:
 private:
     bool CheckBraces(QString const & commString);
     QStringList InterpretSubstring(QStringList Input);
+    QStringList StringPreprocessor(QString input);
 
     QMap<QString, MathFunctions::AbstractFunction *> Functions;
     QMap<QString, MathOperators::AbstractOperator *> Operators;

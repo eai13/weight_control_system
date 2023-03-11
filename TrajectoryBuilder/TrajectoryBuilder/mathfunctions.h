@@ -9,6 +9,7 @@
 #include "qcustomplot.h"
 #include <QStringLiteral>
 #include <QtDataVisualization/q3dscatter.h>
+#include <QFile>
 
 namespace MathOperators{
     class AbstractOperator;
@@ -111,6 +112,7 @@ namespace MathFunctions{
     class MathFunctionRange;
     class MathFunctionPlot3D;
     class MathFunctionPlot2D;
+    class MathFunctionExport3DTrajectory;
 }
 
 class MathFunctions::AbstractFunction{
@@ -123,16 +125,18 @@ public:
 
 protected:
     enum FunctionArgsAmount{
-        SIN_ARG_AM      = 1,
-        COS_ARG_AM      = 1,
-        TAN_ARG_AM      = 1,
-        CTG_ARG_AM      = 1,
-        ABS_ARG_AM      = 1,
-        LOG_ARG_AM      = 1,
-        EXP_ARG_AM      = 1,
-        RANGE_ARG_AM    = 3,
-        PLOT3D_ARG_AM   = 3,
-        PLOT2D_ARG_AM   = 2
+        SIN_ARG_AM              = 1,
+        COS_ARG_AM              = 1,
+        TAN_ARG_AM              = 1,
+        CTG_ARG_AM              = 1,
+        ABS_ARG_AM              = 1,
+        LOG_ARG_AM              = 1,
+        EXP_ARG_AM              = 1,
+        RANGE_ARG_AM            = 3,
+        PLOT3D_ARG_AM           = 3,
+        PLOT2D_ARG_AM           = 2,
+        EXPORT2DTRAJECTORY_AM   = 3,
+        EXPORT3DTRAJECTORY_AM   = 3
     };
     uint8_t ArgumentsAmount = 0;
     AbstractFunction(void) {}
@@ -226,6 +230,15 @@ public:
     MathTypes::AbstractType * Execute(QVector<MathTypes::AbstractType *> * args) override;
     MathTypes::AbstractType::VarTypes GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args) override;
     ~MathFunctionPlot2D(void) override {}
+};
+
+class MathFunctions::MathFunctionExport3DTrajectory : public AbstractFunction {
+public:
+    MathFunctionExport3DTrajectory(void) { this->ArgumentsAmount = EXPORT3DTRAJECTORY_AM; }
+
+    MathTypes::AbstractType * Execute(QVector<MathTypes::AbstractType *> * args) override;
+    MathTypes::AbstractType::VarTypes GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args) override;
+    ~MathFunctionExport3DTrajectory(void) override {}
 };
 
 #endif // MATHFUNCTIONS_H

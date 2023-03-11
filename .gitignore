@@ -6,6 +6,7 @@ PID_Monitor*
 __pycache__*
 protocol_test*
 *user
-traj.csv
+*.csv
+*.png
 Makefile*
 *.stash

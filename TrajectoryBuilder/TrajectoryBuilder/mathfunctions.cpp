@@ -317,12 +317,32 @@ Execute(QVector<MathTypes::AbstractType *> * args){
     if (args->size() != this->ArgumentsAmount) return nullptr;
     QVector<QVector<qreal>> data;
     for (auto iter = args->begin(); iter != args->end(); iter++){
-        if ((*iter)->GetType() != MathTypes::AbstractType::MATH_VAR_TYPE_VECTOR){
-            return nullptr;
-        }
-        else{
+        if ((*iter)->GetType() == MathTypes::AbstractType::MATH_VAR_TYPE_VECTOR){
             data.push_back(dynamic_cast<MathTypes::TypeVector *>((*iter))->GetRawCopy());
         }
+        else if ((*iter)->GetType() == MathTypes::AbstractType::MATH_VAR_TYPE_DOUBLE){
+            QVector<qreal> tmp;
+            tmp.push_back(dynamic_cast<MathTypes::TypeDouble *>((*iter))->GetValue());
+            data.push_back(tmp);
+        }
+        else{
+            return nullptr;
+        }
+    }
+    QVector<QVector<qreal>> plot_data(3);
+    QVector<qreal>::iterator iter[3] = {
+        data[0].begin(),
+        data[1].begin(),
+        data[2].begin()
+    };
+    for (; (iter[0] != data[0].end()) ||
+           (iter[1] != data[1].end()) ||
+           (iter[2] != data[2].end()); ){
+        if (iter[0] == data[0].end()) iter[0]--;
+        if (iter[1] == data[1].end()) iter[1]--;
+        if (iter[2] == data[2].end()) iter[2]--;
+        plot_data[0].push_back(*(iter[0])); plot_data[1].push_back(*(iter[1])); plot_data[2].push_back(*(iter[2]));
+        iter[0]++; iter[1]++; iter[2]++;
     }
 
     QtDataVisualization::Q3DScatter * plot = new QtDataVisualization::Q3DScatter();
@@ -346,9 +366,9 @@ Execute(QVector<MathTypes::AbstractType *> * args){
     data_series->setBaseColor(QColor(255, 0, 0));
     plot->addSeries(data_series);
 
-    for (uint32_t iter = 0; (iter < data[0].size()) && (iter < data[1].size()) && (iter < data[2].size()); iter++){
+    for (int iter = 0; (iter < plot_data[0].size()) && (iter < plot_data[1].size()) && (iter < plot_data[2].size()); iter++){
         plot->seriesList().at(0)->dataProxy()->addItem(
-                    QtDataVisualization::QScatterDataItem(QVector3D(data[0][iter], data[1][iter], data[2][iter])));
+                    QtDataVisualization::QScatterDataItem(QVector3D(plot_data[0][iter], plot_data[1][iter], plot_data[2][iter])));
     }
 
     plot_widget->show();
@@ -367,17 +387,34 @@ Execute(QVector<MathTypes::AbstractType *> * args){
     if (args->size() != this->ArgumentsAmount) return nullptr;
     QVector<QVector<qreal>> data;
     for (auto iter = args->begin(); iter != args->end(); iter++){
-        if ((*iter)->GetType() != MathTypes::AbstractType::MATH_VAR_TYPE_VECTOR){
-            return nullptr;
-        }
-        else{
+        if ((*iter)->GetType() == MathTypes::AbstractType::MATH_VAR_TYPE_VECTOR){
             data.push_back(dynamic_cast<MathTypes::TypeVector *>((*iter))->GetRawCopy());
         }
+        else if ((*iter)->GetType() == MathTypes::AbstractType::MATH_VAR_TYPE_DOUBLE){
+            QVector<qreal> tmp;
+            tmp.push_back(dynamic_cast<MathTypes::TypeDouble *>((*iter))->GetValue());
+            data.push_back(tmp);
+        }
+        else{
+            return nullptr;
+        }
+    }
+    QVector<QVector<qreal>> plot_data(2);
+    QVector<qreal>::iterator iter[2] = {
+        data[0].begin(),
+        data[1].begin()
+    };
+    for (; (iter[0] != data[0].end()) ||
+           (iter[1] != data[1].end()); ){
+        if (iter[0] == data[0].end()) iter[0]--;
+        if (iter[1] == data[1].end()) iter[1]--;
+        plot_data[0].push_back(*(iter[0])); plot_data[1].push_back(*(iter[1]));
+        iter[0]++; iter[1]++;
     }
     QCustomPlot * plot = new QCustomPlot();
     plot->setAttribute(Qt::WA_DeleteOnClose);
     plot->addGraph();
-    plot->graph(0)->setData(data[0], data[1]);
+    plot->graph(0)->setData(plot_data[0], plot_data[1]);
     plot->rescaleAxes();
     plot->setMinimumSize(QSize(400, 400));
     plot->show();
@@ -393,4 +430,55 @@ GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args){
 uint8_t MathFunctions::AbstractFunction::
 GetArgumentsExpected(void){
     return this->ArgumentsAmount;
+}
+
+MathTypes::AbstractType * MathFunctions::MathFunctionExport3DTrajectory::
+Execute(QVector<MathTypes::AbstractType *> * args){
+    if (!args) return nullptr;
+    if (args->size() != this->ArgumentsAmount) return nullptr;
+    QVector<QVector<qreal>> data(3);
+    auto data_iter = data.begin();
+    for (auto iter = args->begin(); iter != args->end(); iter++){
+        if ((*iter)->GetType() == MathTypes::AbstractType::MATH_VAR_TYPE_NONE) return nullptr;
+        else if ((*iter)->GetType() == MathTypes::AbstractType::MATH_VAR_TYPE_DOUBLE){
+            qreal val = dynamic_cast<MathTypes::TypeDouble *>(*iter)->GetValue();
+            data_iter->push_back(val);
+            data_iter++;
+        }
+        else if ((*iter)->GetType() == MathTypes::AbstractType::MATH_VAR_TYPE_VECTOR){
+            *data_iter = (dynamic_cast<MathTypes::TypeVector *>((*iter))->GetRawCopy());
+            data_iter++;
+        }
+        else{
+            return nullptr;
+        }
+    }
+    QVector<qreal>::iterator iter[3] = {
+        data[0].begin(),
+        data[1].begin(),
+        data[2].begin()
+    };
+    QString filter;
+    QString fname = QFileDialog::getSaveFileName(nullptr, "Export 3D Trajectory", QDir::currentPath(), "CSV (*.csv)", &filter);
+    QFile file(fname + ".csv");
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)){
+        QTextStream file_stream(&file);
+        file_stream << "X;Y;Z\n";
+        for (; (iter[0] != data[0].end()) ||
+               (iter[1] != data[1].end()) ||
+               (iter[2] != data[2].end()); ){
+            if (iter[0] == data[0].end()) iter[0]--;
+            if (iter[1] == data[1].end()) iter[1]--;
+            if (iter[2] == data[2].end()) iter[2]--;
+            file_stream << QString::asprintf("%.2f;%.2f;%.2f\n", *(iter[0]), *(iter[1]), *(iter[2]));
+            iter[0]++; iter[1]++; iter[2]++;
+        }
+        file.close();
+    }
+    return nullptr;
+}
+
+MathTypes::AbstractType::VarTypes MathFunctions::MathFunctionExport3DTrajectory::
+GetReturnValue(QVector<MathTypes::AbstractType::VarTypes> args){
+    return MathTypes::AbstractType::MATH_VAR_TYPE_NONE;
 }
