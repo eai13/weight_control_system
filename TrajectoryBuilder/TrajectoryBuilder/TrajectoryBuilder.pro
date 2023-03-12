@@ -15,7 +15,8 @@ SOURCES += \
     mathfunctions.cpp \
     mathtreeprocessor.cpp \
     mathtypes.cpp \
-    qcustomplot.cpp
+    qcustomplot.cpp \
+    smartline.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -23,7 +24,8 @@ HEADERS += \
     mathfunctions.h \
     mathtreeprocessor.h \
     mathtypes.h \
-    qcustomplot.h
+    qcustomplot.h \
+    smartline.h
 
 FORMS += \
     mainwindow.ui

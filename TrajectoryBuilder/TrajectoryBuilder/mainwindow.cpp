@@ -11,12 +11,16 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->pb_ClearCommandHistory, &QPushButton::released, this, &MainWindow::slClearCommandHistory);
     connect(ui->pb_ClearVariables,      &QPushButton::released, this, &MainWindow::slClearVariables);
     connect(ui->pb_Interpret,           &QPushButton::released, this, &MainWindow::slInterpret);
-    connect(ui->line_Interpreter,       &QLineEdit::returnPressed, this, &MainWindow::slInterpret);
-    connect(ui->line_Interpreter,       &QLineEdit::textEdited, this, &MainWindow::slTextEdited);
+    connect(ui->line_Interpreter,       &SmartLine::returnPressed, this, &MainWindow::slInterpret);
+    connect(ui->line_Interpreter,       &SmartLine::textEdited, this, &MainWindow::slTextEdited);
+    connect(ui->line_Interpreter,       &SmartLine::siKeyUpReleased, this, &MainWindow::slKeyUpReleased);
+    connect(ui->line_Interpreter,       &SmartLine::siKeyDownReleased, this, &MainWindow::slKeyDownReleased);
+    connect(ui->list_Variables,         &QListWidget::itemDoubleClicked, this, &MainWindow::slInspectVariable);
 
     connect(&(this->Interpreter), &MathInterpreter::siInterpreterDebugString, this, &MainWindow::slLogDebug);
     connect(&(this->Interpreter), &MathInterpreter::siVariableCreated, this, &MainWindow::slVariableCreated);
     connect(&(this->Interpreter), &MathInterpreter::siVariableRemoved, this, &MainWindow::slVariableRemoved);
+    connect(this, &MainWindow::siShowVariableWindow, &(this->Interpreter), &MathInterpreter::slShowVariableWindow);
     connect(this, &MainWindow::siVariableChanged, &(this->Interpreter), &MathInterpreter::slVariableChanged);
     connect(this, &MainWindow::siVariableRemoved, &(this->Interpreter), &MathInterpreter::slVariableRemoved);
 }
@@ -76,6 +80,10 @@ void MainWindow::slClearVariables(void){
     }
 }
 
+void MainWindow::slInspectVariable(QListWidgetItem *item){
+    emit this->siShowVariableWindow(item->text());
+}
+
 void MainWindow::slInterpret(void){
     this->slAddCommandToHistory(ui->line_Interpreter->text());
     this->slLogDebug("STARTED");
@@ -86,6 +94,25 @@ void MainWindow::slInterpret(void){
 
 void MainWindow::slTextEdited(QString const & Value){
     QString CurrentInstance;
+}
+
+void MainWindow::slKeyUpReleased(void){
+    if (ui->list_CommandHistory->count() == 0) return;
+    if (this->CommandHistoryItem == 0){
+        this->CommandHistoryItem = ui->list_CommandHistory->count() - 1;
+    }
+    else{
+        this->CommandHistoryItem--;
+    }
+    if (ui->list_CommandHistory->findItems(ui->line_Interpreter->text(), Qt::MatchExactly).isEmpty()){
+        this->CommandStash = ui->line_Interpreter->text();
+    }
+    ui->line_Interpreter->setText(ui->list_CommandHistory->item(this->CommandHistoryItem)->text());
+}
+
+void MainWindow::slKeyDownReleased(void){
+    ui->line_Interpreter->setText(this->CommandStash);
+    this->CommandHistoryItem = ui->list_CommandHistory->count();
 }
 
 QListWidgetItem * MainWindow::CheckVariableExists(QString Name){

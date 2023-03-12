@@ -11,6 +11,7 @@
 #include <QDebug>
 #include <QWidget>
 #include <QObject>
+#include <QBoxLayout>
 
 //QT_BEGIN_NAMESPACE
 //namespace Interpreter { class MathInterpreter; }
@@ -37,6 +38,7 @@ private:
     QMap<QString, MathTypes::AbstractType *> Variables;
 
 public slots:
+    void slShowVariableWindow(QString Name);
     void slVariableRemoved(QString Name);
     void slVariableChanged(QString Name, QString Value);
 

@@ -79,7 +79,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="line_Interpreter">
+       <widget class="SmartLine" name="line_Interpreter">
         <property name="placeholderText">
          <string/>
         </property>
@@ -149,6 +149,13 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SmartLine</class>
+   <extends>QLineEdit</extends>
+   <header>smartline.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

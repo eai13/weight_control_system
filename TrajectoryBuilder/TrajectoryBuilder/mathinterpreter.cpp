@@ -272,7 +272,7 @@ QStringList MathInterpreter::InterpretSubstring(QStringList Input){
                             BracesStack.pop();
                         }
                     }
-                    else if (*iter == ","){
+                    else if ((*iter == ",") && (BracesStack.isEmpty())){
                         Output.append(this->InterpretSubstring(Accumulator));
                         Accumulator.clear();
                         continue;
@@ -282,6 +282,7 @@ QStringList MathInterpreter::InterpretSubstring(QStringList Input){
                     }
                     Accumulator.push_back(*iter);
                 }
+                if (iter == Input.end()) break;
             }
             else{
                 qDebug() << "Error Function Arguments";
@@ -437,6 +438,51 @@ QStringList MathInterpreter::StringPreprocessor(QString input){
     }
 
     return FunctionalList;
+}
+
+void MathInterpreter::slShowVariableWindow(QString Name){
+    QStringList NameParts = Name.split(" : ");
+    if (NameParts.size() != 2) return;
+    if (this->Variables.contains(NameParts[0])){
+        switch(this->Variables[NameParts[0]]->GetType()){
+        case(MathTypes::AbstractType::MATH_VAR_TYPE_DOUBLE):{
+            qreal val = dynamic_cast<MathTypes::TypeDouble *>(this->Variables[NameParts[0]])->GetValue();
+            QWidget * Window = new QWidget();
+            Window->setAttribute(Qt::WA_DeleteOnClose);
+            Window->setAttribute(Qt::WA_ShowModal);
+            QBoxLayout * Layout = new QBoxLayout(QBoxLayout::TopToBottom);
+            QPushButton * Accept = new QPushButton("Accept");
+            QLineEdit * Value = new QLineEdit(QString::asprintf("%.2f", val));
+            Layout->addWidget(new QLabel(Name));
+            Layout->addWidget(Value);
+            Layout->addWidget(Accept);
+            Window->setLayout(Layout);
+            Window->show();
+            break;
+        }
+        case(MathTypes::AbstractType::MATH_VAR_TYPE_VECTOR):{
+            QVector<qreal> val = dynamic_cast<MathTypes::TypeVector *>(this->Variables[NameParts[0]])->GetRawCopy();
+            QWidget * Window = new QWidget();
+            Window->setAttribute(Qt::WA_DeleteOnClose);
+            Window->setAttribute(Qt::WA_ShowModal);
+            QBoxLayout * Layout = new QBoxLayout(QBoxLayout::TopToBottom);
+            QPushButton * Accept = new QPushButton("Accept");
+            QTableWidget * Values = new QTableWidget(1, val.size());
+            for (int iter = 0; iter < val.size(); iter++){
+                Values->setItem(0, iter, new QTableWidgetItem(QString::asprintf("%.2f", val[iter])));
+            }
+            Layout->addWidget(new QLabel(Name));
+            Layout->addWidget(Values);
+            Layout->addWidget(Accept);
+            Window->setLayout(Layout);
+            Window->show();
+            break;
+        }
+        default:{
+            break;
+        }
+        }
+    }
 }
 
 void MathInterpreter::slVariableRemoved(QString Name){

@@ -5,6 +5,7 @@
 #include <QVector>
 #include <QtMath>
 #include <math.h>
+#include <QObject>
 
 namespace MathTypes{
     class AbstractType;

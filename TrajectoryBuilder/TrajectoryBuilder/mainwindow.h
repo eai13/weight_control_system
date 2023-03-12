@@ -7,6 +7,7 @@
 #include <QCompleter>
 #include <QStringListModel>
 #include "qcustomplot.h"
+#include <QTableWidget>
 
 #include "mathinterpreter.h"
 
@@ -37,8 +38,14 @@ public slots:
 private slots:
     void slClearCommandHistory(void);
     void slClearVariables(void);
+    void slInspectVariable(QListWidgetItem * item);
     void slInterpret(void);
     void slTextEdited(QString const & Value);
+    void slKeyUpReleased(void);
+    void slKeyDownReleased(void);
+private:
+    uint32_t CommandHistoryItem = 0;
+    QString CommandStash;
 
 private:
 
@@ -51,8 +58,8 @@ private:
     QStringList Instances;
 
 signals:
-    void siLookForSimilarInstances(QString Instance);
     void siVariableRemoved(QString Name);
     void siVariableChanged(QString Name, QString Value);
+    void siShowVariableWindow(QString Name);
 };
 #endif // MAINWINDOW_H
